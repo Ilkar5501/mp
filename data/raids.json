@@ -1,0 +1,1131 @@
+{
+  "3": [
+    {
+      "name": "Murder of Crows",
+      "units": [
+        {
+          "character_id": "Tenma Udai — The Original",
+          "lane": "front",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Hinata — Wings of Dawn",
+          "lane": "back",
+          "merge": 3,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "back",
+          "merge": 3,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tempo"
+    },
+    {
+      "name": "Twin Tempo",
+      "units": [
+        {
+          "character_id": "Suna — Coiled Serpent",
+          "lane": "front",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Osamu — Twin Shadow",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tempo"
+    },
+    {
+      "name": "What If?",
+      "units": [
+        {
+          "character_id": "Hirugami — The Immovable Gate",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Ushijima — Absolute Monarch",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "offense"
+    },
+    {
+      "name": "Owl Attack",
+      "units": [
+        {
+          "character_id": "Washio — Silent Pillar",
+          "lane": "front",
+          "merge": 7,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Bokuto — Star of the Owls",
+          "lane": "back",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "back",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "offense"
+    },
+    {
+      "name": "The Little Giants",
+      "units": [
+        {
+          "character_id": "Takeru — Flashing Salmon",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "back",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "back",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        }
+      ],
+      "theme": "recovery"
+    },
+    {
+      "name": "Cat and Snake",
+      "units": [
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kenma — Max Level Gamer",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Daisho — Serpent of Chaos",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tactics"
+    },
+    {
+      "name": "Iron Wall",
+      "units": [
+        {
+          "character_id": "Aone — Wall of Steel",
+          "lane": "front",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Koganegawa — Towering Setter",
+          "lane": "back",
+          "merge": 3,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kosuke — Behind the Iron Wall",
+          "lane": "back",
+          "merge": 3,
+          "boon": "def",
+          "bane": "hp"
+        }
+      ],
+      "theme": "defense"
+    },
+    {
+      "name": "Unshaken",
+      "units": [
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 7,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kanoka — Ace of the other Side",
+          "lane": "back",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "back",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "defense"
+    },
+    {
+      "name": "All For One",
+      "units": [
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kiryu — Last Hope",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Usuri — Calculated Distraction",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "recovery"
+    },
+    {
+      "name": "Snarky Sharks",
+      "units": [
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Tendo — Guess Monster",
+          "lane": "back",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Iwaizumi — Fitness Fanatic",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tactics"
+    },
+    {
+      "name": "Counter Court",
+      "units": [
+        {
+          "character_id": "Hirugami — The Immovable Gate",
+          "lane": "front",
+          "merge": 8,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Reon — Benkei",
+          "lane": "back",
+          "merge": 7,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Ushijima — Absolute Monarch",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "defense"
+    },
+    {
+      "name": "The King's Court",
+      "units": [
+        {
+          "character_id": "Tsuki — Tireless Taunter",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "back",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tempo"
+    },
+    {
+      "name": "Mouse Trap",
+      "units": [
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kenma — Max Level Gamer",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Yamamoto — Fire Lord",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tactics"
+    },
+    {
+      "name": "Target and Fire",
+      "units": [
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Teradomari — Agile Hunter",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "offense"
+    },
+    {
+      "name": "Sly Strikes",
+      "units": [
+        {
+          "character_id": "Konoha — Plug and Play",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Suga — Relentless Setter",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kyotani — Mad Dog",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "recovery"
+    }
+  ],
+  "6": [
+    {
+      "name": "A Crow's Dream",
+      "units": [
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Tenma Udai — The Original",
+          "lane": "front",
+          "merge": 3,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Tsuki — Tireless Taunter",
+          "lane": "front",
+          "merge": 3,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Hinata — Wings of Dawn",
+          "lane": "back",
+          "merge": 3,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "back",
+          "merge": 3,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Nishinoya — Guardian Deity",
+          "lane": "back",
+          "merge": 3,
+          "boon": "def",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tempo"
+    },
+    {
+      "name": "The Rice Fields",
+      "units": [
+        {
+          "character_id": "Akagi — Relentless Receiver",
+          "lane": "front",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Suna — Coiled Serpent",
+          "lane": "front",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kita — Flawless Routine",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Osamu — Twin Shadow",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "back",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tempo"
+    },
+    {
+      "name": "Ace Orchestra",
+      "units": [
+        {
+          "character_id": "Hirugami — The Immovable Gate",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "front",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Ushijima — Absolute Monarch",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Usuri — Calculated Distraction",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "offense"
+    },
+    {
+      "name": "The Owl's Nest",
+      "units": [
+        {
+          "character_id": "Konoha — Plug and Play",
+          "lane": "front",
+          "merge": 7,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Washio — Silent Pillar",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Bokuto — Star of the Owls",
+          "lane": "back",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "back",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tactics"
+    },
+    {
+      "name": "Unshaken Wall",
+      "units": [
+        {
+          "character_id": "Hirugami — The Immovable Gate",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kanoka — Ace of the other Side",
+          "lane": "front",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Usuri — Calculated Distraction",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "defense"
+    },
+    {
+      "name": "9 Lives",
+      "units": [
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Tsuki — Tireless Taunter",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Yaku — Hands of Ruin",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kenma — Max Level Gamer",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Yamamoto — Fire Lord",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kai — Serene Sage",
+          "lane": "back",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tactics"
+    },
+    {
+      "name": "Iron Wall",
+      "units": [
+        {
+          "character_id": "Aone — Wall of Steel",
+          "lane": "front",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Koganegawa — Towering Setter",
+          "lane": "front",
+          "merge": 3,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kosuke — Behind the Iron Wall",
+          "lane": "front",
+          "merge": 3,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Futakuchi — Smirking Thorn",
+          "lane": "back",
+          "merge": 3,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "back",
+          "merge": 3,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Asahi — True Ace",
+          "lane": "back",
+          "merge": 3,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "defense"
+    },
+    {
+      "name": "Backs Against the Wall",
+      "units": [
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 7,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Yamagata — Last Line",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kanoka — Ace of the other Side",
+          "lane": "front",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Usuri — Calculated Distraction",
+          "lane": "back",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kiryu — Last Hope",
+          "lane": "back",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "back",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        }
+      ],
+      "theme": "offense"
+    },
+    {
+      "name": "The Emperor's Entourage",
+      "units": [
+        {
+          "character_id": "Tendo — Guess Monster",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Ushijima — Absolute Monarch",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Shirabu — Emperor's Devotee",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Reon — Benkei",
+          "lane": "back",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        }
+      ],
+      "theme": "offense"
+    },
+    {
+      "name": "Freak Quicks",
+      "units": [
+        {
+          "character_id": "Suna — Coiled Serpent",
+          "lane": "front",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Osamu — Twin Shadow",
+          "lane": "front",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Hinata — Wings of Dawn",
+          "lane": "front",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kenma — Max Level Gamer",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tempo"
+    },
+    {
+      "name": "Where Dreams go to Die",
+      "units": [
+        {
+          "character_id": "Gao — Hulking Giant",
+          "lane": "front",
+          "merge": 8,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Hirugami — The Immovable Gate",
+          "lane": "front",
+          "merge": 7,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "front",
+          "merge": 7,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 7,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Nishinoya — Guardian Deity",
+          "lane": "back",
+          "merge": 7,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Shirabu — Emperor's Devotee",
+          "lane": "back",
+          "merge": 7,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "defense"
+    },
+    {
+      "name": "Race to the Top",
+      "units": [
+        {
+          "character_id": "Tenma Udai — The Original",
+          "lane": "front",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Tsuki — Tireless Taunter",
+          "lane": "front",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "front",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "back",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "back",
+          "merge": 4,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "back",
+          "merge": 4,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "recovery"
+    },
+    {
+      "name": "Powerful Machinations",
+      "units": [
+        {
+          "character_id": "Aran — Thunderous Cannon",
+          "lane": "front",
+          "merge": 6,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Konoha — Plug and Play",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kenma — Max Level Gamer",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kyotani — Mad Dog",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "tactics"
+    },
+    {
+      "name": "Rally Rally Go!",
+      "units": [
+        {
+          "character_id": "Hirugami — The Immovable Gate",
+          "lane": "front",
+          "merge": 6,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kanoka — Ace of the other Side",
+          "lane": "front",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "front",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Fukunaga — Doctor Freeze",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Bokuto — Star of the Owls",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "recovery"
+    },
+    {
+      "name": "Speedy Snipers",
+      "units": [
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "front",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Osamu — Twin Shadow",
+          "lane": "front",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Teradomari — Agile Hunter",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "back",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "back",
+          "merge": 5,
+          "boon": "def",
+          "bane": "hp"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "back",
+          "merge": 5,
+          "boon": "spd",
+          "bane": "hp"
+        }
+      ],
+      "theme": "recovery"
+    }
+  ]
+}

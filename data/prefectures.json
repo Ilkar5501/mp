@@ -1,0 +1,472 @@
+[
+  {
+    "name": "Prefecture Formation 1",
+    "pods": [
+      [
+        [
+          "Washio — Silent Pillar",
+          "front"
+        ],
+        [
+          "Bokuto — Star of the Owls",
+          "back"
+        ],
+        [
+          "Akaashi — Architect of Calm",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Konoha — Plug and Play",
+          "front"
+        ],
+        [
+          "Kiryu — Reluctant Titan",
+          "back"
+        ],
+        [
+          "Usuri — Calculated Distraction",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Kuroo — Black Cat's Gambit",
+          "front"
+        ],
+        [
+          "Kenma — Max Level Gamer",
+          "back"
+        ],
+        [
+          "Daisho — Serpent of Chaos",
+          "back"
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "Prefecture Formation 2",
+    "pods": [
+      [
+        [
+          "Korai — Little Giant",
+          "front"
+        ],
+        [
+          "Akagi — Relentless Receiver",
+          "back"
+        ],
+        [
+          "Gao — Hulking Giant",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Hirugami — The Immovable Gate",
+          "front"
+        ],
+        [
+          "Kita — Flawless Routine",
+          "back"
+        ],
+        [
+          "Lev — Young Lion",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Suna — Coiled Serpent",
+          "front"
+        ],
+        [
+          "Atsumu — Arrogant Genius",
+          "back"
+        ],
+        [
+          "Osamu — Twin Shadow",
+          "back"
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "Prefecture Formation 3",
+    "pods": [
+      [
+        [
+          "Korai — Little Giant",
+          "front"
+        ],
+        [
+          "Hinata — Wings of Dawn",
+          "back"
+        ],
+        [
+          "Kageyama — Crown of Precision",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Daichi — Steadfast Captain",
+          "front"
+        ],
+        [
+          "Tenma Udai — The Original",
+          "back"
+        ],
+        [
+          "Oikawa — Grand Conductor",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Suna — Coiled Serpent",
+          "front"
+        ],
+        [
+          "Atsumu — Arrogant Genius",
+          "back"
+        ],
+        [
+          "Osamu — Twin Shadow",
+          "back"
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "Prefecture Formation 4",
+    "pods": [
+      [
+        [
+          "Tsuki — Tireless Taunter",
+          "front"
+        ],
+        [
+          "Oikawa — Grand Conductor",
+          "back"
+        ],
+        [
+          "Iwaizumi — Fitness Fanatic",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Tendo — Guess Monster",
+          "front"
+        ],
+        [
+          "Aran — Thunderous Cannon",
+          "back"
+        ],
+        [
+          "Gao — Hulking Giant",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Unnan — Fortress of Fortitude",
+          "front"
+        ],
+        [
+          "Kyotani — Mad Dog",
+          "back"
+        ],
+        [
+          "Asahi — True Ace",
+          "back"
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "Prefecture Formation 5",
+    "pods": [
+      [
+        [
+          "Unnan — Fortress of Fortitude",
+          "front"
+        ],
+        [
+          "Nishinoya — Guardian Deity",
+          "back"
+        ],
+        [
+          "Hinata — Miracle Maker",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Kuroo — Black Cat's Gambit",
+          "front"
+        ],
+        [
+          "Kageyama — Crown of Precision",
+          "back"
+        ],
+        [
+          "Atsumu — Arrogant Genius",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Suna — Coiled Serpent",
+          "front"
+        ],
+        [
+          "Takeru — Flashing Salmon",
+          "front"
+        ],
+        [
+          "Tenma Udai — The Original",
+          "front"
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "Prefecture Formation 6",
+    "pods": [
+      [
+        [
+          "Korai — Little Giant",
+          "front"
+        ],
+        [
+          "Ushijima — Absolute Monarch",
+          "back"
+        ],
+        [
+          "Shirabu — Emperor's Devotee",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Gao — Hulking Giant",
+          "front"
+        ],
+        [
+          "Oikawa — Grand Conductor",
+          "back"
+        ],
+        [
+          "Iwaizumi — Fitness Fanatic",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Daichi — Steadfast Captain",
+          "front"
+        ],
+        [
+          "Usuri — Calculated Distraction",
+          "back"
+        ],
+        [
+          "Asahi — True Ace",
+          "back"
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "Prefecture Formation 7",
+    "pods": [
+      [
+        [
+          "Aone — Wall of Steel",
+          "front"
+        ],
+        [
+          "Koganegawa — Towering Setter",
+          "back"
+        ],
+        [
+          "Futakuchi — Smirking Thorn",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Tendo — Guess Monster",
+          "front"
+        ],
+        [
+          "Kenma — Max Level Gamer",
+          "back"
+        ],
+        [
+          "Nishinoya — Guardian Deity",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Unnan — Fortress of Fortitude",
+          "front"
+        ],
+        [
+          "Kosuke — Behind the Iron Wall",
+          "back"
+        ],
+        [
+          "Gao — Hulking Giant",
+          "back"
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "Prefecture Formation 8",
+    "pods": [
+      [
+        [
+          "Tsuki — Tireless Taunter",
+          "front"
+        ],
+        [
+          "Kanoka — Ace of the other Side",
+          "back"
+        ],
+        [
+          "Nishinoya — Guardian Deity",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Suna — Coiled Serpent",
+          "front"
+        ],
+        [
+          "Kageyama — Crown of Precision",
+          "back"
+        ],
+        [
+          "Atsumu — Arrogant Genius",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Daichi — Steadfast Captain",
+          "front"
+        ],
+        [
+          "Tenma Udai — The Original",
+          "back"
+        ],
+        [
+          "Hinata — Wings of Dawn",
+          "back"
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "Prefecture Formation 9",
+    "pods": [
+      [
+        [
+          "Lev — Young Lion",
+          "front"
+        ],
+        [
+          "Atsumu — Arrogant Genius",
+          "back"
+        ],
+        [
+          "Akagi — Relentless Receiver",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Washio — Silent Pillar",
+          "front"
+        ],
+        [
+          "Kageyama — Crown of Precision",
+          "back"
+        ],
+        [
+          "Osamu — Twin Shadow",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Tendo — Guess Monster",
+          "front"
+        ],
+        [
+          "Teradomari — Agile Hunter",
+          "back"
+        ],
+        [
+          "Usuri — Calculated Distraction",
+          "front"
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "Prefecture Formation 10",
+    "pods": [
+      [
+        [
+          "Hirugami — The Immovable Gate",
+          "front"
+        ],
+        [
+          "Oikawa — Grand Conductor",
+          "back"
+        ],
+        [
+          "Daichi — Steadfast Captain",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Korai — Little Giant",
+          "front"
+        ],
+        [
+          "Ushijima — Absolute Monarch",
+          "back"
+        ],
+        [
+          "Usuri — Calculated Distraction",
+          "back"
+        ]
+      ],
+      [
+        [
+          "Konoha — Plug and Play",
+          "front"
+        ],
+        [
+          "Akaashi — Architect of Calm",
+          "back"
+        ],
+        [
+          "Bokuto — Star of the Owls",
+          "back"
+        ]
+      ]
+    ]
+  }
+]

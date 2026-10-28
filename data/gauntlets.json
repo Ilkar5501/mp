@@ -1,0 +1,342 @@
+{
+  "regional": {
+    "order": [
+      "Date Tech",
+      "Fukurodani",
+      "Aoba Johsai",
+      "Kamomedai"
+    ],
+    "schools": {
+      "Date Tech": [
+        {
+          "merge": 0,
+          "front": "Aone — Wall of Steel",
+          "back": [
+            "Koganegawa — Towering Setter",
+            "Futakuchi — Smirking Thorn"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Aone — Wall of Steel",
+          "back": [
+            "Koganegawa — Towering Setter",
+            "Futakuchi — Smirking Thorn"
+          ]
+        },
+        {
+          "merge": 10,
+          "front": "Aone — Wall of Steel",
+          "back": [
+            "Koganegawa — Towering Setter",
+            "Futakuchi — Smirking Thorn"
+          ]
+        }
+      ],
+      "Fukurodani": [
+        {
+          "merge": 0,
+          "front": "Akaashi — Architect of Calm",
+          "back": [
+            "Bokuto — Star of the Owls",
+            "Komi — Energizing Spirit"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Washio — Silent Pillar",
+          "back": [
+            "Bokuto — Star of the Owls",
+            "Akaashi — Architect of Calm"
+          ]
+        },
+        {
+          "merge": 10,
+          "front": "Konoha — Plug and Play",
+          "back": [
+            "Bokuto — Star of the Owls",
+            "Akaashi — Architect of Calm"
+          ]
+        }
+      ],
+      "Aoba Johsai": [
+        {
+          "merge": 0,
+          "front": "Iwaizumi — Fitness Fanatic",
+          "back": [
+            "Kyotani — Mad Dog",
+            "Oikawa — Grand Conductor"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Iwaizumi — Fitness Fanatic",
+          "back": [
+            "Kyotani — Mad Dog",
+            "Oikawa — Grand Conductor"
+          ]
+        },
+        {
+          "merge": 10,
+          "front": "Iwaizumi — Fitness Fanatic",
+          "back": [
+            "Kyotani — Mad Dog",
+            "Oikawa — Grand Conductor"
+          ]
+        }
+      ],
+      "Kamomedai": [
+        {
+          "merge": 0,
+          "front": "Korai — Little Giant",
+          "back": [
+            "Gao — Hulking Giant",
+            "Hirugami — The Immovable Gate"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Gao — Hulking Giant",
+          "back": [
+            "Korai — Little Giant",
+            "Hirugami — The Immovable Gate"
+          ]
+        },
+        {
+          "merge": 10,
+          "front": "Hirugami — The Immovable Gate",
+          "back": [
+            "Gao — Hulking Giant",
+            "Korai — Little Giant"
+          ]
+        }
+      ]
+    }
+  },
+  "national": {
+    "order": [
+      "Shiratorizawa",
+      "Karasuno",
+      "Inarizaki",
+      "Nekoma"
+    ],
+    "schools": {
+      "Shiratorizawa": [
+        {
+          "merge": 0,
+          "front": "Yamagata — Last Line",
+          "back": [
+            "Reon — Benkei",
+            "Goshiki — The Future's Ace"
+          ]
+        },
+        {
+          "merge": 1,
+          "front": "Tendo — Guess Monster",
+          "back": [
+            "Goshiki — The Future's Ace",
+            "Reon — Benkei"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Tendo — Guess Monster",
+          "back": [
+            "Ushijima — Absolute Monarch",
+            "Shirabu — Emperor's Devotee"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Yamagata — Last Line",
+          "back": [
+            "Ushijima — Absolute Monarch",
+            "Reon — Benkei"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Yamagata — Last Line",
+          "back": [
+            "Ushijima — Absolute Monarch",
+            "Shirabu — Emperor's Devotee"
+          ]
+        }
+      ],
+      "Karasuno": [
+        {
+          "merge": 0,
+          "front": "Tsuki — Tireless Taunter",
+          "back": [
+            "Suga — Relentless Setter",
+            "Tanaka — Unbreakable Wing"
+          ]
+        },
+        {
+          "merge": 1,
+          "front": "Kageyama — Crown of Precision",
+          "back": [
+            "Hinata — Wings of Dawn",
+            "Suga — Relentless Setter"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Hinata — Miracle Maker",
+          "back": [
+            "Kageyama — Crown of Precision",
+            "Asahi — True Ace"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Tsuki — Tireless Taunter",
+          "back": [
+            "Kageyama — Crown of Precision",
+            "Hinata — Miracle Maker"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Tsuki — Tireless Taunter",
+          "back": [
+            "Kageyama — Crown of Precision",
+            "Hinata — Wings of Dawn"
+          ]
+        }
+      ],
+      "Inarizaki": [
+        {
+          "merge": 0,
+          "front": "Suna — Coiled Serpent",
+          "back": [
+            "Atsumu — Arrogant Genius",
+            "Akagi — Relentless Receiver"
+          ]
+        },
+        {
+          "merge": 1,
+          "front": "Suna — Coiled Serpent",
+          "back": [
+            "Atsumu — Arrogant Genius",
+            "Osamu — Twin Shadow"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Akagi — Relentless Receiver",
+          "back": [
+            "Atsumu — Arrogant Genius",
+            "Osamu — Twin Shadow"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Suna — Coiled Serpent",
+          "back": [
+            "Atsumu — Arrogant Genius",
+            "Akagi — Relentless Receiver"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Suna — Coiled Serpent",
+          "back": [
+            "Atsumu — Arrogant Genius",
+            "Osamu — Twin Shadow"
+          ]
+        }
+      ],
+      "Nekoma": [
+        {
+          "merge": 0,
+          "front": "Lev — Young Lion",
+          "back": [
+            "Kai — Serene Sage",
+            "Fukunaga — Doctor Freeze"
+          ]
+        },
+        {
+          "merge": 1,
+          "front": "Lev — Young Lion",
+          "back": [
+            "Kenma — Max Level Gamer",
+            "Fukunaga — Doctor Freeze"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Yaku — Hands of Ruin",
+          "back": [
+            "Kenma — Max Level Gamer",
+            "Yamamoto — Fire Lord"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Kuroo — Black Cat's Gambit",
+          "back": [
+            "Kenma — Max Level Gamer",
+            "Yamamoto — Fire Lord"
+          ]
+        },
+        {
+          "merge": 5,
+          "front": "Kuroo — Black Cat's Gambit",
+          "back": [
+            "Kenma — Max Level Gamer",
+            "Yaku — Hands of Ruin"
+          ]
+        }
+      ]
+    }
+  },
+  "training": {
+    "Tsubakihara": [
+      {
+        "front": "Atema — Brave Bastion",
+        "back": [
+          "Teradomari — Agile Hunter",
+          "Echigo — Cool Headed"
+        ]
+      },
+      {
+        "front": "Teradomari — Agile Hunter",
+        "back": [
+          "Echigo — Cool Headed",
+          "Himekawa — Miracle Server"
+        ]
+      },
+      {
+        "front": "Echigo — Cool Headed",
+        "back": [
+          "Maruyama — Steady Wing",
+          "Teradomari — Agile Hunter"
+        ]
+      }
+    ],
+    "Mujinazaka": [
+      {
+        "front": "Unnan — Fortress of Fortitude",
+        "back": [
+          "Usuri — Calculated Distraction",
+          "Kiryu — Reluctant Titan"
+        ]
+      },
+      {
+        "front": "Unnan — Fortress of Fortitude",
+        "back": [
+          "Usuri — Calculated Distraction",
+          "Kiryu — Reluctant Titan"
+        ]
+      },
+      {
+        "front": "Unnan — Fortress of Fortitude",
+        "back": [
+          "Usuri — Calculated Distraction",
+          "Kiryu — Reluctant Titan"
+        ]
+      }
+    ]
+  }
+}

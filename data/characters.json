@@ -1,0 +1,3312 @@
+[
+  {
+    "id": "Hinata — Wings of Dawn",
+    "name": "Hinata",
+    "title": "Wings of Dawn",
+    "position": "MB",
+    "school": "Karasuno",
+    "rarity": 5,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/a1/49/76/a14976039d37f9e9d75162ef1f34f5d3.jpg",
+    "character_icon": "https://i.pinimg.com/736x/95/85/bd/9585bd6830d52529287a43cf334f2298.jpg",
+    "stats": {
+      "hp": 180,
+      "pow": 0,
+      "qik": 45,
+      "def": 23,
+      "rec": 17,
+      "spd": 40,
+      "jmp": 40,
+      "bst": 345
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Flash of Brilliance",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 30% during damage calculation for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Unseen Tempo",
+        "text": "During combat, if unit initiated combat, grants Qik/Spd+4 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Freakish Athleticism",
+        "text": "During combat, if unit's Spd ≥ foe's Spd+5, unit can make a follow-up attack. Does not stack. If unit is allied with Kageyama, this skill does not grant that follow-up; instead, unit attacks twice.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "The Greatest Decoy",
+        "text": "After unit's combat, inflicts Spd/Jmp−3 on all foes whose Spd is lower than unit's Spd through their next actions.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "[Brave Attack]: 'Unit attacks twice' produces two consecutive hits per attack action. It is separate from a follow-up attack.",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kageyama — Crown of Precision",
+    "name": "Kageyama",
+    "title": "Crown of Precision",
+    "position": "S",
+    "school": "Karasuno",
+    "rarity": 5,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/736x/9e/6e/ec/9e6eecf5346c6818a8c09e59c1d46b45.jpg",
+    "character_icon": "https://i.pinimg.com/736x/bb/e0/06/bbe00688036f2ede5842c811027d7af8.jpg",
+    "stats": {
+      "hp": 162,
+      "pow": 50,
+      "qik": 0,
+      "def": 30,
+      "rec": 25,
+      "spd": 33,
+      "jmp": 32,
+      "bst": 332
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Perfect Set",
+        "text": "After combat, if unit's Ultimate is ready, triggers unit's Ultimate and grants Pow/Qik+6 to unit and all allies through their next actions.",
+        "timing": "COMBAT_END"
+      },
+      "A": {
+        "name": "Jump Serve",
+        "text": "During combat, if unit initiated combat, grants Pow+6 to unit. After combat, inflicts Spd-3 on target through their next action.",
+        "timing": "COMBAT_LIVE > COMBAT_END"
+      },
+      "B": {
+        "name": "Fast-Break Tempo",
+        "text": "During combat, if team's HP ≤75%, an allied unit initiated combat, and that initiating unit's Spd ≥ foe's Spd+3, grants the initiating allied unit a guaranteed follow-up attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "King's Commandment",
+        "text": "After unit's combat, inflicts Def/Rec−4 on all foes through their next actions.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Ushijima — Absolute Monarch",
+    "name": "Ushijima",
+    "title": "Absolute Monarch",
+    "position": "OP",
+    "school": "Shiratorizawa",
+    "rarity": 5,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/34/e7/22/34e722b911fe25142ca904b4ca3e702f.jpg",
+    "character_icon": "https://i.pinimg.com/736x/41/30/4c/41304c983621b8ab2c7add4399ab9144.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 56,
+      "qik": 0,
+      "def": 33,
+      "rec": 26,
+      "spd": 30,
+      "jmp": 41,
+      "bst": 346
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Unstoppable Spike",
+        "text": "When unit's Ultimate triggers during combat, boosts unit's Pow by 50% for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Undeniable Dominance",
+        "text": "During combat, grants Pow+3 to unit and grants additional Pow equal to the total of unit's visible stat bonuses.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Block Buster",
+        "text": "During combat, inflicts Pow/Def−3 on foe and neutralizes foe's visible bonuses to Pow/Def.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Ace's Pulse",
+        "text": "At start of each odd-numbered turn, grants Jmp+6 to unit and allies through their next actions.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Hirugami — The Immovable Gate",
+    "name": "Hirugami",
+    "title": "The Immovable Gate",
+    "position": "MB",
+    "school": "Kamomedai",
+    "rarity": 5,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/76/10/3e/76103e0efbf39b07c2a481fbbc4aab26.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/e5/8d/1f/e58d1f2fd6f54aee57b8bb0db614627d.jpg",
+    "stats": {
+      "hp": 164,
+      "pow": 46,
+      "qik": 0,
+      "def": 38,
+      "rec": 26,
+      "spd": 25,
+      "jmp": 33,
+      "bst": 332
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Unshakeable Savior",
+        "text": "When a foe would initiate combat against an ally, if unit's Ultimate is ready, unit enters combat in that ally's place and receives all after-combat effects that would have applied to that ally. This triggers unit's Ultimate.",
+        "timing": "TARGET_SELECTION"
+      },
+      "A": {
+        "name": "Sterling Shield",
+        "text": "During combat, unit can counterattack regardless of foe's attack type. During damage calculation against unit, uses unit's Def in place of Rec.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Practiced Patience",
+        "text": "During combat, if foe initiated combat, grants Pow/Def to unit equal to 1 + 1 × the number of foes that have already acted this turn, to a maximum of +5. Also disables foe's effects that calculate damage using the lower of unit's Def or Rec.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Way of the Block",
+        "text": "At start of turn, if unit is in the front-line, grants Def+4 to unit and MB allies through their next actions.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kuroo — Black Cat's Gambit",
+    "name": "Kuroo",
+    "title": "Black Cat's Gambit",
+    "position": "MB",
+    "school": "Nekoma",
+    "rarity": 5,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/e6/a8/d8/e6a8d81a5f9c1588a96d6d0bf9ff6c90.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/8e/58/3d/8e583d9b93683ce05bacbea555f99422.jpg",
+    "stats": {
+      "hp": 176,
+      "pow": 48,
+      "qik": 0,
+      "def": 38,
+      "rec": 33,
+      "spd": 28,
+      "jmp": 34,
+      "bst": 357
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Masterful Spike",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 50% during damage calculation for that attack. After damage is dealt, restores team HP equal to 50% of damage dealt by that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER > DAMAGE_RESULT"
+      },
+      "A": {
+        "name": "Leader's Instinct",
+        "text": "During combat, unit can counterattack regardless of foe's attack type. If foe initiated combat, grants Ultimate cooldown charge +1 whenever unit attacks or is attacked.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Scheming Mind",
+        "text": "During combat, inflicts Pow/Qik/Jmp−2 on foe and neutralizes foe's visible bonuses to Pow/Qik/Jmp.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Connecting Guidance",
+        "text": "During combat, grants Rec+4 to all back-line allies. Excludes unit. If unit is in the front-line, also grants Def/Rec+2 to unit.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Atsumu — Arrogant Genius",
+    "name": "Atsumu",
+    "title": "Arrogant Genius",
+    "position": "S",
+    "school": "Inarizaki",
+    "rarity": 5,
+    "role_class": "Support/DPS",
+    "card_art": "https://i.pinimg.com/736x/4a/ef/e4/4aefe4f48e544a96c80990e22b6efd17.jpg",
+    "character_icon": "https://i.pinimg.com/736x/c7/b1/ad/c7b1adc8cda118f6735318cae18351f9.jpg",
+    "stats": {
+      "hp": 156,
+      "pow": 51,
+      "qik": 0,
+      "def": 29,
+      "rec": 27,
+      "spd": 38,
+      "jmp": 30,
+      "bst": 331
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "No Contest",
+        "text": "When unit's Ultimate triggers during combat, disables foe's Ultimate for the remainder of the current turn and deals +10 damage for that attack. If unit is allied with Osamu, deals +15 damage instead.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Overclocked Rhythm",
+        "text": "During combat, if unit's Spd > foe's Spd, grants Ultimate cooldown charge +1 whenever unit attacks.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Elite Standard",
+        "text": "During combat, grants [Excellence] to unit and all allies.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Gear Shift",
+        "text": "During combat, grants Spd+X to unit and allies, where X = current turn number +1.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "[Excellence]: During combat, if unit's Spd > foe's Spd, deals bonus damage equal to 70% of the Spd difference. No maximum; fractional damage rounds down.",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Oikawa — Grand Conductor",
+    "name": "Oikawa",
+    "title": "Grand Conductor",
+    "position": "S",
+    "school": "Aoba Johsai",
+    "rarity": 5,
+    "role_class": "Support/DPS",
+    "card_art": "https://i.pinimg.com/736x/45/69/24/45692457dd5c5195621021bfd5a3322f.jpg",
+    "character_icon": "https://i.pinimg.com/736x/11/f7/39/11f739ef45886f45e0aff808c4e765e1.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 54,
+      "qik": 0,
+      "def": 31,
+      "rec": 29,
+      "spd": 27,
+      "jmp": 30,
+      "bst": 331
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Courtbreaker",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 150% for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Showman's Entrance",
+        "text": "During combat, if unit initiated combat, grants Pow/Jmp+5 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Critical Cadence",
+        "text": "After unit or an ally deals critical-hit damage, grants Ultimate cooldown count−1 to that attacking unit. This can activate once per turn for each ally and up to twice per turn for Oikawa.",
+        "timing": "DAMAGE_RESULT"
+      },
+      "C": {
+        "name": "Skyward Command",
+        "text": "During combat, grants Jmp+7 to unit and allies.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Korai — Little Giant",
+    "name": "Korai",
+    "title": "Little Giant",
+    "position": "WS",
+    "school": "Kamomedai",
+    "rarity": 5,
+    "role_class": "DPS/Tank",
+    "card_art": "https://i.pinimg.com/736x/9c/3a/a7/9c3aa7674c7399c0efdfce4d5c8228c6.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/f5/7b/08/f57b080cfe6d4cbc0601ecb25a70c11f.jpg",
+    "stats": {
+      "hp": 176,
+      "pow": 49,
+      "qik": 0,
+      "def": 34,
+      "rec": 34,
+      "spd": 38,
+      "jmp": 41,
+      "bst": 372
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "The Little Giant",
+        "text": "When unit's Ultimate triggers during combat, if unit is in the front-line, boosts damage dealt by 40% of unit's Jmp for that attack; if unit is in the back-line, boosts damage dealt by 40% of unit's Spd instead. After combat, if this Ultimate triggered during that combat and allied formation differs from its starting formation, restores all allies to their original positions.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER > COMBAT_END"
+      },
+      "A": {
+        "name": "Master of the Rotation",
+        "text": "During combat, if unit is in the front-line, grants Pow/Def/Jmp+4 to unit; if unit is in the back-line, grants Pow/Rec/Spd+4 instead.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Soaring Gull",
+        "text": "During combat, if unit is in the front-line and unit's Jmp > foe's Jmp, reduces damage from foe's first attack by 30% and deals +5 damage on unit's next attack during that combat. If unit is in the back-line and unit's Spd > foe's Spd, treats foe's Def/Rec as if reduced by 20%.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Universal Support",
+        "text": "During combat, if unit is in the front-line, grants Def/Jmp+3 to back-line allies; if unit is in the back-line, grants Rec/Spd+3 to all front-line allies.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Hinata — Miracle Maker",
+    "name": "Hinata",
+    "title": "Miracle Maker",
+    "position": "MB",
+    "school": "Karasuno",
+    "rarity": 4,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/736x/dd/e5/bf/dde5bf6d4e525b29cdf1f59408346153.jpg",
+    "character_icon": "https://i.pinimg.com/736x/f4/30/a4/f430a4d74f33501044055df2cbf05a2d.jpg",
+    "stats": {
+      "hp": 164,
+      "pow": 0,
+      "qik": 47,
+      "def": 29,
+      "rec": 25,
+      "spd": 37,
+      "jmp": 37,
+      "bst": 339
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Wild Instinct",
+        "text": "When unit's Ultimate triggers during foe's attack, reduces damage from that attack by 30%. After damage resolves, if unit is in the back-line, stores bonus damage equal to 40% of unit's Spd for unit's next attack, even in a later combat.",
+        "timing": "ULTIMATE_TRIGGER > DAMAGE_RESULT"
+      },
+      "A": {
+        "name": "Eyes on the Ball",
+        "text": "During combat, if foe initiated combat, grants Def/Rec+3 to unit and grants Ultimate cooldown charge +1 whenever unit attacks or is attacked.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Lightning Footwork",
+        "text": "During combat, if unit's Spd > foe's Spd, reduces damage from foe's attacks by (unit's Spd − foe's Spd) × 4%, to a maximum of 40%.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Decoy Duty",
+        "text": "During combat, grants Pow/Qik/Spd+3 to all front-line allies and Def/Rec+3 to back-line allies. Excludes unit.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Nishinoya — Guardian Deity",
+    "name": "Nishinoya",
+    "title": "Guardian Deity",
+    "position": "Li",
+    "school": "Karasuno",
+    "rarity": 4,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/de/81/a3/de81a31b1b44b93339822ace0a546db1.jpg",
+    "character_icon": "https://i.pinimg.com/736x/e3/61/b5/e361b584ad260863fdad8827c0d56539.jpg",
+    "stats": {
+      "hp": 150,
+      "pow": 0,
+      "qik": 44,
+      "def": 23,
+      "rec": 37,
+      "spd": 42,
+      "jmp": 32,
+      "bst": 328
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Rolling Thunder",
+        "text": "When a Qik-attacker foe would initiate combat against an ally, if unit's Ultimate is ready, unit enters combat in that ally's place and receives all after-combat effects that would have applied to that ally. This triggers unit's Ultimate.",
+        "timing": "TARGET_SELECTION"
+      },
+      "A": {
+        "name": "Libero's Spirit",
+        "text": "During combat, unit can counterattack regardless of foe's attack type. If foe initiated combat, grants Def/Spd/Jmp+4 to unit. After combat, if foe initiated combat, restores 6 HP to team.",
+        "timing": "COMBAT_LIVE > COMBAT_END"
+      },
+      "B": {
+        "name": "Godlike Reflexes",
+        "text": "During combat, if foe initiated combat and unit's Spd ≥ foe's Spd+5, grants unit a guaranteed follow-up attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Anchor's Presence",
+        "text": "During combat, grants Rec+4 to all back-line allies, including unit if unit is in the back-line.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Suna — Coiled Serpent",
+    "name": "Suna",
+    "title": "Coiled Serpent",
+    "position": "MB",
+    "school": "Inarizaki",
+    "rarity": 4,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/1200x/7f/22/7e/7f227eedc6187ce4c65668d91bde678c.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/df/58/2b/df582bda502789ad90bec6aca35bae96.jpg",
+    "stats": {
+      "hp": 152,
+      "pow": 0,
+      "qik": 50,
+      "def": 33,
+      "rec": 26,
+      "spd": 36,
+      "jmp": 34,
+      "bst": 331
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Torso Spike",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 40% of unit's Spd for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Angle Hunter",
+        "text": "During combat, if unit initiated combat, grants Jmp+10 and Spd+6 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Block Manipulation",
+        "text": "During combat, unit calculates damage using the lower of foe's Def or Rec. When unit's Ultimate triggers, deals +10 damage for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "C": {
+        "name": "Dancing to a Tune",
+        "text": "At start of turn, grants Spd+6 to the ally with the highest Spd through that ally's next action. Excludes unit.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Konoha — Plug and Play",
+    "name": "Konoha",
+    "title": "Plug and Play",
+    "position": "OP",
+    "school": "Fukurodani",
+    "rarity": 4,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/ec/9e/f4/ec9ef4945bc15a2d098b9009b016000b.jpg",
+    "character_icon": "https://i.pinimg.com/736x/39/46/6a/39466af7e4bb88dab41c9c15d8040aa6.jpg",
+    "stats": {
+      "hp": 180,
+      "pow": 45,
+      "qik": 0,
+      "def": 29,
+      "rec": 31,
+      "spd": 35,
+      "jmp": 34,
+      "bst": 354
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Crashing Save",
+        "text": "When a foe would initiate combat against an ally, if unit's Ultimate is ready, unit enters combat in that ally's place and receives all after-combat effects that would have applied to that ally. This triggers unit's Ultimate.",
+        "timing": "TARGET_SELECTION"
+      },
+      "A": {
+        "name": "Jack of all trades",
+        "text": "During combat, if foe initiated combat, grants Def/Rec+4 to unit and inflicts Ultimate cooldown charge−1 on foe whenever foe attacks or is attacked during that combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Rally Extension",
+        "text": "During combat, if foe's Spd+5 ≥ unit's Spd, grants Jmp+7 to unit. After combat, restores 6 HP to team.",
+        "timing": "COMBAT_LIVE > COMBAT_END"
+      },
+      "C": {
+        "name": "Reaching Hands",
+        "text": "At start of turn, grants Jmp+3 to all allies through their next actions. Excludes unit. During an ally's combat, if that ally has a visible debuff, grants Jmp+3 to that ally.",
+        "timing": "TURN_START > COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Akaashi — Architect of Calm",
+    "name": "Akaashi",
+    "title": "Architect of Calm",
+    "position": "S",
+    "school": "Fukurodani",
+    "rarity": 4,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/736x/59/e6/18/59e61843c543ecd967374c26261d6c1a.jpg",
+    "character_icon": "https://i.pinimg.com/736x/5d/72/c5/5d72c5ace2b76d676e7838f9109b6c56.jpg",
+    "stats": {
+      "hp": 152,
+      "pow": 46,
+      "qik": 0,
+      "def": 28,
+      "rec": 25,
+      "spd": 32,
+      "jmp": 29,
+      "bst": 312
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Calm Maneuver",
+        "text": "When unit's Ultimate triggers during combat, after damage is dealt, restores team HP equal to 30% of damage dealt by that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER > DAMAGE_RESULT"
+      },
+      "A": {
+        "name": "Smart Serve",
+        "text": "During combat, if unit initiated combat, grants Pow+6 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Weakness Whisperer",
+        "text": "During combat, for unit and allies, grants an in-combat bonus to Pow/Qik/Spd/Def/Rec/Jmp equal to twice that character's current visible penalty to the same stat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Saving the Show",
+        "text": "At start of an ally's action, if that ally has a visible debuff, grants that ally Ultimate cooldown charge+1 whenever that ally attacks through the end of that action.",
+        "timing": "ACTION_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 1
+  },
+  {
+    "id": "Bokuto — Star of the Owls",
+    "name": "Bokuto",
+    "title": "Star of the Owls",
+    "position": "WS",
+    "school": "Fukurodani",
+    "rarity": 4,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/72/d5/88/72d588bb260a178f854a66dda22f63a2.jpg",
+    "character_icon": "https://i.pinimg.com/736x/5e/e9/58/5ee958a3256de13dd14105d11283f04d.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 53,
+      "qik": 0,
+      "def": 27,
+      "rec": 28,
+      "spd": 34,
+      "jmp": 35,
+      "bst": 337
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Superstar",
+        "text": "After combat, if unit initiated combat and unit's Ultimate is ready, triggers unit's Ultimate and grants unit another action. This can activate once per turn.",
+        "timing": "COMBAT_END"
+      },
+      "A": {
+        "name": "Ups and Downs",
+        "text": "During combat, if unit initiated combat, deals 2 damage for each ally skill that is impacting unit during combat (max. 10). After combat, if unit attacked, inflicts Pow/Jmp/Spd−6 on unit and target through their next actions.",
+        "timing": "COMBAT_LIVE > COMBAT_END"
+      },
+      "B": {
+        "name": "Center Stage Antics",
+        "text": "During combat, if unit initiated combat, grants unit a guaranteed follow-up attack. If unit has a visible stat penalty, inflicts Def/Rec-1 on foe during combat",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Leaning on the Team",
+        "text": "At start of turn, if team's HP ≤75%, inflicts Def/Rec−3 on unit and grants Def/Rec+3 to all allies through their next actions. Excludes unit.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kenma — Max Level Gamer",
+    "name": "Kenma",
+    "title": "Max Level Gamer",
+    "position": "S",
+    "school": "Nekoma",
+    "rarity": 4,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/736x/d3/bd/25/d3bd258a7c29887752c83c46090b39f8.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/6e/c5/e7/6ec5e767d04eaa8a0848b5ca24b227de.jpg",
+    "stats": {
+      "hp": 140,
+      "pow": 0,
+      "qik": 48,
+      "def": 23,
+      "rec": 32,
+      "spd": 25,
+      "jmp": 26,
+      "bst": 294
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Sly Dump",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 50% of unit's Rec for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Final Boss Tactics",
+        "text": "After any foe's combat, inflicts 1 stack of [Fatigue] on that foe; stacks have no maximum. [Fatigue] persists across turns. During combat, foes suffer the stat penalties defined by [Fatigue] based on their current number of stacks.",
+        "timing": "COMBAT_LIVE > COMBAT_END"
+      },
+      "B": {
+        "name": "Mouse Trap",
+        "text": "At start of turn, inflicts Jmp−7 on the foe with the highest Jmp through that foe's next action.",
+        "timing": "TURN_START"
+      },
+      "C": {
+        "name": "Rallying the Troops",
+        "text": "At start of turn, grants Qik/Pow+4 to front-line allies through their next actions. If any foe has at least 3 [Fatigue] stacks when this effect resolves, also grants Spd+3 to all allies through their next actions.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "[Fatigue] (uncapped): During combat, if foe has N stacks, inflicts Spd/Jmp−N, Pow/Qik−max(N−1,0), and Def/Rec−max(N−2,0). [Fatigue] persists across turns.",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 1
+  },
+  {
+    "id": "Osamu — Twin Shadow",
+    "name": "Osamu",
+    "title": "Twin Shadow",
+    "position": "OP",
+    "school": "Inarizaki",
+    "rarity": 4,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/1200x/04/d6/39/04d6392fee9c09b3c08c7b332b8f7623.jpg",
+    "character_icon": "https://i.pinimg.com/736x/a7/28/22/a72822834d8a6dbe32a2e48be33480e2.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 0,
+      "qik": 51,
+      "def": 27,
+      "rec": 27,
+      "spd": 36,
+      "jmp": 35,
+      "bst": 336
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Cut Through",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 50% during damage calculation for that attack. If unit is allied with Atsumu, treats foe's Def/Rec as if reduced by 70% instead.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Quiet Pursuit",
+        "text": "During combat, if unit initiated combat, grants Qik/Spd+3 to unit. If unit's Spd > foe's Spd, grants unit a follow-up attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Early Bite",
+        "text": "At start of combat, if team's HP ≤75% and unit initiated combat, any follow-up attack unit can make during that combat occurs before foe can counterattack.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "Quickened Pulse",
+        "text": "During combat, for unit and allies, if that character's Spd > foe's Spd, grants Jmp+4 to that character.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 1
+  },
+  {
+    "id": "Yaku — Hands of Ruin",
+    "name": "Yaku",
+    "title": "Hands of Ruin",
+    "position": "Li",
+    "school": "Nekoma",
+    "rarity": 4,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/a4/ae/ce/a4aecece7b5db85a20bf6949ae0fb378.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/38/7c/03/387c03cef2c9978698fd53025443e202.jpg",
+    "stats": {
+      "hp": 172,
+      "pow": 0,
+      "qik": 47,
+      "def": 26,
+      "rec": 40,
+      "spd": 32,
+      "jmp": 35,
+      "bst": 352
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Zero-Hour Rescue",
+        "text": "When unit's Ultimate triggers during foe's attack, reduces damage from that attack by 40%.",
+        "timing": "ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Reflected Edge",
+        "text": "During combat, unit can counterattack regardless of foe's attack type. Also grants Qik/Def/Rec/Spd/Jmp bonuses equal to unit's current visible bonus to each corresponding stat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Prepared for Anything",
+        "text": "At start of turn 1, if unit's Ultimate can trigger when unit is attacked, grants unit Ultimate cooldown count−2. When unit's Ultimate triggers, reduces damage dealt to unit by an additional 5 for that attack.",
+        "timing": "TURN_START > ULTIMATE_TRIGGER"
+      },
+      "C": {
+        "name": "Drain the Threat",
+        "text": "After unit's combat, inflicts Pow/Qik−4 on target through that target's next action.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 1
+  },
+  {
+    "id": "Iwaizumi — Fitness Fanatic",
+    "name": "Iwaizumi",
+    "title": "Fitness Fanatic",
+    "position": "WS",
+    "school": "Aoba Johsai",
+    "rarity": 4,
+    "role_class": "DPS/Tank",
+    "card_art": "https://i.pinimg.com/736x/9a/06/08/9a06082a7e63da49df219a11a14bc9da.jpg",
+    "character_icon": "https://i.pinimg.com/736x/9a/06/5c/9a065cbc8a339b1ee7a96866b8767ede.jpg",
+    "stats": {
+      "hp": 164,
+      "pow": 50,
+      "qik": 0,
+      "def": 27,
+      "rec": 35,
+      "spd": 40,
+      "jmp": 29,
+      "bst": 345
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Hammer Through",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 30% during damage calculation for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Meet It Head-On",
+        "text": "During combat, if foe initiated combat, grants Rec+6 to unit and inflicts Ultimate cooldown charge−1 on foe whenever foe attacks or is attacked during that combat. Also, when a Qik attacker selects a target, adds +30 percentage points to unit's Qik-targeting modifier before the shared-X targeting distribution is solved.",
+        "timing": "TARGET_SELECTION > COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Immediate Coverage",
+        "text": "After combat, if foe initiated combat and foe was a Qik attacker, grants [Charged] to unit through unit's next action.",
+        "timing": "COMBAT_END"
+      },
+      "C": {
+        "name": "No Half Measures",
+        "text": "During combat, changes allied offensive critical-hit stat multiplier from 1.2× to 1.5×.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "[Charged]: During unit's next action, unit can make a follow-up attack.",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kiryu — Reluctant Titan",
+    "name": "Kiryu",
+    "title": "Reluctant Titan",
+    "position": "WS",
+    "school": "Mujinazaka",
+    "rarity": 4,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/93/f4/f0/93f4f0a76ddaea2a09a09c587d8f0e1d.jpg",
+    "character_icon": "https://i.pinimg.com/736x/21/ad/45/21ad457d04364f8a1dbd96a3f77a7812.jpg",
+    "stats": {
+      "hp": 168,
+      "pow": 55,
+      "qik": 0,
+      "def": 27,
+      "rec": 28,
+      "spd": 32,
+      "jmp": 33,
+      "bst": 343
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Piercing Cannon",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 50% during damage calculation for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Crushing the Guard",
+        "text": "During combat, if unit initiated combat, grants Pow+6 to unit and deals bonus damage equal to 30% of foe's Def.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "No One Steps In",
+        "text": "When unit initiates combat, effects that would allow a foe's ally to enter combat in that foe's place are disabled. When unit's Ultimate triggers, deals +10 damage for that attack.",
+        "timing": "TARGET_SELECTION > ULTIMATE_TRIGGER"
+      },
+      "C": {
+        "name": "Open the Wound",
+        "text": "When unit's Ultimate triggers, inflicts [Exposed] on the foe with the highest combined Def+Rec through that foe's next action.",
+        "timing": "ULTIMATE_TRIGGER"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": "[Exposed]: During combat, unit takes +5 damage from each foe's attack."
+    },
+    "clarification_count": 1
+  },
+  {
+    "id": "Aone — Wall of Steel",
+    "name": "Aone",
+    "title": "Wall of Steel",
+    "position": "MB",
+    "school": "Date Tech",
+    "rarity": 3,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/736x/24/f7/72/24f77231bce7a46f0e9a8dfd8bbea10c.jpg",
+    "character_icon": "https://i.pinimg.com/736x/96/35/4a/96354ad19783a0bfa29c347033b912a3.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 50,
+      "qik": 0,
+      "def": 40,
+      "rec": 24,
+      "spd": 30,
+      "jmp": 33,
+      "bst": 337
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Roof Block",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 50% of unit's Def for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Silent Pressure",
+        "text": "During combat, if unit's Def ≥ foe's Def+3, foe cannot make a follow-up attack. If foe is a Pow attacker, unit calculates damage using the lower of foe's Def or Rec.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Sealing the Line",
+        "text": "During combat, if foe is in the front-line, grants Def/Rec/Jmp+4 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Block-and-Serve",
+        "text": "At start of turn, grants Pow/Qik/Spd+4 to Date Tech allies through their next actions. Excludes unit.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Tsuki — Tireless Taunter",
+    "name": "Tsuki",
+    "title": "Tireless Taunter",
+    "position": "MB",
+    "school": "Karasuno",
+    "rarity": 3,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/736x/8e/a8/fe/8ea8fecd7ee032cda4c6d8487ae99971.jpg",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/8c7a7f2ecbfcd0d7f9400ac8e4d807e1.jpg",
+    "stats": {
+      "hp": 156,
+      "pow": 50,
+      "qik": 0,
+      "def": 37,
+      "rec": 24,
+      "spd": 27,
+      "jmp": 31,
+      "bst": 325
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Calculated Block",
+        "text": "When unit's Ultimate triggers during combat, after damage is dealt, restores team HP equal to 50% of damage dealt by that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER > DAMAGE_RESULT"
+      },
+      "A": {
+        "name": "Hideous Laughter",
+        "text": "When a Pow attacker selects a target, if unit is in the front-line, adds +30 percentage points to unit's POW-targeting modifier before the shared-X targeting distribution is solved.",
+        "timing": "TARGET_SELECTION"
+      },
+      "B": {
+        "name": "Systematic Shut Down",
+        "text": "At start of combat, if team's HP ≥50%, grants Ultimate cooldown charge +1 whenever unit attacks or is attacked and inflicts Ultimate cooldown charge−1 on foe whenever either combatant attacks during that combat.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "Stress Induction",
+        "text": "After combat, inflicts Ultimate cooldown count+1 on the combat target and all front-line foes.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Komi — Energizing Spirit",
+    "name": "Komi",
+    "title": "Energizing Spirit",
+    "position": "Li",
+    "school": "Fukurodani",
+    "rarity": 3,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/736x/1c/b9/c1/1cb9c1e547705433c1eb859150d2c8ef.jpg",
+    "character_icon": "https://i.pinimg.com/736x/74/1a/3f/741a3f785b88e52f6c4af6df16bb9ad2.jpg",
+    "stats": {
+      "hp": 168,
+      "pow": 0,
+      "qik": 48,
+      "def": 22,
+      "rec": 35,
+      "spd": 30,
+      "jmp": 30,
+      "bst": 333
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Rebound Spark",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 80% of unit's Rec for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Back-line Expectation",
+        "text": "When a Qik attacker selects a target, if unit is in the back-line, adds +30 percentage points to unit's QIK-targeting modifier before the shared-X targeting distribution is solved. With an ordinary front-line ally and one ordinary back-line ally, this produces 50% targeting for unit, 30% for the front-line ally, and 20% for the other back-line ally.",
+        "timing": "TARGET_SELECTION"
+      },
+      "B": {
+        "name": "Clean Reset",
+        "text": "At start of combat, if team's HP ≥50%, grants Qik/Rec+5 to unit during that combat. Also during that combat, if foe can make a follow-up attack, reduces damage from foe's first attack by 50%.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "Swift Hands",
+        "text": "At start of turn, grants Rec+3 to back-line allies through their next actions. Excludes unit. During an ally's combat, if that ally has a visible debuff, grants Rec+3 to that ally.",
+        "timing": "TURN_START > COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Aran — Thunderous Cannon",
+    "name": "Aran",
+    "title": "Thunderous Cannon",
+    "position": "WS",
+    "school": "Inarizaki",
+    "rarity": 3,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/1200x/f0/1c/8d/f01c8d1f56b4cfe500c83a7c2e4bbe28.jpg",
+    "character_icon": "https://i.pinimg.com/736x/61/1e/4e/611e4e6bf0d8c718f2a023e7c78d506a.jpg",
+    "stats": {
+      "hp": 176,
+      "pow": 53,
+      "qik": 0,
+      "def": 26,
+      "rec": 25,
+      "spd": 28,
+      "jmp": 37,
+      "bst": 345
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Blasting Strike",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 30% during damage calculation for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Ferocious Swing",
+        "text": "During combat, if unit initiated combat, grants Pow+6 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Tenacity",
+        "text": "After combat, if unit's Ultimate triggered at any point before or during that combat, grants unit Ultimate cooldown count−2.",
+        "timing": "COMBAT_END"
+      },
+      "C": {
+        "name": "Heating Up!",
+        "text": "At start of turn, grants Pow+6 to the ally with the highest Pow through that ally's next action. Excludes unit.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 1
+  },
+  {
+    "id": "Akagi — Relentless Receiver",
+    "name": "Akagi",
+    "title": "Relentless Receiver",
+    "position": "Li",
+    "school": "Inarizaki",
+    "rarity": 3,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/51/ee/bd/51eebdaac00b5e48b27e74bd0004ce8f.jpg",
+    "character_icon": "https://i.pinimg.com/736x/df/16/56/df165664118dc4f911c90698b4992129.jpg",
+    "stats": {
+      "hp": 152,
+      "pow": 0,
+      "qik": 48,
+      "def": 23,
+      "rec": 33,
+      "spd": 33,
+      "jmp": 30,
+      "bst": 319
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Full Stretch",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 50% for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Comeback Rush",
+        "text": "At start of combat, if team's HP ≤75%, grants Qik/Def/Rec/Spd/Jmp+4 to unit during that combat.",
+        "timing": "COMBAT_START"
+      },
+      "B": {
+        "name": "Gap Sense",
+        "text": "During combat, unit calculates damage using the lower of foe's Def or Rec.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Dread Zone",
+        "text": "After combat, if unit attacked, inflicts [Cannot Counter] on target and all foes through their next actions.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Yamamoto — Fire Lord",
+    "name": "Yamamoto",
+    "title": "Fire Lord",
+    "position": "WS",
+    "school": "Nekoma",
+    "rarity": 3,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/6c/3e/bb/6c3ebb16a9a607d1ffbe7d3ef9f5a609.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/a2/01/28/a20128b47cb7757fe4b5ae53cc1a5938.jpg",
+    "stats": {
+      "hp": 168,
+      "pow": 50,
+      "qik": 0,
+      "def": 26,
+      "rec": 33,
+      "spd": 28,
+      "jmp": 32,
+      "bst": 337
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Overrun",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 20% during damage calculation for that attack, deals bonus damage equal to 10% of unit's Pow, and neutralizes percentage-based damage reduction for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Headlong Leap",
+        "text": "During combat, if unit initiated combat, grants Pow/Jmp+4 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Pile On",
+        "text": "During combat, deals bonus damage equal to 3 × foe's [Fatigue] stacks, to a maximum of +14 damage.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Passing Lift",
+        "text": "During combat, if Yamamoto's Rec > foe's Rec, grants Jmp+3 to Yamamoto and allies.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 1
+  },
+  {
+    "id": "Asahi — True Ace",
+    "name": "Asahi",
+    "title": "True Ace",
+    "position": "WS",
+    "school": "Karasuno",
+    "rarity": 3,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/1200x/86/bc/7a/86bc7a739a25f4fe9c9074f35046250d.jpg",
+    "character_icon": "https://i.pinimg.com/736x/2f/57/07/2f570722e5553dd0526ab8c6ce2d401e.jpg",
+    "stats": {
+      "hp": 164,
+      "pow": 53,
+      "qik": 0,
+      "def": 28,
+      "rec": 26,
+      "spd": 25,
+      "jmp": 38,
+      "bst": 334
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Block Breaker",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 30% of unit's Pow for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Gathering Power",
+        "text": "During combat, grants Pow to unit equal to 1 + 2 × the number of previous actions unit has taken this match, to a maximum of +8.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Pressure-Proof Ace",
+        "text": "At start of combat, if team's HP ≤75%, neutralizes unit's penalties to Pow/Jmp and grants Jmp+4 to unit during that combat.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "Last Stand",
+        "text": "At start of combat, if team's HP ≤50%, grants Pow+6 to unit during that combat. Also, if team's HP ≤25%, grants unit a guaranteed follow-up attack during that combat.",
+        "timing": "COMBAT_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Tendo — Guess Monster",
+    "name": "Tendo",
+    "title": "Guess Monster",
+    "position": "MB",
+    "school": "Shiratorizawa",
+    "rarity": 3,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/736x/c8/3c/3c/c83c3c81254dfa3f732d2ddaba35d782.jpg",
+    "character_icon": "https://i.pinimg.com/736x/b7/54/20/b75420b75072eda4ded7268bb4797229.jpg",
+    "stats": {
+      "hp": 162,
+      "pow": 0,
+      "qik": 49,
+      "def": 35,
+      "rec": 26,
+      "spd": 26,
+      "jmp": 33,
+      "bst": 331
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Afterimage Curse",
+        "text": "After combat, if unit's Ultimate is ready, triggers unit's Ultimate and inflicts Pow/Qik−6 on all foes through their next actions.",
+        "timing": "COMBAT_END"
+      },
+      "A": {
+        "name": "Gamble on It",
+        "text": "During combat, inflicts Pow/Qik−3 on foe. If unit's Spd > foe's Spd, unit can counterattack regardless of foe's attack type. After combat, if unit was attacked, deals 5 damage to unit's team if unit's Spd > foe's Spd, otherwise deals 10 damage to foe's team.",
+        "timing": "COMBAT_LIVE > COMBAT_END"
+      },
+      "B": {
+        "name": "Hijacked Speed",
+        "text": "At start of combat, swaps unit's and foe's base Spd for that combat. Visible and in-combat modifiers apply after this swap.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "Reverse Fortune",
+        "text": "At start of turn, converts bonuses into penalties on foes in the same line as unit whose HP ≤ unit's HP. Those penalties persist through the affected foes' next actions.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Teradomari — Agile Hunter",
+    "name": "Teradomari",
+    "title": "Agile Hunter",
+    "position": "WS",
+    "school": "Tsubakihara",
+    "rarity": 3,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/1200x/a7/b6/8d/a7b68df3b31b02c6892e33d1d7938d5a.jpg",
+    "character_icon": "https://i.pinimg.com/736x/15/c8/7f/15c87fdae3cfd881a06d858140f8980f.jpg",
+    "stats": {
+      "hp": 152,
+      "pow": 49,
+      "qik": 0,
+      "def": 28,
+      "rec": 25,
+      "spd": 37,
+      "jmp": 38,
+      "bst": 329
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Terminal Velocity",
+        "text": "When unit's Ultimate triggers during combat, boosts unit's Pow by 30% for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Overextend",
+        "text": "During combat, if unit initiated combat, grants Pow/Jmp+3 to unit. After combat, grants Spd+3 to unit through unit's next action and deals 6 damage to unit's team.",
+        "timing": "COMBAT_LIVE > COMBAT_END"
+      },
+      "B": {
+        "name": "Find the Opening",
+        "text": "When unit would initiate combat, selects the foe with the lowest Def+Rec as the combat target. During combat, neutralizes foe's visible stat bonuses.",
+        "timing": "TARGET_SELECTION > COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Marked Prey",
+        "text": "When unit's Ultimate triggers, applies [Hunted] to the foe with the lowest Def+Rec for the remainder of the current turn.",
+        "timing": "ULTIMATE_TRIGGER"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": "[Hunted]: When a foe selects a combat target, a unit with [Hunted] must be selected and that unit's allies cannot be selected."
+    },
+    "clarification_count": 1
+  },
+  {
+    "id": "Unnan — Fortress of Fortitude",
+    "name": "Unnan",
+    "title": "Fortress of Fortitude",
+    "position": "MB",
+    "school": "Mujinazaka",
+    "rarity": 3,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/95/1a/59/951a594bb37e8e3b413022bee976054f.jpg",
+    "character_icon": "https://i.pinimg.com/736x/ac/6d/4c/ac6d4cb940197aff3d3412bf3d94f4e0.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 48,
+      "qik": 0,
+      "def": 35,
+      "rec": 25,
+      "spd": 26,
+      "jmp": 38,
+      "bst": 332
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Absorb the Blow",
+        "text": "When unit's Ultimate triggers during a Qik-attacker foe's attack, reduces damage from that attack by 50%.",
+        "timing": "ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Choke the Offense",
+        "text": "During combat, if foe initiated combat, inflicts Pow/Qik−6 on foe. Before foe's first attack, if that attack can trigger foe's Ultimate and unit's Def ≥ foe's Def+5, inflicts Ultimate cooldown count+1 on foe. Cannot exceed foe's maximum Ultimate cooldown.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Dig In",
+        "text": "When unit's Ultimate triggers, reduces damage dealt to unit by an additional 5 for that attack. If foe initiated combat and unit's Ultimate did not trigger during that combat, restores 6 team HP after combat.",
+        "timing": "ULTIMATE_TRIGGER > COMBAT_END"
+      },
+      "C": {
+        "name": "Ground their Game",
+        "text": "After unit's combat, inflicts Jmp−3 on all foes through their next actions.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Shirabu — Emperor's Devotee",
+    "name": "Shirabu",
+    "title": "Emperor's Devotee",
+    "position": "S",
+    "school": "Shiratorizawa",
+    "rarity": 2,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/1200x/9f/d4/de/9fd4de74309db656844e8679e33699ad.jpg",
+    "character_icon": "https://i.pinimg.com/736x/fb/ff/70/fbff70e16111865215d074684022a85e.jpg",
+    "stats": {
+      "hp": 150,
+      "pow": 43,
+      "qik": 0,
+      "def": 24,
+      "rec": 22,
+      "spd": 29,
+      "jmp": 25,
+      "bst": 293
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Steady Supply",
+        "text": "When unit's Ultimate triggers during combat, after damage is dealt, restores team HP equal to 50% of damage dealt by that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER > DAMAGE_RESULT"
+      },
+      "A": {
+        "name": "Dedication",
+        "text": "At start of match, permanently reduces the maximum Ultimate cooldown of the ally with the highest Pow by 1 and designates that ally. For the remainder of the match, after the designated ally's Ultimate triggers, reduces that ally's current Ultimate cooldown count by 1.",
+        "timing": "MATCH_START > ULTIMATE_TRIGGER"
+      },
+      "B": {
+        "name": "Simple Form",
+        "text": "During combat, neutralizes foe's visible bonuses. At start of combat, if team's HP ≥ 50%, unit and foe cannot make follow-up attacks during that combat.",
+        "timing": "COMBAT_START > COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Targeted Delivery",
+        "text": "At start of turn, grants Pow/Qik+6 to unit and 1 ally through their next actions. If Ushijima is allied with Shirabu, grants Pow+6 to Ushijima and removes all debuffs from Shiratorizawa allies. Excludes unit from debuff removal.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 1
+  },
+  {
+    "id": "Washio — Silent Pillar",
+    "name": "Washio",
+    "title": "Silent Pillar",
+    "position": "MB",
+    "school": "Fukurodani",
+    "rarity": 2,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/736x/37/3a/0e/373a0e670ffe09ad2c4d887397eabeb4.jpg",
+    "character_icon": "https://i.pinimg.com/736x/83/04/0c/83040c9ec3bce6edcff39f1fed245d74.jpg",
+    "stats": {
+      "hp": 168,
+      "pow": 47,
+      "qik": 0,
+      "def": 36,
+      "rec": 28,
+      "spd": 26,
+      "jmp": 32,
+      "bst": 337
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Granite Drop",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 80% of unit's Def for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Extra-Ordinary Block",
+        "text": "During combat, grants Def+6 to unit. If any ally has a visible debuff, also grants Pow/Def+3 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Owl Eyes",
+        "text": "During combat, if unit's Def > foe's Def, reduces damage from foe's offensive critical hits by (unit's Def - foe's Def) × 4%, to a maximum of 40%.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Strong Hands",
+        "text": "At start of turn, grants Def+3 to front-line allies through their next actions. Excludes unit. During an ally's combat, if that ally has a visible debuff, grants Def+3 to that ally.",
+        "timing": "TURN_START > COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kita — Flawless Routine",
+    "name": "Kita",
+    "title": "Flawless Routine",
+    "position": "WS",
+    "school": "Inarizaki",
+    "rarity": 2,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/b4/50/66/b45066ec7b382c89fc046048a282af94.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/49/40/c4/4940c4970d9cb28d50eb65531c50f44a.jpg",
+    "stats": {
+      "hp": 192,
+      "pow": 43,
+      "qik": 0,
+      "def": 24,
+      "rec": 35,
+      "spd": 25,
+      "jmp": 27,
+      "bst": 346
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Perfect Receive",
+        "text": "When unit's Ultimate triggers during foe's attack, reduces damage from that attack by 30%. After combat, if unit's Ultimate triggered during that combat, restores 6 HP to team.",
+        "timing": "ULTIMATE_TRIGGER > COMBAT_END"
+      },
+      "A": {
+        "name": "Flawless Routine",
+        "text": "During combat, if foe initiated combat, grants Def/Rec+5 to unit and neutralizes unit's penalties to Def/Rec.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "No Shortcuts",
+        "text": "During combat, neutralizes foe's visible bonuses to Pow/Qik. If foe has no visible bonuses to Pow/Qik, grants Def/Rec+3 to unit instead.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Fundamentalist",
+        "text": "During combat, grants Def/Rec+2 to all allies. If an ally has no visible bonuses, also grants Pow/Qik+2 to that ally.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Fukunaga — Doctor Freeze",
+    "name": "Fukunaga",
+    "title": "Doctor Freeze",
+    "position": "WS",
+    "school": "Nekoma",
+    "rarity": 2,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/a4/51/11/a45111ba5934814c07666da5202d173d.jpg",
+    "character_icon": "https://i.pinimg.com/736x/33/cb/57/33cb578c88f7e223689f880f145275a3.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 48,
+      "qik": 0,
+      "def": 26,
+      "rec": 32,
+      "spd": 30,
+      "jmp": 30,
+      "bst": 326
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Encore",
+        "text": "After combat, if unit initiated combat and unit's Ultimate is ready, triggers unit's Ultimate and grants unit another action. This can activate once per turn.",
+        "timing": "COMBAT_END"
+      },
+      "A": {
+        "name": "Deadpan Focus",
+        "text": "At start of combat, if team's HP ≥25%, grants Pow/Spd/Def/Rec+5 to unit during that combat.",
+        "timing": "COMBAT_START"
+      },
+      "B": {
+        "name": "Isolation Chamber",
+        "text": "During combat, disables skills of all units other than unit and foe. Unit and foe cannot land critical hits.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Cold Silence",
+        "text": "During combat, unit and foe cannot trigger Ultimates.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Daichi — Steadfast Captain",
+    "name": "Daichi",
+    "title": "Steadfast Captain",
+    "position": "OP",
+    "school": "Karasuno",
+    "rarity": 2,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/59/1a/38/591a38188f035d5ff760afcdf7311997.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/97/6e/a4/976ea44a3d2aaeac26e33c8c3c779623.jpg",
+    "stats": {
+      "hp": 168,
+      "pow": 47,
+      "qik": 0,
+      "def": 27,
+      "rec": 34,
+      "spd": 26,
+      "jmp": 28,
+      "bst": 330
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Clearing the Air",
+        "text": "When unit's Ultimate triggers during combat, after damage is dealt, restores team HP equal to 50% of damage dealt by that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER > DAMAGE_RESULT"
+      },
+      "A": {
+        "name": "Refusal to Fail",
+        "text": "During combat, unit can counterattack regardless of foe's attack type. At start of combat, if team's HP ≤50%, grants Pow/Def/Rec/Jmp+5 to unit during that combat.",
+        "timing": "COMBAT_START > COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Ultimate Endurance",
+        "text": "At start of match, permanently reduces unit's maximum Ultimate cooldown by 1. After combat, if unit's Ultimate triggered during that combat, restores 10 HP to team.",
+        "timing": "MATCH_START > COMBAT_END"
+      },
+      "C": {
+        "name": "Captain's Rallying Cry",
+        "text": "When unit's or an ally's Ultimate triggers, removes all debuffs from unit and allies.",
+        "timing": "ULTIMATE_TRIGGER"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Futakuchi — Smirking Thorn",
+    "name": "Futakuchi",
+    "title": "Smirking Thorn",
+    "position": "WS",
+    "school": "Date Tech",
+    "rarity": 2,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/2e/e2/3c/2ee23cfd8545e9011a4562c6dc42c581.jpg",
+    "character_icon": "https://i.pinimg.com/736x/35/9b/12/359b12f1ad36ae78bf5e259c834bec22.jpg",
+    "stats": {
+      "hp": 152,
+      "pow": 47,
+      "qik": 0,
+      "def": 32,
+      "rec": 24,
+      "spd": 25,
+      "jmp": 31,
+      "bst": 311
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Needling Shot",
+        "text": "When unit's Ultimate triggers during combat, deals +15 damage for that attack. If foe has any visible penalty at that time, deals an additional +10 damage.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Smug Pressure",
+        "text": "During combat, if foe has any visible penalty, grants Pow/Def+5 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Poke the Weak Spot",
+        "text": "During combat, if foe has any visible bonus, neutralizes foe's visible bonuses to Pow/Def/Spd. If foe has any visible penalty, foe cannot make a guaranteed follow-up attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Trash Talk",
+        "text": "At start of turn, deals 20 damage to opposing team's HP and converts bonuses on foes into penalties through their next actions.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Goshiki — The Future's Ace",
+    "name": "Goshiki",
+    "title": "The Future's Ace",
+    "position": "WS",
+    "school": "Shiratorizawa",
+    "rarity": 2,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/1200x/f7/2f/67/f72f67bf0b255a8de4c07e526cc989f0.jpg",
+    "character_icon": "https://i.pinimg.com/736x/c0/8a/22/c08a2237fcc96b60f3aea00f0b03769c.jpg",
+    "stats": {
+      "hp": 156,
+      "pow": 50,
+      "qik": 0,
+      "def": 25,
+      "rec": 25,
+      "spd": 33,
+      "jmp": 31,
+      "bst": 320
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Straight-Line Kill",
+        "text": "When unit's Ultimate triggers during combat, deals +10 damage for that attack. If opposing team's HP ≤75% at that time, deals +20 damage instead. If opposing team's HP ≤50%, deals +30 damage instead.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Sharp Approach",
+        "text": "During combat, if unit initiated combat, grants Pow/Jmp+4 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Killer Instinct",
+        "text": "At start of combat, if opposing team's HP ≤75%, treats foe's Def as if reduced by 20% during damage calculation for that combat.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "The Next Ace",
+        "text": "At start of turn, if opposing team's HP ≤75%, grants Jmp+4 to unit through unit's next action. If opposing team's HP ≤50%, also grants Ultimate cooldown count−1.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Yamagata — Last Line",
+    "name": "Yamagata",
+    "title": "Last Line",
+    "position": "Li",
+    "school": "Shiratorizawa",
+    "rarity": 2,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/0c/eb/af/0cebaf9eb36804decbd8ed9bc0a9f8c9.jpg",
+    "character_icon": "https://i.pinimg.com/736x/13/58/fd/1358fd8ec4c0920d83caea123cc6b039.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 0,
+      "qik": 49,
+      "def": 25,
+      "rec": 34,
+      "spd": 30,
+      "jmp": 28,
+      "bst": 326
+    },
+    "ult_cd": 5,
+    "abilities": {
+      "U": {
+        "name": "Nothing Gets Through",
+        "text": "When unit's Ultimate triggers during foe's attack, after all other damage calculations, sets damage from that attack to 1.",
+        "timing": "ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Always in Range",
+        "text": "During combat, unit can counterattack regardless of foe's attack type. At start of combat, if team's HP ≤99%, grants Def/Rec/Jmp+3 to unit during that combat.",
+        "timing": "COMBAT_START > COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Brace for Impact",
+        "text": "At start of turn, if team's HP ≤75%, grants unit Ultimate cooldown count−1. When unit's Ultimate triggers, grants Def/Rec+4 to unit through unit's next action.",
+        "timing": "TURN_START > ULTIMATE_TRIGGER"
+      },
+      "C": {
+        "name": "Emergency Formation",
+        "text": "At start of turn, if team's HP ≤50%, grants unit and allies an HP Barrier equal to 10% of each character's HP.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Reon — Benkei",
+    "name": "Reon",
+    "title": "Benkei",
+    "position": "WS",
+    "school": "Shiratorizawa",
+    "rarity": 2,
+    "role_class": "Tank/Support",
+    "card_art": "https://i.pinimg.com/1200x/d1/35/21/d13521f4bd79e09b79e04369ecc41162.jpg",
+    "character_icon": "https://i.pinimg.com/736x/ca/34/8b/ca348b90a4a6028664ddc384239d88f1.jpg",
+    "stats": {
+      "hp": 164,
+      "pow": 48,
+      "qik": 0,
+      "def": 27,
+      "rec": 34,
+      "spd": 29,
+      "jmp": 29,
+      "bst": 331
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Reliable Cannon",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 50% of unit's Rec for that attack. After combat, if unit's Ultimate triggered during that combat, restores 5 HP to team.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER > COMBAT_END"
+      },
+      "A": {
+        "name": "Complete Fundamentals",
+        "text": "During combat, if unit initiated combat, grants Pow/Jmp+4 to unit. If foe initiated combat, grants Def/Rec+4 to unit instead.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Safety Net",
+        "text": "During an ally's combat, grants Def/Rec+3 to the defending ally. Does not stack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Slow the Assault",
+        "text": "During an ally's combat, if foe initiated combat, inflicts Ultimate cooldown charge−1 on that foe whenever that foe attacks or is attacked.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Gao — Hulking Giant",
+    "name": "Gao",
+    "title": "Hulking Giant",
+    "position": "OP",
+    "school": "Kamomedai",
+    "rarity": 2,
+    "role_class": "DPS",
+    "card_art": "https://i.postimg.cc/8PtMxVMD/Screenshot-2026-09-30-153259.png",
+    "character_icon": "https://i.pinimg.com/1200x/22/9b/85/229b855da9af76b11cf7ab3d3fb2db14.jpg",
+    "stats": {
+      "hp": 156,
+      "pow": 51,
+      "qik": 0,
+      "def": 35,
+      "rec": 20,
+      "spd": 23,
+      "jmp": 35,
+      "bst": 320
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Skyhammer",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 80% of unit's Def for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Dual Stance",
+        "text": "During combat, if foe initiated combat, grants Def/Jmp+4 to unit. If unit initiated combat, grants Pow+6 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Over the Front",
+        "text": "When unit would initiate combat, unit can target only foes in the back-line.",
+        "timing": "TARGET_SELECTION"
+      },
+      "C": {
+        "name": "Tall Order",
+        "text": "At start of turn, for unit and each ally whose Def > Rec, grants that character Ultimate cooldown count−1.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Daisho — Serpent of Chaos",
+    "name": "Daisho",
+    "title": "Serpent of Chaos",
+    "position": "WS",
+    "school": "Nohebi",
+    "rarity": 2,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/1200x/52/4f/0d/524f0d762c807578bb1acd338b1994d9.jpg",
+    "character_icon": "https://i.pinimg.com/736x/1d/12/cd/1d12cd062003097f72747c74b29afff4.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 48,
+      "qik": 0,
+      "def": 27,
+      "rec": 32,
+      "spd": 30,
+      "jmp": 30,
+      "bst": 327
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Venomous Followthrough",
+        "text": "During combat, unit's Ultimate can trigger only if unit's Spd ≥ foe's Spd−4. When unit's Ultimate triggers, deals +15 damage for that attack and grants unit a guaranteed follow-up attack for that combat.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Sudden Lunge",
+        "text": "During combat, if unit initiated combat, grants Pow/Spd+4 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Wrong-Footed",
+        "text": "At start of unit's action, inflicts Spd/Jmp−5 on a random foe that has not yet acted this turn through that foe's next action. If all foes have already acted this turn, inflicts Spd/Jmp−5 on all foes through their next actions.",
+        "timing": "ACTION_START"
+      },
+      "C": {
+        "name": "Forced Error",
+        "text": "After combat, inflicts [Free Ball] on all foes through their next actions.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": "[Free Ball]: When unit is selected as a combat target, effects that would allow an ally to enter combat in unit's place are disabled."
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Takeru — Flashing Salmon",
+    "name": "Takeru",
+    "title": "Flashing Salmon",
+    "position": "WS",
+    "school": "Wakutani Minami",
+    "rarity": 2,
+    "role_class": "DPS",
+    "card_art": "https://i.postimg.cc/6QcQpCLq/Screenshot-2026-09-30-195517.png",
+    "character_icon": "https://i.pinimg.com/736x/d5/09/60/d509604302410edf3a7cc82e00478ef8.jpg",
+    "stats": {
+      "hp": 152,
+      "pow": 0,
+      "qik": 50,
+      "def": 23,
+      "rec": 30,
+      "spd": 37,
+      "jmp": 33,
+      "bst": 325
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Flow State",
+        "text": "During combat, unit's Ultimate can trigger only if unit's Spd ≥ foe's Spd−4. If that condition is met and unit's Ultimate is ready or has triggered during that combat, deals bonus damage equal to 15% of unit's Spd. When unit's Ultimate triggers during foe's attack, reduces damage from that attack by 40%.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Spike Out",
+        "text": "During combat, if foe's Def+Rec > unit's Def+Rec, grants unit a follow-up attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Rally Surge",
+        "text": "After combat, if unit's Ultimate triggered during that combat, restores 10 HP to team.",
+        "timing": "COMBAT_END"
+      },
+      "C": {
+        "name": "Shifting the Tide",
+        "text": "After combat, if unit's Ultimate triggered during that combat, swaps one randomly selected front-line foe with a random back-line foe.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 2
+  },
+  {
+    "id": "Lev — Young Lion",
+    "name": "Lev",
+    "title": "Young Lion",
+    "position": "MB",
+    "school": "Nekoma",
+    "rarity": 1,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/b1/1f/ca/b11fca3efc0b10a60fdb107b8fbb14f1.jpg",
+    "character_icon": "https://i.pinimg.com/736x/f9/89/28/f989280d30c1291ea307ee84eef606e3.jpg",
+    "stats": {
+      "hp": 152,
+      "pow": 0,
+      "qik": 52,
+      "def": 32,
+      "rec": 25,
+      "spd": 35,
+      "jmp": 36,
+      "bst": 332
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Lion's Smash",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 50% for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Ace's Hunger",
+        "text": "During combat, if unit initiated combat, grants Spd+5 to unit. If unit's Spd > foe's Spd, grants Ultimate cooldown charge +1 whenever unit attacks.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Unpredictable Swing",
+        "text": "During combat, if unit's Spd > foe's Spd and foe is a Qik attacker, unit and foe cannot counterattack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Intuitive Cover",
+        "text": "At start of turn, grants Rec+6 to the ally with the highest Rec through that ally's next action.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kai — Serene Sage",
+    "name": "Kai",
+    "title": "Serene Sage",
+    "position": "OP",
+    "school": "Nekoma",
+    "rarity": 1,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/736x/2d/18/87/2d188708150aac1393af3d636c281d56.jpg",
+    "character_icon": "https://i.pinimg.com/736x/e4/75/ee/e475ee0f543e10aeefdfda48316bd370.jpg",
+    "stats": {
+      "hp": 168,
+      "pow": 48,
+      "qik": 0,
+      "def": 27,
+      "rec": 34,
+      "spd": 27,
+      "jmp": 30,
+      "bst": 334
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Serene Finish",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 50% of unit's Rec for that attack. After damage is dealt, restores team HP equal to 30% of damage dealt by that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER > DAMAGE_RESULT"
+      },
+      "A": {
+        "name": "Receive First",
+        "text": "During combat, if foe initiated combat, grants Def/Rec+5 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Cover the Seam",
+        "text": "If foe selects Kai despite an ally's applicable targeting modifier, grants Def/Rec+5 to Kai during combat. Also grants Def/Rec+5 to an ally entering combat through a save. Does not stack.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "Stable Backcourt",
+        "text": "During combat, grants Rec+3 to unit and allies. If unit is in the back-line, also grants Def+3 to all front-line allies.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Suga — Relentless Setter",
+    "name": "Suga",
+    "title": "Relentless Setter",
+    "position": "S",
+    "school": "Karasuno",
+    "rarity": 1,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/67/9a/4e/679a4e88fcafe61b745ff6d9cf77ed61.jpg",
+    "character_icon": "https://i.pinimg.com/736x/bf/15/6f/bf156f399c5e5131767b769021a725e4.jpg",
+    "stats": {
+      "hp": 156,
+      "pow": 47,
+      "qik": 0,
+      "def": 26,
+      "rec": 26,
+      "spd": 31,
+      "jmp": 27,
+      "bst": 313
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Trick Play",
+        "text": "When unit's Ultimate triggers during combat, grants Pow/Jmp+12 to unit and boosts damage dealt by 10% for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Soft Serve",
+        "text": "During combat, inflicts Spd−5 on unit. Unit attacks twice. If foe's Jmp > unit's Jmp, grants Pow/Def+3 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Synchronized Attack",
+        "text": "At start of combat, if team's HP ≤75% and foe initiated combat, unit can counterattack before foe's first attack during that combat.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "Passing the Torch",
+        "text": "At start of turn, grants Pow/Qik/Spd+6 to a random ally through that ally's next action.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "[Brave Attack]: 'Unit attacks twice' produces two consecutive hits per attack action. It is separate from a follow-up attack.",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Tanaka — Unbreakable Wing",
+    "name": "Tanaka",
+    "title": "Unbreakable Wing",
+    "position": "WS",
+    "school": "Karasuno",
+    "rarity": 1,
+    "role_class": "DPS/Support",
+    "card_art": "https://i.pinimg.com/736x/a8/21/15/a82115352e2bcf59821bf23059909065.jpg",
+    "character_icon": "https://i.pinimg.com/736x/16/4e/19/164e191c25f542bb56c857a6538262d5.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 50,
+      "qik": 0,
+      "def": 27,
+      "rec": 26,
+      "spd": 29,
+      "jmp": 33,
+      "bst": 325
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "All-Out Slam",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 50% for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Fearless Entry",
+        "text": "During combat, if unit initiated combat, grants Pow+4 and Def+8 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Spreading Grit",
+        "text": "After unit's combat, grants Pow/Qik/Spd/Def/Rec+2 to allies through their next actions.",
+        "timing": "COMBAT_END"
+      },
+      "C": {
+        "name": "Climbing the Mountain",
+        "text": "At start of turn, if unit's Ultimate cooldown count is at its maximum value, grants Ultimate cooldown count−1. After combat, if unit's Ultimate cooldown count is at its maximum value, grants Ultimate cooldown count−1.",
+        "timing": "TURN_START > COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kyotani — Mad Dog",
+    "name": "Kyotani",
+    "title": "Mad Dog",
+    "position": "OP",
+    "school": "Aoba Johsai",
+    "rarity": 1,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/1200x/14/cd/b6/14cdb6b6ebccb5182331b9022a84cff5.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/ae/bf/9f/aebf9fb73fd9319259a03dd4bd71c790.jpg",
+    "stats": {
+      "hp": 152,
+      "pow": 55,
+      "qik": 0,
+      "def": 25,
+      "rec": 23,
+      "spd": 33,
+      "jmp": 36,
+      "bst": 324
+    },
+    "ult_cd": 5,
+    "abilities": {
+      "U": {
+        "name": "Unleashed Interception",
+        "text": "When the allied unit with the lowest Pow/Qik would initiate combat, if unit's Ultimate is ready, unit enters combat in that ally's place and receives all after-combat effects that would have applied to that ally. This triggers unit's Ultimate. If unit entered combat through this effect, grants Jmp+8 to unit during that combat.",
+        "timing": "TARGET_SELECTION"
+      },
+      "A": {
+        "name": "Predator's Pace",
+        "text": "During combat, if unit's Pow > foe's Pow, grants Ultimate cooldown charge +1 whenever unit attacks.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Feral Advantage",
+        "text": "During combat, if unit initiated combat and unit has any visible bonus or positive status, grants Pow/Def+4 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Rabid Energy",
+        "text": "During combat, grants Pow+3 to all allies.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Koganegawa — Towering Setter",
+    "name": "Koganegawa",
+    "title": "Towering Setter",
+    "position": "S",
+    "school": "Date Tech",
+    "rarity": 1,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/21/39/60/213960e3c1d20e410966ef4d625c15a4.jpg",
+    "character_icon": "https://i.pinimg.com/736x/1d/9a/87/1d9a87c37f81180cfccbeb4a42ffdb08.jpg",
+    "stats": {
+      "hp": 148,
+      "pow": 0,
+      "qik": 48,
+      "def": 34,
+      "rec": 23,
+      "spd": 24,
+      "jmp": 32,
+      "bst": 309
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Towering Set",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 50% of unit's Def for that attack. After combat, if unit's Ultimate triggered during that combat, grants Def/Jmp+4 to all front-line allies through their next actions.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER > COMBAT_END"
+      },
+      "A": {
+        "name": "Reach Above",
+        "text": "During combat, if foe initiated combat, grants Def/Jmp+5 to unit. If unit's Jmp > foe's Jmp, reduces damage from foe's attacks by 10% of unit's Def.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Intimidating Height",
+        "text": "During combat, if foe initiated combat, inflicts Pow/Qik/Jmp−4 on foe. At start of combat, if team's HP ≤75% and foe initiated combat, grants unit a guaranteed follow-up attack if unit can make one; otherwise, grants [Intimidation] to unit through unit's next action.",
+        "timing": "COMBAT_START > COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Rising Iron Wall",
+        "text": "At start of turn, grants Def/Rec/Jmp+4 to Date Tech allies through their next actions. Excludes unit.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "[Intimidation]: During unit's next initiated combat, foe cannot counterattack.",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Tenma Udai — The Original",
+    "name": "Tenma Udai",
+    "title": "The Original",
+    "position": "WS",
+    "school": "Karasuno",
+    "rarity": 5,
+    "role_class": "DPS",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Screenshot%202026-10-09%20092543.png",
+    "character_icon": "https://static.wikia.nocookie.net/haikyuu/images/6/63/Little_giant.png/revision/latest?cb=20200413180037",
+    "stats": {
+      "hp": 152,
+      "pow": 53,
+      "qik": 0,
+      "def": 22,
+      "rec": 25,
+      "spd": 37,
+      "jmp": 39,
+      "bst": 328
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Wipe Out",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 30% during damage calculation for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Raven's Flight",
+        "text": "Unit is 10% more likely to target foes in the front-line. If unit initiates combat, grants Jmp+8. During combat, if unit initiates and lands a critical hit, inflicts Def-6 on all foes through their next action.",
+        "timing": "TARGET_SELECTION > COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Rising Tempo",
+        "text": "During combat, neutralizes unit's visible penalties. If unit's Spd > foe's Spd, grants Ultimate cooldown charge+1 whenever unit attacks or is attacked and deals +5 damage per unit's hit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Murder of Crows",
+        "text": "At start of turn, grants Def/Rec+4 to allies in the same row as unit. Excludes unit, except if there are no allies in unit's row.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kosuke — Behind the Iron Wall",
+    "name": "Kosuke",
+    "title": "Behind the Iron Wall",
+    "position": "Li",
+    "school": "Date Tech",
+    "rarity": 2,
+    "role_class": "Tank/Support",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Screenshot%202026-10-09%20090418.png",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Screenshot%202026-10-09%20090346.png",
+    "stats": {
+      "hp": 160,
+      "pow": 0,
+      "qik": 44,
+      "def": 27,
+      "rec": 33,
+      "spd": 30,
+      "jmp": 33,
+      "bst": 327
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Keep it Alive",
+        "text": "When triggered during foe’s attack, reduces damage from that attack by 40%. After that damage resolves, restores 10 team HP.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Cover the Block",
+        "text": "During combat, if foe initiated, grants Qik/Rec/Jmp+4 to unit. Unit can counterattack regardless of foe’s attack type.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Connected Wall",
+        "text": "During another Date Tech ally’s combat, if that ally is frontline and foe initiated, that ally can counterattack regardless of attack type. For each ally whose Def > Rec, unit deals an additional 1 damage during combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Turn the Block Around",
+        "text": "After unit or another ally’s combat, if unit or that ally landed at least one defensive critical hit, restores 8 team HP and deals 5 damage to the opposing team. Activates once per combat.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kanoka — Ace of the other Side",
+    "name": "Kanoka",
+    "title": "Ace of the other Side",
+    "position": "WS",
+    "school": "Niiyama Girls' High",
+    "rarity": 4,
+    "role_class": "DPS/Support",
+    "card_art": "https://i.pinimg.com/1200x/18/47/c2/1847c29a00a1426186a9b087760dff09.jpg",
+    "character_icon": "https://i.pinimg.com/736x/4e/b5/5c/4eb55c23a551aba5d73cad0bb769db9b.jpg",
+    "stats": {
+      "hp": 164,
+      "pow": 48,
+      "qik": 0,
+      "def": 26,
+      "rec": 29,
+      "spd": 36,
+      "jmp": 29,
+      "bst": 332
+    },
+    "ult_cd": 5,
+    "abilities": {
+      "U": {
+        "name": "Crushing Blow",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 60% during damage calculation for that attack. After damage is dealt, restores team HP equal to 60% of damage dealt by that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Unshaken Ace",
+        "text": "During combat, grants Pow/Spd+5 to unit. When foe triggers an offensive or defensive critical hit during unit's combat, neutralizes the stat multiplier granted by that critical hit. That hit still counts as a critical hit for skill activation.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Persistence is Key",
+        "text": "Whenever a foe triggers an offensive or defensive critical hit, reduces unit’s current Ultimate cooldown count by 1. After this reduction, if unit’s Ultimate cooldown count is 0, removes all debuffs from unit and grants Pow/Def/Rec/Spd+6 through unit’s next action. This cleansing and stat-granting effect can activate once per turn.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Heartthrob",
+        "text": "After unit’s combat, inflicts Ultimate cooldown count+1 on all foes. Cannot exceed each foe’s maximum Ultimate cooldown.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Usuri — Calculated Distraction",
+    "name": "Usuri",
+    "title": "Calculated Distraction",
+    "position": "S",
+    "school": "Mujinazaka",
+    "rarity": 3,
+    "role_class": "Support / Control",
+    "card_art": "https://i.pinimg.com/736x/8f/7f/07/8f7f07e99aa6a165dfc9d29ceb3af5b3.jpg",
+    "character_icon": "https://iili.io/n14VKu4.png",
+    "stats": {
+      "hp": 154,
+      "pow": 47,
+      "qik": 0,
+      "def": 30,
+      "rec": 27,
+      "spd": 36,
+      "jmp": 32,
+      "bst": 326
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Tactical Dump",
+        "text": "When unit's Ultimate triggers during combat, neutralizes foe's HP barriers and inflicts [Heal Block] on foe through their next action prior to damage calculation, then boosts damage dealt by 50% of unit's Pow for that attack.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Mastermind's Strings",
+        "text": "During combat, if an ally initiates combat for the first time each turn, grants [Siphon] to that ally for that attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Feeding the Beast",
+        "text": "During combat, grants Pow/Jmp+X to the allied unit that dealt the most damage in the previous turn (if unit is allied with Kiryu, always targets Kiryu instead), where X = current turn number + 2, to a maximum of +5.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Mental Break",
+        "text": "At start of turn, converts all visible stat bonuses on foes into stat penalties (e.g., a +4 Pow bonus becomes a −4 Pow penalty) through their next actions.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "[Heal Block]: Unit cannot recover HP from any source (Ultimate effects, passive healing, or team recovery). Because HP is shared, recovery of its team HP pool is blocked through the affected unit's next action.",
+      "A": "[Siphon]: After combat, grants Ultimate cooldown count −1 to the attacking unit, and grants Ultimate cooldown count +1 to the target foe (up to their maximum cooldown limit). Changes remaining count once; does not change maximum cost. Applies once on each ally's first initiated combat per turn.",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kiryu — Last Hope",
+    "name": "Kiryu",
+    "title": "Last Hope",
+    "position": "WS",
+    "school": "Mujinazaka",
+    "rarity": 5,
+    "role_class": "DPS",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Screenshot%202026-10-13%20113426.png",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Screenshot%202026-10-13%20113902.png",
+    "stats": {
+      "hp": 160,
+      "pow": 55,
+      "qik": 0,
+      "def": 31,
+      "rec": 31,
+      "spd": 27,
+      "jmp": 29,
+      "bst": 333
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Fatal Bearing",
+        "text": "When unit's Ultimate triggers, deals +25 damage for that attack. If the foe triggers a defensive critical hit for that attack, deals an additional +10 damage.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Aligned Approach",
+        "text": "If unit initiates combat and is in the same row as an allied Setter, grants Pow/Def/Rec+3 during combat. Additionally, if the foe is an MB or Li and unit's Pow ≥ foe's Pow/Qik+3, foe cannot counterattack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Heavy Expectations",
+        "text": "At the end of each turn, grants unit 1 stack of [Burden], or 2 stacks instead if unit is allied with Usuri. If unit initiates combat with at least 3 stacks of [Burden] and the foe can counterattack, unit makes a guaranteed follow-up attack. If unit initiates combat with at least 5 stacks of [Burden], neutralizes unit's visible stat penalties and foe's visible stat bonuses during combat, and neutralizes percentage-based damage reduction.",
+        "timing": "TURN_END > COMBAT_LIVE > COMBAT_END"
+      },
+      "C": {
+        "name": "Compounding Pressure",
+        "text": "If a foe triggers an offensive or defensive critical hit during combat with unit or an ally, after combat grants unit 1 stack of Burden and inflicts Def/Rec/Spd−4 on that foe through its next action. Activates once per combat and up to twice per turn.",
+        "timing": "COMBAT_LIVE > COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "[Burden]: Maximum 10 stacks. If unit initiates combat, grants Pow/Def/Rec+(X+1) during combat, where X is unit's number of [Burden] stacks. After combat, deals X damage to unit's team. Stacks are not consumed. A stack gained from Compounding Pressure during that combat counts toward this damage.",
+      "C": ""
+    },
+    "clarification_count": 4
+  },
+  {
+    "id": "Kanbayashi — Emergency Recovery",
+    "name": "Kanbayashi",
+    "title": "Emergency Recovery",
+    "position": "Li",
+    "school": "Kamomedai",
+    "rarity": 4,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/736x/cf/8d/22/cf8d223ece7fbd57b8b09575ae876213.jpg",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Screenshot%202026-10-13%20114444.png",
+    "stats": {
+      "hp": 170,
+      "pow": 0,
+      "qik": 45,
+      "def": 28,
+      "rec": 34,
+      "spd": 31,
+      "jmp": 28,
+      "bst": 336
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Restorative Dig",
+        "text": "When unit's Ultimate triggers, after damage resolves, restores team HP equal to 75% of unit's Rec.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Quiet Reinforcement",
+        "text": "At start of turn, if team HP ≤90%, grants Def/Rec+4 to unit and the ally with the lowest total Def+Rec through their next actions, and grants that ally Ultimate cooldown count−1.",
+        "timing": "TURN_START"
+      },
+      "B": {
+        "name": "Critical Care",
+        "text": "After unit or an ally's combat, if the foe triggered an offensive critical hit during that combat, restores 6 team HP. Activates once per combat.",
+        "timing": "COMBAT_END"
+      },
+      "C": {
+        "name": "Shock Absorption",
+        "text": "If a foe triggers an offensive critical hit against unit or an ally in the same row as unit, reduces damage from that attack by 30%.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 4
+  },
+  {
+    "id": "Kageyama — Prodigious Talent",
+    "name": "Kageyama",
+    "title": "Prodigious Talent",
+    "position": "S",
+    "school": "Karasuno",
+    "rarity": 5,
+    "role_class": "Support",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/80827ea358634b0015b66848e28cfd71.jpg",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/5947ebbee25ca5d5ee41f642d9cfa0d1.jpg",
+    "stats": {
+      "hp": 168,
+      "pow": 53,
+      "qik": 0,
+      "def": 34,
+      "rec": 26,
+      "spd": 33,
+      "jmp": 35,
+      "bst": 349
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Genius's Sequence",
+        "text": "Grants [Open Play] and [Perfect Window] to unit and all allies through their next actions.",
+        "timing": "COMBAT_END"
+      },
+      "A": {
+        "name": "Shattering Serve",
+        "text": "During combat, grants Pow/Jmp+3 to unit. If unit initiated combat and has at least 4 distinct [Bonus] effects, grants unit a guaranteed follow-up attack. If unit has at least 6 distinct [Bonus] effects, deals +5 damage per attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Heightened Tempo",
+        "text": "If an ally triggers an Ultimate during combat they initiated, grants Ultimate cooldown count−1 to unit after that combat. Can activate up to twice per turn.",
+        "timing": "ULTIMATE_TRIGGER > COMBAT_END"
+      },
+      "C": {
+        "name": "The Golden Road",
+        "text": "At the start of turn, grants 1 random MB/WS/OP ally [Open Play] through their next action. Cannot target the same ally on consecutive turns. If Kageyama cannot target an ally, he instead grants himself Pow/Def/Rec/Jmp+3 and neutralizes all debuffs on himself.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "[Perfect Window]: Disables foe's non-Ultimate effects that \"reduce damage by X%\" during combat, including those granted by foe's allies.",
+      "A": "",
+      "B": "",
+      "C": "[Open Play]: Grants unit Pow/Qik/Def/Rec/Spd/Jmp+3 during combat and treats foe's Def/Rec as reduced by 20% during that combat. If unit is Hinata, also deals damage = 15% of unit's Spd during combat. If reapplied while unit already has Open Play and is still waiting to act that turn, extends its duration by one additional action. Its effects do not stack in strength."
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Shibayama — Tenacious Student",
+    "name": "Shibayama",
+    "title": "Tenacious Student",
+    "position": "Li",
+    "school": "Nekoma",
+    "rarity": 1,
+    "role_class": "Support/Tank",
+    "card_art": "https://i.pinimg.com/1200x/87/3f/72/873f727e8754f567cf98e57374f0a161.jpg",
+    "character_icon": "https://i.pinimg.com/736x/7f/cf/45/7fcf45d7829522cb6de61b97425f0760.jpg",
+    "stats": {
+      "hp": 156,
+      "pow": 0,
+      "qik": 44,
+      "def": 24,
+      "rec": 26,
+      "spd": 37,
+      "jmp": 34,
+      "bst": 321
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Scrappy Finish",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 50% for that hit.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Nervous Resolve",
+        "text": "During combat, if unit initiated combat, grants Qik+5 to unit. If unit has at least 3 other Nekoma allies, also grants Spd+3 to unit during combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Learning Curve",
+        "text": "After unit's combat, if unit took damage during that combat equal to at least 25% of unit's HP, grants unit 1 stack of [Learning].",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Feline Footwork",
+        "text": "At start of turn, grants Pow/Qik/Def/Rec/Spd/Jmp+X to unit and all Nekoma allies through their next actions; X = number of characters on unit's team whose Rec > Def (max. 4).",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "[Learning]: Grants Def/Rec+1 per stack during combat. Stacks persist for the battle.",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Nozawa — Carefree Fighter",
+    "name": "Nozawa",
+    "title": "Carefree Fighter",
+    "position": "WS",
+    "school": "Kamomedai",
+    "rarity": 3,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/736x/e1/1c/5e/e11c5e030428e1a7fe5050867c02e908.jpg",
+    "character_icon": "https://i.pinimg.com/736x/d5/a9/5f/d5a95f4d3d5c8696fa3554fea0df3bcf.jpg",
+    "stats": {
+      "hp": 160,
+      "pow": 48,
+      "qik": 0,
+      "def": 26,
+      "rec": 33,
+      "spd": 30,
+      "jmp": 29,
+      "bst": 326
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Gull Dive",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as reduced by 50% for that hit.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Reliable Platform",
+        "text": "During combat, if unit's Rec > foe's Rec, unit can counterattack regardless of foe's attack type.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Grounded Rally",
+        "text": "If foe initiated combat, prevents unit and foe from making follow-up attacks during that combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Coastal Discipline",
+        "text": "During combat, grants Rec+2 to unit and all frontline allies. During combat, reduces each foe's school-bond bonus by 1, to a minimum of 0.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Suwa — Patience Weaver",
+    "name": "Suwa",
+    "title": "Patience Weaver",
+    "position": "S",
+    "school": "Kamomedai",
+    "rarity": 4,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/736x/e8/5e/61/e85e614168d12cfbcc6c9fe2bb352f52.jpg",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Suwa.png",
+    "stats": {
+      "hp": 168,
+      "pow": 0,
+      "qik": 49,
+      "def": 35,
+      "rec": 28,
+      "spd": 27,
+      "jmp": 34,
+      "bst": 341
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Steady Reset",
+        "text": "When unit's Ultimate triggers during combat, after damage is dealt, restores team HP equal to 30% of damage dealt by that hit.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Orderly Delivery",
+        "text": "During combat, if unit initiated combat, grants Qik+4 to unit. If foe initiated combat, neutralizes foe's visible bonuses to Pow/Qik during that combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Fortified Formation",
+        "text": "During combat, if at least two-thirds of unit's team has Def ≥33 (2 characters in 3v3; 4 in 6v6), reduces damage from each foe's hit by 20% of unit's Def.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Bunch Formation",
+        "text": "At start of turn, grants [Bunch Block] to unit and all frontline allies who do not already have it. This effect lasts for the rest of the battle.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": "[Bunch Block]: If foe initiated combat, grants Ultimate cooldown charge+1 whenever unit attacks or is attacked during that combat. Does not stack."
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Ezota — Resting Leaf",
+    "name": "Ezota",
+    "title": "Resting Leaf",
+    "position": "OP",
+    "school": "Mujinazaka",
+    "rarity": 2,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/736x/64/f1/90/64f1906d8e73617160125d27d0e3b51f.jpg",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Ezota.png",
+    "stats": {
+      "hp": 160,
+      "pow": 47,
+      "qik": 0,
+      "def": 26,
+      "rec": 33,
+      "spd": 34,
+      "jmp": 30,
+      "bst": 330
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Resilient Cover",
+        "text": "When unit's Ultimate triggers during foe's hit, reduces damage from that hit by 30%. After combat, if this Ultimate triggered during that combat, inflicts Pow/Qik−6 on that foe and grants Pow/Rec+6 to unit through their next actions.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Calculated Edge",
+        "text": "During combat, if unit initiated combat and foe's team includes a Qik attacker, grants Pow+6 and Rec+4 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Anticipated Return",
+        "text": "If foe initiated combat and foe's team had HP ≤75% at combat start, unit can counterattack before foe's first attack. During combat, if unit is in the backline, foe is a Pow attacker, and unit's Rec > foe's Rec, reduces damage from each foe's hit by 15% of unit's Rec.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Counter Pressure",
+        "text": "When unit's Ultimate triggers during combat, after that hit, restores 6 team HP and inflicts Qik/Spd−4 on all foes through their next actions.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Echigo — Cool Headed",
+    "name": "Echigo",
+    "title": "Cool Headed",
+    "position": "S",
+    "school": "Tsubakihara",
+    "rarity": 5,
+    "role_class": "Support",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Echigo.jpeg",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Echigo_mini.png",
+    "stats": {
+      "hp": 168,
+      "pow": 0,
+      "qik": 50,
+      "def": 31,
+      "rec": 28,
+      "spd": 26,
+      "jmp": 31,
+      "bst": 334
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Miracle D-Ball",
+        "text": "Before unit battles, if Ultimate is ready, transfers its action to the ally in the opposite zone. That ally initiates combat without consuming its scheduled action. Once per turn; does not reset once-per-turn effects. Permanently grants that ally [Safe Landing] for the match. If the ally is Teradomari, also grants Pow/Spd/Jmp+4 during that combat and Ultimate cooldown charge+1 whenever he attacks (does not stack).",
+        "timing": "ACTION_START"
+      },
+      "A": {
+        "name": "Summit Signals",
+        "text": "During combat, if unit initiated combat, grants Qik+6 to unit. If unit is adjacent to an MB ally, grants Def+4 to unit during combat. If unit is adjacent to a Li ally, grants Rec+4 to unit during combat. All slots are adjacent in 3v3.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Mountain Rhythm",
+        "text": "At start of turn 1, grants Ultimate cooldown count−2 to unit. At start of each subsequent turn, grants Ultimate cooldown count−X to unit; X = number of Tsubakihara characters on unit's team, including unit. Remaining cooldown cannot fall below 0.",
+        "timing": "TURN_START"
+      },
+      "C": {
+        "name": "Unbroken Ascent",
+        "text": "During combat, if unit's team has HP ≤50%, neutralizes effects that prevent unit and allies from making follow-up attacks.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "[Opposite Zone]: In 3v3: Front → Back 2 → Back 1 → Front. In 6v6: Front 1 ↔ Back 3; Front 2 ↔ Back 2; Front 3 ↔ Back 1.",
+      "A": "",
+      "B": "",
+      "C": "",
+      "Safe Landing": "[Safe Landing]: Prevents all after-combat damage to unit’s team caused by combats involving unit, including damage from skills and items. Permanent for the match."
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Matsukawa — Towering Terror",
+    "name": "Matsukawa",
+    "title": "Towering Terror",
+    "position": "MB",
+    "school": "Aoba Johsai",
+    "rarity": 4,
+    "role_class": "DPS/Tank",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/matsukawa.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/30/b7/09/30b70990b2ff653826b71b6e3dc87453.jpg",
+    "stats": {
+      "hp": 164,
+      "pow": 0,
+      "qik": 52,
+      "def": 33,
+      "rec": 26,
+      "spd": 36,
+      "jmp": 35,
+      "bst": 346
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Tower Collapse",
+        "text": "When unit's Ultimate triggers during combat, boosts unit's Qik by 50% for that hit.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Read Ahead",
+        "text": "When a Qik foe targets another ally, if unit is in the frontline, unit has a 50% chance to enter combat in that ally's place. After-combat effects apply to unit instead of that ally. Can activate twice per turn. Effects that prevent saves also prevent this effect.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Creeping Terror",
+        "text": "Whenever foe lands an offensive critical hit on unit, stores 10% of damage taken and grants unit 1 stack of [Terror] (max. 5). During a combat unit entered in an ally's place, adds all stored damage plus unit's Terror stack count to unit's next hit, then clears the stored damage and all Terror stacks.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Lingering Dread",
+        "text": "After unit's combat, inflicts Pow/Qik−2 on all foes through their next actions.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "[Terror]: Grants Qik/Spd/Jmp+1 per stack during combat. Maximum 5 stacks.",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Watari — Flashing Jump",
+    "name": "Watari",
+    "title": "Flashing Jump",
+    "position": "Li",
+    "school": "Aoba Johsai",
+    "rarity": 2,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/1200x/a5/ef/88/a5ef88063b505c8217a79fa934c04415.jpg",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/watari_mini.png",
+    "stats": {
+      "hp": 156,
+      "pow": 50,
+      "qik": 0,
+      "def": 27,
+      "rec": 28,
+      "spd": 37,
+      "jmp": 34,
+      "bst": 332
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Setter's Reprieve",
+        "text": "Before unit initiates combat, if unit's Ultimate is ready and unit has a Setter ally, triggers this Ultimate and transfers unit's action to a random Setter ally. Re-triggers that ally's applicable start-of-turn skills, then that ally selects a foe and initiates combat. This does not consume the recipient's scheduled action or reset once-per-turn limits. Once per turn.",
+        "timing": "ACTION_START"
+      },
+      "A": {
+        "name": "Accumulated Trust",
+        "text": "During combat, if unit initiated combat, grants Pow+X to unit; X = total actions taken by allied Setters throughout this battle (max. 8). Includes transferred and extra actions.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Stubborn Resistance",
+        "text": "If foe initiated combat, inflicts Ultimate cooldown charge−1 on foe whenever foe attacks or is attacked during that combat. Does not stack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Second Wind",
+        "text": "At start of turn, grants Pow/Qik+7 to a random ally through that ally's next action. If that ally is a Setter, also grants Pow+4 to unit through unit's next action.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Maruyama — Steady Wing",
+    "name": "Maruyama",
+    "title": "Steady Wing",
+    "position": "WS",
+    "school": "Tsubakihara",
+    "rarity": 3,
+    "role_class": "Support",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/maruyama.jpeg",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/maruyama_mini.png",
+    "stats": {
+      "hp": 156,
+      "pow": 51,
+      "qik": 0,
+      "def": 26,
+      "rec": 30,
+      "spd": 31,
+      "jmp": 29,
+      "bst": 323
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Crosscourt Drive",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as reduced by 50% for that hit.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Balanced Coverage",
+        "text": "During combat, if unit initiated combat, grants Pow+4 to unit. If foe initiated combat, grants Def/Jmp+1 to unit for each other ally whose Rec > Def, and Rec/Spd+1 to unit for each other ally whose Def > Rec (max. +4 to each stat).",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Emergency Dig",
+        "text": "When a Qik foe targets another ally, if unit is in the backline, unit has a 25% chance to enter combat in that ally's place. Increases this chance by 5 percentage points per other Tsubakihara ally. After-combat effects apply to unit instead of that ally. Can activate twice per turn. Effects that prevent saves also prevent this effect.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Wing Relay",
+        "text": "At start of turn, grants Ultimate cooldown count−1 to unit and each WS ally whose Rec > Def.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Himekawa — Miracle Server",
+    "name": "Himekawa",
+    "title": "Miracle Server",
+    "position": "WS",
+    "school": "Tsubakihara",
+    "rarity": 1,
+    "role_class": "Support/DPS",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/tsubakihara-analysis-the-most-underrated-team-v0-fs2ze03aauih1.jpeg",
+    "character_icon": "https://i.pinimg.com/736x/06/23/5e/06235e501de51517e13dbb7cb42b0ef0.jpg",
+    "stats": {
+      "hp": 148,
+      "pow": 55,
+      "qik": 0,
+      "def": 24,
+      "rec": 27,
+      "spd": 24,
+      "jmp": 30,
+      "bst": 308
+    },
+    "ult_cd": 5,
+    "abilities": {
+      "U": {
+        "name": "Fortune Returns",
+        "text": "After combat, if unit initiated combat and unit's Ultimate is ready, triggers this Ultimate and grants unit another action. Once per turn. After unit's initiated combat, if the final coin result included at least 3 heads, grants Ultimate cooldown count−1 to unit before checking this Ultimate. This reduction can activate once per turn.",
+        "timing": "COMBAT_END"
+      },
+      "A": {
+        "name": "Ceiling Serve",
+        "text": "At start of unit's initiated combat, flips 4 coins. Grants Pow/Def/Rec/Spd/Jmp+5 per heads and inflicts Pow/Def/Rec/Spd/Jmp−5 per tails on unit during that combat. If the final result includes fewer than 2 heads, during unit's next coin flip sequence, re-flips each tails once.",
+        "timing": "COMBAT_START"
+      },
+      "B": {
+        "name": "Fifth Coin",
+        "text": "If unit is in the backline, flips 1 additional coin. If the final result is 5 heads, unit cannot be selected as an attack target through unit's next action.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Shifting Winds",
+        "text": "At start of turn, randomly selects 2 different characters on unit's team, including unit: inflicts Spd−6 on one and grants Spd+6 to the other through their next actions. Teradomari cannot be selected on consecutive turns. If Teradomari receives the Spd penalty, during the following turn converts one final tails to heads in each of unit's coin flip sequences.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Atema — Brave Bastion",
+    "name": "Atema",
+    "title": "Brave Bastion",
+    "position": "MB",
+    "school": "Tsubakihara",
+    "rarity": 3,
+    "role_class": "Tank",
+    "card_art": "https://i.pinimg.com/1200x/6b/72/72/6b7272c92019bd8dcff582fd3160837f.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/18/80/27/188027278fc3152080bff1252ac1e0ad.jpg",
+    "stats": {
+      "hp": 172,
+      "pow": 47,
+      "qik": 0,
+      "def": 32,
+      "rec": 27,
+      "spd": 28,
+      "jmp": 32,
+      "bst": 338
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Ridgeline Hammer",
+        "text": "When unit's Ultimate triggers during combat, deals bonus damage equal to 50% of unit's Def for that hit.",
+        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Lasting Shelter",
+        "text": "When a Pow foe targets another ally, if unit is in the frontline, unit has a 25% chance to enter combat in that ally's place. Increases this chance by 5 percentage points per other Tsubakihara ally. After-combat effects apply to unit instead of that ally. Can activate twice per turn. Effects that prevent saves also prevent this effect.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Grit & Grind",
+        "text": "Whenever foe lands an offensive critical hit on unit, grants unit and all frontline allies 1 stack of [Grit & Grind] (max. 3). When unit first reaches 3 stacks, removes all stacks from other allies and restores 9 team HP; unit keeps its 3 stacks. If unit already has 3 stacks, grants no stacks to allies and instead restores 3 team HP after combat per critical hit that would have granted a stack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Neighboring Peaks",
+        "text": "At start of turn, grants either Pow+6 or Def+6 at random to each adjacent MB ally through their next actions. If unit has no adjacent MB ally, grants Pow/Def+6 to unit through unit's next action. All slots are adjacent in 3v3.",
+        "timing": "TURN_START"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "[Grit & Grind]: If unit is in the frontline, grants Def/Jmp+2 per stack during combat. Maximum 3 stacks.",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Akifumi — Supporting Teammate",
+    "name": "Akifumi",
+    "position": "Li",
+    "title": "Supporting Teammate",
+    "school": "Tsubakihara",
+    "rarity": 3,
+    "role_class": "Support",
+    "card_art": "https://i.pinimg.com/1200x/d9/42/df/d942dfdb1360a1deb12d7441b63ba4ff.jpg",
+    "character_icon": "https://i.pinimg.com/736x/f7/95/be/f795be31f2830589c69eae4376f7b032.jpg",
+    "stats": {
+      "hp": 158,
+      "pow": 0,
+      "qik": 49,
+      "def": 25,
+      "rec": 27,
+      "spd": 33,
+      "jmp": 32,
+      "bst": 324
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Another Chance",
+        "text": "If unit initiates combat, after combat, grants another action to ally with the lowest base HP (excluding unit) that has already acted. (Once per turn.) This Ultimate can only trigger once per turn.",
+        "timing": "COMBAT_END"
+      },
+      "A": {
+        "name": "Steady Support",
+        "text": "Grants Qik/Rec+4 during combat. If unit has a visible Qik or Rec penalty, grants an additional in-combat bonus to each affected stat equal to twice its current penalty magnitude. Calculates each stat independently.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Quiet Read",
+        "text": "At start of turn, reduces unit’s remaining Ultimate cooldown count by 1. If unit initiates combat or foe’s team HP ≥50% at combat start, inflicts Spd/Rec−6 on foe and neutralizes foe’s visible Spd/Rec bonuses during combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Second Effort",
+        "text": "During unit’s or an ally’s initiation, if that unit has already initiated combat this turn, foe cannot counterattack.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {}
+  }
+]
