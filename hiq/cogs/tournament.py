@@ -188,7 +188,7 @@ class TournamentCog(commands.Cog):
         e=discord.Embed(title=f'🏆 6v6 Tournament — {t["status"].title()}',color=PURPLE)
         names=lambda owner:discord.utils.escape_markdown(entries[owner]['display_name'][:32])
         e.description=(f'**{len(entries)}/8 entrants** • Double elimination • Two losses knock you out.\n'
-            'Champion: **100 coins with CPUs / 150 with eight human players**.\nThree rewarded championship wins per day shared across both modes. Losses: 0 coins.\n'
+            'Champion: **100 coins with CPUs / 150 with eight human players**.\nThree rewarded championship wins unlock per day, shared across both modes. Unused allowance banks until Monday weekly reset. Losses: 0 coins.\n'
             'Matches run automatically; human players receive results by DM. CPUs use Neutral +0 cards and earn no coins.\n')
         if t['status']=='open':e.description+='The host can use **Auto-fill** to fill empty places with CPU teams and start.\n'
         if t['status'] in ('open','cancelled'):e.add_field(name='Entrants',value='\n'.join(names(owner) for owner in entries) or 'No entrants yet.',inline=False)
@@ -210,7 +210,7 @@ class TournamentCog(commands.Cog):
         if t['champion_id']:
             rewards=await self.store.rewards(t['id'])
             winner=t['champion_id']
-            reward_text='CPU team — no coins awarded.' if is_cpu(winner) else f'{rewards[winner]["amount"]} coins awarded (daily cap applied).'
+            reward_text='CPU team — no coins awarded.' if is_cpu(winner) else f'{rewards[winner]["amount"]} coins awarded (accrued reward allowance applied).'
             e.add_field(name=f'🏆 Champion — {names(winner)}',value=reward_text,inline=False)
             e.add_field(name='Other participants • 0 coins',value='\n'.join(f'{names(owner)}: {r["amount"]} coins' for owner,r in rewards.items() if owner!=t['champion_id']) or 'No other human participants.',inline=False)
         e.set_footer(text=f'ID {t["id"]} • ;to {t["id"]} reopens results • A losers-bracket finalist win triggers a grand-final reset.')

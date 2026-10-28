@@ -147,7 +147,7 @@ def tutorial_embed(page: int, *, review: bool = False) -> discord.Embed:
             '• **`;to` / `;tournament`** opens an 8-player 6v6 double-elimination lobby; two losses eliminate you. Champion gets 100 coins with CPUs or 150 with eight humans, up to three wins daily across modes; losses give 0.\n'
             '• **`;gauntlet regional`** runs all **12** Regional matches in order.\n'
             '• **`;gauntlet national`** runs all **20** National matches in order.\n'
-            'You must win every match to become Champion. Each mode pays **150 coins for the first daily clear and 50 for the second**. Further clears give no coins.\n\n'
+            'You must win every match to become Champion. Each mode unlocks **one 150-coin clear and one 50-coin clear per day**. Unused Gauntlet, Raid, Tournament, and Prefecture reward allowances roll over until Monday weekly reset. Further clears give no coins after all accrued allowances are used.\n\n'
             'Battle results include per-unit offense/defense stats, **OPOM**, and **DPOM**. Gauntlets provide per-game performance panels instead of one giant combined log. Run **`;help`** at any time for commands.'
         ),
         (

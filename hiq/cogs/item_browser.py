@@ -34,8 +34,8 @@ class ItemBrowser(SafeView):
     def embed(self):
         blocks=[]
         for it in self.matches[self.page*3:self.page*3+3]:
-            cost=it['shard_cost'];cap=cost*2;earned=self.progress.get(it['key'],0)
-            blocks.append(f'> **{it["name"]} — {it.get("emoji","🏐")}**\n> **`{it["effect"]}`**\n> -# Shard Cost: {cost}\n> -# Raid Type: *{it["theme"].title()}*\n> -# Who can equip: *{it["eligible"]}*\n> -# Daily Shard Cap: {cap} | {earned/cap:.0%} ({earned}/{cap})')
+            cost=it['shard_cost'];cap=cost*2*self.progress.get('_days',1);earned=self.progress.get(it['key'],0)
+            blocks.append(f'> **{it["name"]} — {it.get("emoji","🏐")}**\n> **`{it["effect"]}`**\n> -# Shard Cost: {cost}\n> -# Raid Type: *{it["theme"].title()}*\n> -# Who can equip: *{it["eligible"]}*\n> -# Accrued Shard Allowance: {cap} | {earned/cap:.0%} ({earned}/{cap}) • +{cost*2}/day; expires weekly')
         e=discord.Embed(title='Equipment Items',description='\n\n'.join(blocks) or 'No matching items. Try another search or browse all items.',color=PURPLE)
         e.set_footer(text=f'Page {self.page+1}/{max(1,math.ceil(len(self.matches)/3))} • {len(self.matches)} items • ;craft name • ;allcraft')
         return e
