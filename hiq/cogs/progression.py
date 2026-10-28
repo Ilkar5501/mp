@@ -338,7 +338,19 @@ class ProgressionCog(commands.Cog):
         await craft_command(self.bot,ctx,player_name)
 
     @commands.hybrid_command(name='recycle',description='Recycle an unlocked card for coins or unequipped equipment for clan coins.')
-    async def recycle(self,ctx:commands.Context,instance_id:str):
+    async def recycle(self,ctx:commands.Context,*,instance_id:str):
+        from ..items import find_items
+        parts=instance_id.strip().rsplit(None,1)
+        if len(parts)==2:
+            try:quantity=int(parts[1])
+            except ValueError:quantity=None
+            if quantity is not None:
+                matches=find_items(parts[0])
+                if len(matches)!=1:await ctx.send('Use one specific equipment name followed by its quantity.');return
+                from ..raid_store import RaidStore
+                try:result=await RaidStore(self.bot.db).recycle_equipment(ctx.author.id,key=matches[0]['key'],count=quantity)
+                except ValueError as exc:await ctx.send(str(exc));return
+                await ctx.send(f'Recycled **{matches[0]["name"]} ×{result["count"]}** • +{result["clan_coins"]} clan coins.');return
         card=await self.bot.db.get_card(instance_id)
         if not card or card.owner_id!=ctx.author.id:
             from ..raid_store import RaidStore

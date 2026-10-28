@@ -38,7 +38,7 @@
   {
     "key": "rock_solid_game_plan",
     "name": "Rock Solid Game Plan",
-    "effect": "At start of turn, inflicts Atk-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
+    "effect": "At start of turn, inflicts Pow/Qik-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
     "eligible": "Akaashi, Atsumu, Kageyama, Kenma, Koganegawa, Oikawa, Shirabu, Suga, Usuri",
     "shard_cost": 5,
     "drop_rate": 0.04,
@@ -452,7 +452,7 @@
     "daily_cap": 50,
     "drop_rate": 0.005,
     "eligible": "Anyone",
-    "effect": "If foe initiates combat, grants Pow/Qik during combat equal to unit’s maximum Ultimate cooldown count +2.",
+    "effect": "If foe initiates combat, grants Def/Rec during combat equal to unit’s maximum Ultimate cooldown count +2.",
     "emoji": "🛡️"
   },
   {
@@ -548,7 +548,7 @@
     "daily_cap": 20,
     "drop_rate": 0.02,
     "eligible": "Anyone",
-    "effect": "After combat, inflicts Pow/Qik−5 on foes within 2 spaces of target through their next actions.",
+    "effect": "After combat, inflicts Pow/Qik−4 on foe and foes in same line as foe through their next actions.",
     "emoji": "📋"
   },
   {
@@ -680,7 +680,7 @@
     "daily_cap": 20,
     "drop_rate": 0.02,
     "eligible": "Anyone",
-    "effect": "Deals +3 damage per hit during combat.",
+    "effect": "Deals +3 damage per unit's attack during combat.",
     "emoji": "🏐"
   },
   {

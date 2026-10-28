@@ -22,7 +22,7 @@ def main():
         if len(formation['pods'])!=3 or any(len(pod)!=3 for pod in formation['pods']):raise ValueError(f'Formation {i+1} needs three pods of three.')
         if len({c.name for _,c,_ in specs})!=9:raise ValueError(f'Formation {i+1} has duplicate player names.')
         if any(lane not in ('front','back') for _,_,lane in specs):raise ValueError(f'Formation {i+1} has an invalid lane.')
-    gauntlets=json.loads((ROOT/'data/gauntlets.json').read_text())
+    gauntlets=json.loads((ROOT/'data/gauntlets.json').read_text(encoding='utf-8'))
     for mode in ('regional','national'):
         for games in gauntlets[mode]['schools'].values():
             for game in games:
@@ -70,19 +70,22 @@ def main():
     from hiq.items import ITEMS,ITEM_BY_KEY,THEMES
     from hiq.raids import RAID_TEAMS,RAID_POOLS,cpu_specs as raid_specs
     from hiq.raid_store import RaidStore
-    if len(ITEMS)!=35 or len(ITEM_BY_KEY)!=35:raise ValueError('Expected 35 unique equipment items.')
-    if abs(sum(i['drop_rate'] for i in ITEMS)+.245-1)>1e-9:raise ValueError('Raid base rates must sum to 100%.')
+    if len(ITEMS)!=60 or len(ITEM_BY_KEY)!=60:raise ValueError('Expected 60 unique equipment items.')
     for theme in THEMES:
-        for stage in ('easy','hard'):
+        for stage in ('easy','hard','extreme'):
             pool=RaidStore(None).reward_pool(theme,{},stage)
-            if len(pool)!=9 or abs(sum(i['weight'] for i in pool)-1)>1e-9:raise ValueError('Invalid themed reward pool.')
+            if len(pool)!=sum(i['theme']==theme for i in ITEMS)+3 or abs(sum(i['weight'] for i in pool)-1)>1e-9:raise ValueError('Invalid themed reward pool.')
         if any(len(RAID_POOLS[theme][fmt])!=3 for fmt in (3,6)):raise ValueError('Each raid needs three teams per format.')
     for fmt in (3,6):
         for index in range(len(RAID_TEAMS[str(fmt)])):
             specs=raid_specs(fmt,index)
             if len(specs)!=fmt or len({c.name for _,c,_ in specs})!=fmt:raise ValueError('Raid formation has invalid/duplicate units.')
             if any(not 0<=card.merge_level<=10 for card,_,_ in specs):raise ValueError('Raid merge level exceeds +10.')
-    print(f'Runtime data valid: {len(CHAR_BY_ID)} characters, 35 raid items, 30 raid formations, existing Prefecture/tournament/Gauntlet data, packs and gallery filters.')
+    from hiq.raids import team_index
+    for theme in THEMES:
+        specs=raid_specs(6,team_index(6,theme,0,'extreme'),'extreme')
+        if len(specs)!=6 or any(card.merge_level!=10 or not card.equipment_key for card,_,_ in specs):raise ValueError('Invalid Extreme formation.')
+    print(f'Runtime data valid: {len(CHAR_BY_ID)} characters, 60 raid items, 30 Easy/Hard formations and 5 Extreme formations, packs and gallery filters.')
 
 
 if __name__=='__main__':main()

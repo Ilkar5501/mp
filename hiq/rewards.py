@@ -36,13 +36,13 @@ async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=
         if opponent is None or opponent==uid:raise ValueError('Choose another player.')
         cur=await conn.execute('INSERT OR IGNORE INTO economy_pvp_opponents VALUES (?,?,?)',(uid,day,opponent))
         if not cur.rowcount:return dict(coins=0,clan_coins=0,wins=wins,duplicate=True)
-    if key=='battle':coins=30 if wins<5 else 4 if wins<50 else 0
+    if key=='battle':coins=50 if wins<5 else 4 if wins<50 else 0
     elif key=='tournament':coins=(150 if human_tournament else 100) if wins<3 else 0
-    elif key in ('gauntlet_regional','gauntlet_national'):coins=(100,50)[wins] if wins<2 else 0
-    elif key=='raid':coins=50 if wins<6 else 0;clan=25 if wins<4 else 0
+    elif key in ('gauntlet_regional','gauntlet_national'):coins=(150,50)[wins] if wins<2 else 0
+    elif key=='raid':coins=min(100,max(0,300-progress['coins']));clan=min(100,max(0,300-progress['clan_coins']))
     elif key=='pvp':coins=50 if wins<8 else 0
     elif key=='prefecture':coins=50 if wins<6 else 0
-    elif key=='war':coins=300 if wins<1 else 0;clan=100 if wins<1 else 0
+    elif key=='war':coins=200 if wins<1 else 0;clan=200 if wins<1 else 0
     else:raise ValueError('Unknown reward mode.')
     await conn.execute('''INSERT INTO economy_daily VALUES (?,?,?,?,?,?)
         ON CONFLICT(owner_id,day_key,reward_key) DO UPDATE SET

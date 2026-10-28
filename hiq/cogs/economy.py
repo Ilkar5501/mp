@@ -130,7 +130,7 @@ class EconomyCog(commands.Cog):
         e.add_field(name='Position Pack — 450 coins', value='3 cards from MB / S / OP / Li / WS\n**20% 1★ • 20% 2★ • 25% 3★ • 20% 4★ • 15% 5★** per card', inline=False)
         e.add_field(name='School Pack — 450 coins', value=f'3 cards from one eligible school\n**{schools}**\nSame targeted rarity odds as Position Packs.', inline=False)
         e.add_field(name='Boons / Banes', value='Each pull rolls HP, active POW/QIK, DEF, REC, SPD, and JMP independently for its boon and bane. Different rolls give **+3 / −3**; matching rolls cancel into **Neutral**.', inline=False)
-        e.add_field(name='Free & earned', value='`;daily` gives one free Base Pack per day. Your first 5 `;battle` wins each day award **30 coins each**, then your next 45 award **4 each** (330 daily).', inline=False)
+        e.add_field(name='Free & earned', value='`;daily` gives one free Base Pack per day. Your first 5 `;battle` wins each day award **50 coins each**, then your next 45 award **4 each** (430 daily).', inline=False)
         await ctx.send(embed=e)
 
     @commands.hybrid_group(name='pack', aliases=['p'], description='Buy a Base, Position, or School Pack.', invoke_without_command=True)

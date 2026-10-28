@@ -37,7 +37,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS one_live_raid ON raid_runs(owner_id) WHERE sta
 '''
 
 class RaidStore(CommunityStore):
-    async def craft_all_items(self,uid):
+    async def craft_all_items(self,uid,username=''):
         crafted=[]
         async with self.tx() as c:
             for item in ITEMS:
@@ -46,13 +46,30 @@ class RaidStore(CommunityStore):
                 await consume_shards(c,uid,'item_shard',item['key'],count*item['shard_cost'])
                 ids=[await self._issue_item(c,uid,'equipment',detail=item['key']) for _ in range(count)]
                 crafted.append(dict(item=item,count=count,ids=ids))
+            # Character-specific balances only. School shards are never read or spent.
+            for char in CHARACTERS:
+                cost=CHARACTER_SHARD_COST[char.rarity]
+                count=(await shard_balance(c,uid,'character_shard',char.id))//cost
+                if not count:continue
+                await consume_shards(c,uid,'character_shard',char.id,count*cost)
+                ids=[]
+                for _ in range(count):
+                    card=await self._issue_card(c,uid,username,char)
+                    await c.execute('UPDATE cards SET boon_stat=NULL,bane_stat=NULL WHERE instance_id=?',(card.instance_id,))
+                    ids.append(card.instance_id)
+                crafted.append(dict(character=char,count=count,ids=ids,cost=cost))
         return crafted
 
-    async def recycle_equipment(self,uid,*,item_id=None,key=None):
+    async def recycle_equipment(self,uid,*,item_id=None,key=None,count=None):
         if (item_id is None)==(key is None):raise ValueError('Choose an item ID or item name.')
+        if count is not None and (isinstance(count,bool) or not isinstance(count,int) or count<1):raise ValueError('Quantity must be a positive whole number.')
         async with self.tx() as c:
             rows=await self.rows(c,"SELECT i.* FROM inventory_items i WHERE i.owner_id=? AND i.kind='equipment' AND "+('i.id=?' if item_id else 'i.detail=?')+' AND NOT EXISTS (SELECT 1 FROM cards WHERE equipped_item_id=i.id)',(uid,item_id or key))
             if not rows:raise ValueError('No matching unequipped equipment is available in your inventory.')
+            rows.sort(key=lambda r:(r['created_at'],r['id']))
+            if count is not None:
+                if len(rows)<count:raise ValueError(f'Only {len(rows)} matching unequipped items are available; nothing was recycled.')
+                rows=rows[:count]
             if any(r['detail'] not in ITEM_BY_KEY for r in rows):raise ValueError('An item has no valid recycling recipe.')
             payout=sum(ITEM_BY_KEY[r['detail']]['shard_cost'] for r in rows)
             for row in rows:await c.execute('DELETE FROM inventory_items WHERE id=? AND owner_id=?',(row['id'],uid))
@@ -131,7 +148,7 @@ class RaidStore(CommunityStore):
         """Evaluate every reward against earned totals, never inventory balances."""
         from .raids import DIFFICULTIES
         if theme not in THEMES:raise ValueError('Choose tactics, offense, defense, tempo or recovery.')
-        if difficulty not in DIFFICULTIES:raise ValueError('Choose Easy or Hard.')
+        if difficulty not in DIFFICULTIES:raise ValueError('Choose Easy, Hard or Extreme.')
         group=[i for i in ITEMS if i['theme']==theme]
         total=sum(float(i['drop_rate']) for i in group)
         if not group or total<=0:raise ValueError('Raid item pool has no valid drop weights.')
@@ -148,8 +165,8 @@ class RaidStore(CommunityStore):
                 item_weight*float(item['drop_rate'])/total,1,item['key'])
         add('character_shard','character_shard',50,.50 if difficulty=='easy' else .145,1,
             weekly_remaining=350-int(earned.get('character_shard_weekly',0)))
-        add('coins','coins',300,.05,50)
-        add('clancoins','clancoins',100,.05,25)
+        add('coins','coins',300,.05,100)
+        add('clancoins','clancoins',300,.05,100)
         return candidates
 
     def reward_pool(self,theme,earned,difficulty='hard'):
@@ -166,7 +183,9 @@ class RaidStore(CommunityStore):
             return (row['next_index'] if row else 0)%len(RAID_POOLS[theme][fmt])
 
     async def start(self,uid,username,channel,slot,fmt,theme,expected_index=None,difficulty='hard'):
-        from .raids import RAID_TEAMS,RAID_POOLS,team_index,cpu_specs
+        from .raids import RAID_TEAMS,RAID_POOLS,team_index,cpu_specs,raid_team,DIFFICULTIES
+        if difficulty not in DIFFICULTIES:raise ValueError('Choose Easy, Hard or Extreme.')
+        if difficulty=='extreme' and fmt!=6:raise ValueError('Extreme raids are 6v6 only.')
         async with self.tx() as c:
             if await self.one(c,"SELECT id FROM raid_runs WHERE owner_id=? AND status IN ('running','broken')",(uid,)):raise ValueError('You have an unfinished raid. Use ;raidresume or ;refresh.')
             if fmt not in (3,6):raise ValueError('Choose 3v3 or 6v6.')
@@ -175,8 +194,8 @@ class RaidStore(CommunityStore):
             row=await self.one(c,'SELECT next_index FROM raid_theme_cursor WHERE owner_id=? AND format=? AND theme=?',(uid,fmt,theme))
             rotation_index=(row['next_index'] if row else 0)%len(RAID_POOLS[theme][fmt])
             if expected_index is not None and expected_index!=rotation_index:raise ValueError('Your raid rotation changed. Open ;raid again to see the next opponent.')
-            index=team_index(fmt,theme,rotation_index);sid='raid-'+uuid.uuid4().hex[:12]
-            state={'a':a,'b':snapshot_specs(cpu_specs(fmt,index,difficulty)),'format':fmt,'theme':theme,'index':index,'rotation_index':rotation_index,'rotation_version':2,'difficulty':difficulty,'opponent_name':RAID_TEAMS[str(fmt)][index]['name'],'username':username}
+            index=team_index(fmt,theme,rotation_index,difficulty);sid='raid-'+uuid.uuid4().hex[:12]
+            state={'a':a,'b':snapshot_specs(cpu_specs(fmt,index,difficulty)),'format':fmt,'theme':theme,'index':index,'rotation_index':rotation_index,'rotation_version':3 if difficulty=='extreme' else 2,'difficulty':difficulty,'opponent_name':raid_team(fmt,index,difficulty)['name'],'username':username}
             await c.execute("INSERT INTO raid_runs VALUES (?,?,?,'running',?,?)",(sid,uid,channel,json.dumps(state),now()))
             return await self.raid(sid,c)
 
@@ -200,28 +219,37 @@ class RaidStore(CommunityStore):
                 pool=self.reward_pool(st['theme'],earned,difficulty)
                 all_capped=all(r['remaining']==0 for r in caps)
                 if bool(pool)==all_capped:raise RuntimeError('Raid eligibility check disagrees with reward pool.')
-                st['reward_check']=dict(day=reward_day,week=reward_week,earned=earned,
+                st['reward_check']=dict(day=reward_day,week=reward_week,earned=dict(earned),
                     candidates=caps,eligible_keys=[r['key'] for r in pool],all_capped=all_capped)
                 rng=random.Random(int.from_bytes(hashlib.sha256(sid.encode()).digest()[:8],'big'))
-                pick=dict(rng.choices(pool,weights=[r['weight'] for r in pool],k=1)[0]) if pool else None
-                coins=clan=0
-                if pick:
-                    reward=pick;kind=reward['kind'];stars=0
+                from .raids import drop_count
+                slots=drop_count(rng,difficulty);rewards=[];coins=clan=0
+                for _ in range(slots):
+                    # Rebuild after each slot. Duplicate drops are legal only while eligible.
+                    pool=self.reward_pool(st['theme'],earned,difficulty)
+                    if not pool:break
+                    reward=dict(rng.choices(pool,weights=[r['weight'] for r in pool],k=1)[0])
+                    kind=reward['kind'];stars=0
                     if kind=='character_shard':
                         from .raids import choose_character
                         char=choose_character(rng,CHARACTERS,st.get('difficulty','hard'));reward['detail']=char.id;stars=char.rarity
                     if kind=='coins':
-                        coins=reward['amount']
-                        await c.execute('UPDATE users SET coins=coins+? WHERE discord_id=?',(coins,uid))
+                        coins+=reward['amount']
+                        await c.execute('UPDATE users SET coins=coins+? WHERE discord_id=?',(reward['amount'],uid))
                     elif kind=='clancoins':
-                        clan=reward['amount']
-                        await self._credit(c,uid,clan)
+                        clan+=reward['amount']
+                        await self._credit(c,uid,reward['amount'])
                     else:
                         await self._issue_item(c,uid,kind,stars,reward['detail'])
                         reward['balance']=await shard_balance(c,uid,kind,reward['detail'])
                         await c.execute('INSERT INTO raid_shard_daily VALUES (?,?,?,1) ON CONFLICT(owner_id,day_key,reward_key) DO UPDATE SET amount=amount+1',(uid,reward_day,reward['key']))
                         if kind=='character_shard':
                             await c.execute('INSERT INTO raid_shard_weekly VALUES (?,?,1) ON CONFLICT(owner_id,week_key) DO UPDATE SET amount=amount+1',(uid,reward_week))
+                            earned['character_shard_weekly']=earned.get('character_shard_weekly',0)+1
+                    earned[reward['key']]=earned.get(reward['key'],0)+reward['amount']
+                    rewards.append(reward)
+                reward=rewards[0] if rewards else None
+                st['rewards']=rewards;st['drop_slots']=slots
                 await c.execute('''INSERT INTO economy_daily VALUES (?,?,?,1,?,?)
                     ON CONFLICT(owner_id,day_key,reward_key) DO UPDATE SET
                     wins=wins+1,coins=coins+excluded.coins,clan_coins=clan_coins+excluded.clan_coins''',
@@ -229,7 +257,7 @@ class RaidStore(CommunityStore):
                 if reward is None and not all_capped:raise RuntimeError('Eligible raid victory has no reward.')
                 st['reward_status']='awarded' if reward else 'all_capped'
                 st['currency']=dict(coins=coins,clan_coins=clan)
-                st['reward_version']=2
+                st['reward_version']=3
                 if st.get('rotation_version')==2:
                     # Progress and rewards commit together, once, only after victory.
                     await c.execute('INSERT INTO raid_theme_cursor VALUES (?,?,?,1) ON CONFLICT(owner_id,format,theme) DO UPDATE SET next_index=next_index+1',(uid,st['format'],st['theme']))

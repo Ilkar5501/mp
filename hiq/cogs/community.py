@@ -240,12 +240,12 @@ class CommunityCog(commands.Cog):
         if card.locked:await ctx.send('Unlock that card first.');return
         from ..data import CHAR_BY_ID
         payout=CHAR_BY_ID[card.character_id].rarity*10*(card.merge_level+1)
-        await ctx.send(f'Permanently delete `{card.instance_id}` to give **{payout} clan coins to each current clan member**? Limit: three donations per day.',view=DonateConfirm(self,ctx.author.id,card.instance_id))
-    @commands.hybrid_command(name='checkin',description='Earn 100 daily clan coins; all five check-ins grant a clan bonus.')
+        await ctx.send(f'Permanently delete `{card.instance_id}` to give **{payout} clan coins to each current clan member**? Limit: six donations per day.',view=DonateConfirm(self,ctx.author.id,card.instance_id))
+    @commands.hybrid_command(name='checkin',description='Earn 150 daily clan coins; all five check-ins grant a clan bonus.')
     async def checkin(self,ctx):
         try:bonus,count=await self.store.checkin(ctx.author.id,str(ctx.author))
         except ValueError as exc:await ctx.send(str(exc));return
-        await ctx.send(f'Checked in: **+100 clan coins**. Clan progress: **{count}/5** today.'+(' All five checked in: **+100 additional clan coins for every member!**' if bonus else ''))
+        await ctx.send(f'Checked in: **+150 clan coins**. Clan progress: **{count}/5** today.'+(' All five checked in: **+50 additional clan coins for every member!**' if bonus else ''))
     @commands.hybrid_command(name='clanshop',description='View and purchase clan items with clan coins.')
     async def clanshop(self,ctx):
         if not await self.store.clan(user_id=ctx.author.id):await ctx.send('Join a clan to use its shop.');return
@@ -261,7 +261,15 @@ class CommunityCog(commands.Cog):
         except ValueError as exc:await ctx.send(str(exc));return
         await ctx.send(f'Bought {stars}★ {item} for {cost} clan coins. Item ID: `{iid}`.')
     @commands.hybrid_command(name='inventory',aliases=['inv'],description='Browse your school shards and inventory items.')
-    async def inventory(self,ctx):
+    async def inventory(self,ctx,view:str=''):
+        async with self.store.tx() as c:
+            preference=await self.store.one(c,'SELECT stacked FROM inventory_preferences WHERE user_id=?',(ctx.author.id,))
+            stacked=bool(preference and preference['stacked'])
+            if view:
+                mode=view.casefold()
+                if mode not in ('view','toggle','stacked','compact','regular','ids'):raise ValueError('Use ;inv [toggle|stacked|regular].')
+                stacked=not stacked if mode in ('view','toggle') else mode in ('stacked','compact')
+                await c.execute('INSERT INTO inventory_preferences VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET stacked=excluded.stacked',(ctx.author.id,int(stacked)))
         shards=await self.bot.db.get_shards(ctx.author.id);items=await self.store.items(ctx.author.id)
         balances=await self.store.shard_balances(ctx.author.id)
         from ..shard_balances import label
@@ -272,7 +280,13 @@ class CommunityCog(commands.Cog):
                 lines.append('\n**'+title+'**')
                 lines.extend(f'{label(kind,r["detail"])} — **{r["quantity"]}x**' for r in groups)
         lines+=['\n**Items** — `;craft` • `;equip` • packs: `;open ID` • Blessings: `;bless itemID cardID` • Merge Copies: `;merge`']
-        lines+=[f'**{item_label(item)}** • Item ID `{item["id"]}`' for item in items]
+        if stacked:
+            from collections import Counter
+            from ..items import ITEM_BY_KEY
+            groups=Counter((item['kind'],item['stars'],item['detail']) for item in items)
+            lines += [f'**{ITEM_BY_KEY[detail]["name"] if kind=="equipment" and detail in ITEM_BY_KEY else item_label(dict(kind=kind,stars=stars,detail=detail))} — {count}x**' for (kind,stars,detail),count in sorted(groups.items())]
+        else:lines+=[f'**{item_label(item)}** • Item ID `{item["id"]}`' for item in items]
+        lines+=['\n`;inv toggle` switches stacked / regular view. Use `;inv regular` to see IDs for ;equip.']
         pager=EmbedPager(text_pages(f'{ctx.author.display_name} — Inventory',lines),ctx.author.id)
         await ctx.send(embed=pager.embed(),view=pager)
     @commands.hybrid_command(name='open',description='Open an owned pack item by its unique inventory ID.')
