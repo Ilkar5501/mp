@@ -191,7 +191,7 @@ class CommunityCog(commands.Cog):
         if sid not in self.jobs or self.jobs[sid].done():self.jobs[sid]=asyncio.create_task(self.run(sid))
     async def board(self,row):
         st=row['state'];e=discord.Embed(title=f'Prefecture • 9v9 • {row["status"].title()}',color=PURPLE)
-        e.description=f'Host: <@{st["host"]}> • **{len(st["players"])}/3 pods**\nCPU: **{FORMATIONS[st["cpu_index"]]["name"]}**\nEach win grants {PREFECTURE_WIN_REWARD} coins per player, up to {PREFECTURE_DAILY_CAP} daily.'
+        e.description=f'Host: <@{st["host"]}> • **{len(st["players"])}/3 pods**\nCPU: **{FORMATIONS[st["cpu_index"]]["name"]}**\nEach win grants {PREFECTURE_WIN_REWARD} coins per player. Each day unlocks {PREFECTURE_DAILY_CAP} coins of allowance; unused portions bank until Monday weekly reset. See ;questview.'
         for i,player in enumerate(st['players']):
             lines=[f'{"F" if raw["lane"]=="front" else "B"}: {raw["character"]["name"]} — {raw["character"]["title"]}' for raw in player['snapshot']]
             e.add_field(name=f'Pod {i+1} — {player["username"]}',value='\n'.join(lines),inline=False)

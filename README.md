@@ -13,6 +13,16 @@ No Discord token or production database is included in the repository.
 
 ## v11 changes
 
+### Weekly rollover for activity rewards
+
+Unused **Raid, Tournament, Regional/National Gauntlet, and Prefecture** reward allowances carry forward within the current calendar week. One day's allowance unlocks at local midnight; future days are never unlocked early. On Sunday, a player registered by Monday can use all seven days' remaining allowances before the Monday 00:00 reset in the configured game timezone (America/New_York by default). New players accrue from their registration day. Unused allowances expire at that weekly reset rather than carrying into another week.
+
+Existing partial completions are deducted from the bank. Each Gauntlet's 150-coin and 50-coin clear allowances accrue separately, with the remaining 150-coin clears used first. Tournament allowance is three paid championship wins per elapsed day across both modes; CPU/human payouts stay 100/150. Prefecture accrues six paid wins (300 coins) per elapsed day. Completing extra unpaid activities does not consume future days' allowances.
+
+Raids accrue 300 coins, 300 clan coins, 50 character shards, and twice each item's recipe cost in item shards per elapsed day. All raids share these limits, each drop rechecks the remaining bank, and character shards retain the independent 350/week cap. Currency and shard awards remain random drops. `;questview` and `;items` show accrued limits and usage. Rewards, item/card IDs and already-earned cap usage are preserved through deployment and restart; no reset migration is needed.
+
+Daily packs, donation limits, clan check-ins, normal battle, PvP, and war rewards retain their daily reset behavior. Training's existing weekly rules are unchanged.
+
 - Battle wins: first five pay 50 each, next 45 pay 4 each (430/day). Regional and National Gauntlets each pay 150 then 50 (200/day). War victories pay 200 coins and 200 clan coins, once daily per player.
 - Clan check-in pays 150, plus a 50 bonus when all five members check in. Donation cap: six/day.
 - Raids: Easy always rolls one drop; Hard rolls one/two at 70%/30%; Extreme rolls one/two/three at 5%/40%/55%. Each slot independently draws from the remaining eligible rewards; duplicate drops are allowed. Currency drops award up to 100, capped at 300 coins and 300 clan coins daily across all raids. Existing item and character shard caps remain shared and are checked between slots.

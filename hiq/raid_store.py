@@ -1,13 +1,15 @@
 """Atomic raid rewards, crafting and equipment ownership."""
 from __future__ import annotations
 import hashlib,json,random,uuid
+from datetime import datetime
 from .community_store import CommunityStore,now
 from .items import ITEMS,ITEM_BY_KEY,THEMES,CHARACTER_SHARD_COST,can_equip
 from .data import CHAR_BY_ID,CHARACTERS
-from .economy import week_key,local_date_key
+from .economy import week_key,week_key_for,local_date_key
 from .progression import craft_cost,TRAINING_SCHOOLS
 from .tournament import snapshot_specs
 from .shard_balances import balance as shard_balance,consume as consume_shards
+from .allowances import allowance_days
 
 SCHEMA='''
 CREATE UNIQUE INDEX IF NOT EXISTS one_equipment_instance ON cards(equipped_item_id) WHERE equipped_item_id IS NOT NULL;
@@ -135,8 +137,10 @@ class RaidStore(CommunityStore):
     async def shard_progress(self,uid,conn=None,*,day=None,week=None):
         if conn is None:
             async with self.db.connect() as c:return await self.shard_progress(uid,c,day=day,week=week)
-        day=day or local_date_key();week=week or week_key()
-        progress={r['reward_key']:r['amount'] for r in await self.rows(conn,'SELECT reward_key,amount FROM raid_shard_daily WHERE owner_id=? AND day_key=?',(uid,day))}
+        day=day or local_date_key();week=week or week_key_for(datetime.fromisoformat(day))
+        days=await allowance_days(conn,uid,day)
+        progress={r['reward_key']:r['amount'] for r in await self.rows(conn,'SELECT reward_key,SUM(amount) AS amount FROM raid_shard_daily WHERE owner_id=? AND day_key BETWEEN ? AND ? GROUP BY reward_key',(uid,days[0],day))}
+        progress['_days']=len(days)
         progress['character_shard_weekly']=(await self.weekly(uid,conn,week)).get('character_shard',0)
         from .rewards import daily
         currency=(await daily(conn,uid,day)).get('raid',{})
@@ -154,6 +158,7 @@ class RaidStore(CommunityStore):
         if not group or total<=0:raise ValueError('Raid item pool has no valid drop weights.')
         item_weight=.40 if difficulty=='easy' else .755
         candidates=[]
+        accrued_days=int(earned.get('_days',1))
         def add(kind,key,cap,weight,amount,detail='',weekly_remaining=None):
             used=int(earned.get(key,0));remaining=max(0,int(cap)-used)
             if weekly_remaining is not None:remaining=min(remaining,max(0,weekly_remaining))
@@ -161,12 +166,12 @@ class RaidStore(CommunityStore):
             candidates.append(dict(kind=kind,detail=detail,key=key,weight=weight,
                                    cap=cap,earned=used,remaining=remaining,amount=min(amount,remaining)))
         for item in group:
-            add('item_shard',item['key'],int(item['shard_cost'])*2,
+            add('item_shard',item['key'],int(item['shard_cost'])*2*accrued_days,
                 item_weight*float(item['drop_rate'])/total,1,item['key'])
-        add('character_shard','character_shard',50,.50 if difficulty=='easy' else .145,1,
+        add('character_shard','character_shard',50*accrued_days,.50 if difficulty=='easy' else .145,1,
             weekly_remaining=350-int(earned.get('character_shard_weekly',0)))
-        add('coins','coins',300,.05,100)
-        add('clancoins','clancoins',300,.05,100)
+        add('coins','coins',300*accrued_days,.05,100)
+        add('clancoins','clancoins',300*accrued_days,.05,100)
         return candidates
 
     def reward_pool(self,theme,earned,difficulty='hard'):
@@ -212,7 +217,7 @@ class RaidStore(CommunityStore):
             if not row or row['status'] not in ('running','broken'):raise ValueError('That raid is already resolved or closed.')
             uid=row['owner_id'];st=row['state'];reward=None
             if result['winner_side']=='A':
-                reward_week=week_key();reward_day=local_date_key()
+                reward_day=local_date_key();reward_week=week_key_for(datetime.fromisoformat(reward_day))
                 earned=await self.shard_progress(uid,c,day=reward_day,week=reward_week)
                 difficulty=st.get('difficulty','hard')
                 caps=self.reward_caps(st['theme'],earned,difficulty)
