@@ -964,7 +964,7 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
         raw=max(0,attack_power_before_def-effective_def)
 
         bonus=self.expansion_damage_bonus(ctx,attacker,stats)
-        if self.gear(attacker,'firm_contact'):bonus+=3
+        if self.gear(attacker,'firm_contact') and hit_index==0:bonus+=3
         if off_trigger and self.gear(attacker,'ultimate_impact'):bonus+=attacker.max_cd*4
         if has(attacker,'Kageyama','Prodigious Talent') and len(self.distinct_bonuses(ctx,attacker,stats))>=6: bonus+=5
         if 'Open Play' in attacker.statuses and has(attacker,'Hinata'): bonus+=floori(self.skill_spd(attacker,a)*0.15)

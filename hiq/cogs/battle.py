@@ -394,18 +394,18 @@ class BattleCog(commands.Cog):
         today=local_date_key();uid=ctx.author.id
         progress=await RewardStore(self.bot.db).daily(uid,today)
         e=discord.Embed(title=f'{ctx.author.display_name} — Daily Rewards',color=PURPLE)
-        rules=[('battle','Battle',50,330,'First 5 wins: 30 each; next 45: 4 each.'),
+        rules=[('battle','Battle',50,430,'First 5 wins: 50 each; next 45: 4 each.'),
                ('tournament','Tournament championships',3,450,'100 with CPUs / 150 with eight humans; shared three-win allowance.'),
-               ('gauntlet_regional','Regional clears',2,150,'First clear: 100; second: 50.'),
-               ('gauntlet_national','National clears',2,150,'First clear: 100; second: 50.'),
-               ('raid','Raid',6,300,'One eligible reward per win: shards, 50 coins, or 25 clan coins. Currency caps: 300 coins and 100 clan coins/day.'),
+               ('gauntlet_regional','Regional clears',2,200,'First clear: 150; second: 50.'),
+               ('gauntlet_national','National clears',2,200,'First clear: 150; second: 50.'),
+               ('raid','Raid',3,300,'Easy: 1 drop; Hard: 1–2; Extreme: 1–3. Currency drops: 100 each, capped at 300 coins and 300 clan coins/day.'),
                ('pvp','PvP',8,400,'50 per distinct opponent defeated today; repeat opponents give 0.'),
                ('prefecture','Prefecture',6,300,'50 per win.'),
-               ('war','Clan-war victories',1,300,'300 coins + 100 clan coins for one victory; losses give 0.')]
+               ('war','Clan-war victories',1,200,'200 coins + 200 clan coins for one victory; losses give 0.')]
         for key,label,limit,cap,text in rules:
             row=progress.get(key,{})
             if key=='raid':
-                e.add_field(name=label,value=f'**{row.get("coins",0)}/300 coins • {row.get("clan_coins",0)}/100 clan coins**\n'+text,inline=False)
+                e.add_field(name=label,value=f'**{row.get("coins",0)}/300 coins • {row.get("clan_coins",0)}/300 clan coins**\n'+text,inline=False)
                 continue
             e.add_field(name=label,value=f'**{min(limit,row.get("wins",0))}/{limit} wins • {row.get("coins",0)} coins**'+(' (maximum 300–450)' if key=='tournament' else f' / {cap}')+'\n'+text,inline=False)
         nxt=int(next_daily_at().timestamp())
@@ -415,7 +415,7 @@ class BattleCog(commands.Cog):
         user=await self.bot.db.get_user(uid)
         extra.add_field(name='Daily Pack',value='Claimed today.' if user.last_daily_date==today else 'Available with ;daily.',inline=False)
         clan=await CommunityStore(self.bot.db).progress(uid)
-        extra.add_field(name='Clan Coins',value=f'Check-in: 100; all five members checking in grants another 100.\nCheck-in today: {"done" if clan["checked_in"] else "available if in a clan"}.\nRaid coins: **{progress.get("raid",{}).get("clan_coins",0)}/100** • War coins: **{clan["war"]}/100** today.\nDonations: **{clan["donations"]}/3** today.',inline=False)
+        extra.add_field(name='Clan Coins',value=f'Check-in: 150; all five members checking in grants another 50.\nCheck-in today: {"done" if clan["checked_in"] else "available if in a clan"}.\nRaid coins: **{progress.get("raid",{}).get("clan_coins",0)}/300** • War coins: **{clan["war"]}/200** today.\nDonations: **{clan["donations"]}/6** today.',inline=False)
         shards=await RaidStore(self.bot.db).shard_progress(uid)
         extra.add_field(name='Raid Shards',value=f'Character shards: **{shards.get("character_shard",0)}/50 today** and **{shards.get("character_shard_weekly",0)}/350 this week**.\nEach item: up to twice its recipe cost in shards per day; see ;items.',inline=False)
         training=[];balances=await self.bot.db.get_shards(uid)

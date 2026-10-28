@@ -65,12 +65,12 @@ class PodBattleEngine(BattleEngine):
         return savior,True
 
 
-def play_series(sid,round_no,a,b,uid_a,uid_b,name_a,name_b):
+def play_series(sid,round_no,a,b,uid_a,uid_b,name_a,name_b,mode='clanwar'):
     """Fresh seeded battles, first to two. Draws resolve by remaining HP percentage."""
     score=[0,0];games=[]
     for game in range(1,4):
         seed=int.from_bytes(hashlib.sha256(f'{sid}:{round_no}:{game}'.encode()).digest()[:8],'big')
-        engine=BattleEngine(a,b,owner_a=uid_a,owner_b=uid_b,name_a=name_a,name_b=name_b,mode='clanwar',seed=seed)
+        engine=BattleEngine(a,b,owner_a=uid_a,owner_b=uid_b,name_a=name_a,name_b=name_b,mode=mode,seed=seed)
         result=engine.run()
         if result.winner_side not in ('A','B'):
             af=result.team_a_hp/engine.team_a.max_hp;bf=result.team_b_hp/engine.team_b.max_hp

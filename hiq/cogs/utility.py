@@ -66,6 +66,9 @@ class UtilityCog(commands.Cog):
                 counts['failed battle/PvP/training runs']=len(failed)
         clan=await self.store.clan(user_id=ctx.author.id)
         for row in await self.store.sessions():
+            # Sealed owns its expiration/recovery lifecycle and uses a different
+            # state shape from wars and Prefecture lobbies.
+            if row['kind'] not in ('war','prefecture'):continue
             st=row['state'];kind=row['kind'];cog=self.bot.get_cog('ClanCog' if kind=='war' else 'CommunityCog')
             belongs=bool(clan and clan['id'] in st['clans']) if kind=='war' else (ctx.author.id==st['host'] or ctx.author.id in [p['user_id'] for p in st['players']])
             if not belongs or row['status'] in ('complete','cancelled','declined'):continue
@@ -73,7 +76,7 @@ class UtilityCog(commands.Cog):
             live=bool(task and not task.done())
             # Awaiting sends/team choices is a healthy war, regardless of idle duration.
             missing=await self._message_missing(row)
-            broken=row['status']=='broken' or (row['status']=='running' and not live) or missing
+            broken=row['status']=='broken' or (row['status']=='running' and not live) or (missing and kind!='war')
             if row['status']=='running' and live:continue
             try:await self.store.refresh_session(row['id'],ctx.author.id,broken=broken)
             except ValueError:continue

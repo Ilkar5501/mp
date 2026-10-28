@@ -14,6 +14,8 @@ from .data import CHAR_BY_ID, CHARACTERS
 from .economy import local_date_key, week_key, pull_pack
 from .progression import resolve_pity_sequence
 from .tournament import snapshot_specs
+from .war_activity import WarActivity,WAR_WINDOW
+import time
 
 ADMIN_ID = 626255484411969536
 PREFECTURE_WIN_REWARD = 50
@@ -43,6 +45,7 @@ CREATE TABLE IF NOT EXISTS inventory_items (
  stars INTEGER NOT NULL DEFAULT 0, detail TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS inventory_owner ON inventory_items(owner_id);
+CREATE TABLE IF NOT EXISTS inventory_preferences (user_id INTEGER PRIMARY KEY, stacked INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS clan_daily (
  user_id INTEGER NOT NULL, day TEXT NOT NULL, donations INTEGER NOT NULL DEFAULT 0,
  checkin_clan TEXT, PRIMARY KEY(user_id,day)
@@ -117,7 +120,7 @@ def parse_expiry(timestamp):
     return value
 
 
-class CommunityStore:
+class CommunityStore(WarActivity):
     def __init__(self, db): self.db=db
 
     @asynccontextmanager
@@ -267,7 +270,7 @@ class CommunityStore:
             clan=await self.clan(user_id=user_id,conn=c)
             if not clan:raise ValueError('You must be in a clan to donate.')
             daily=await self.one(c,'SELECT donations FROM clan_daily WHERE user_id=? AND day=?',(user_id,day))
-            if daily and daily['donations']>=3:raise ValueError('You have used all three donations today.')
+            if daily and daily['donations']>=6:raise ValueError('You have used all six donations today.')
             row=await self.one(c,'SELECT * FROM cards WHERE owner_id=? AND (instance_id=? OR full_instance_id=?)',(user_id,card_id,card_id))
             if not row:raise ValueError('That exact card is not in your collection.')
             if row['locked']:raise ValueError('Unlock the card before donating it.')
@@ -289,7 +292,7 @@ class CommunityStore:
             if old and old['checkin_clan']:raise ValueError('You have already checked in today.')
             await c.execute('INSERT INTO clan_daily(user_id,day,checkin_clan) VALUES (?,?,?) ON CONFLICT(user_id,day) DO UPDATE SET checkin_clan=excluded.checkin_clan',(user_id,day,clan['id']))
             await c.execute('UPDATE clan_members SET last_checkin=?,username=? WHERE user_id=?',(day,username,user_id))
-            await self._credit(c,user_id,100)
+            await self._credit(c,user_id,150)
             members=await self.members(clan['id'],c)
             count=await self.one(c,'SELECT COUNT(*) AS n FROM clan_daily d JOIN clan_members m ON d.user_id=m.user_id WHERE m.clan_id=? AND d.checkin_clan=? AND day=?',(clan['id'],clan['id'],day))
             bonus=len(members)==5 and count['n']==5
@@ -297,7 +300,7 @@ class CommunityStore:
                 cur=await c.execute('INSERT OR IGNORE INTO clan_checkin_bonus(clan_id,day) VALUES (?,?)',(clan['id'],day))
                 bonus=bool(cur.rowcount)
                 if bonus:
-                    for member in members:await self._credit(c,member['user_id'],100)
+                    for member in members:await self._credit(c,member['user_id'],50)
             return bonus,count['n']
 
     async def items(self,user_id):
@@ -454,9 +457,12 @@ class CommunityStore:
             async with self.db.connect() as c:return await self.session(sid,c)
         return self.unpack(await self.one(conn,'SELECT * FROM community_sessions WHERE id=?',(sid,)))
 
-    async def sessions(self,kind=None):
+    async def sessions(self,kind=None,statuses=None):
         async with self.db.connect() as c:
-            rows=await self.rows(c,'SELECT * FROM community_sessions'+(' WHERE kind=?' if kind else ''),(kind,) if kind else ())
+            clauses=[];args=[]
+            if kind:clauses.append('kind=?');args.append(kind)
+            if statuses:clauses.append('status IN ('+','.join('?' for _ in statuses)+')');args.extend(statuses)
+            rows=await self.rows(c,'SELECT * FROM community_sessions'+(' WHERE '+' AND '.join(clauses) if clauses else '')+' ORDER BY rowid',args)
             return [self.unpack(r) for r in rows]
 
     async def _save(self,c,row):
@@ -470,17 +476,18 @@ class CommunityStore:
         await c.execute('INSERT INTO community_sessions(id,kind,status,state_json,channel_id,updated_at) VALUES (?,?,?,?,?,?)',(sid,kind,status,json.dumps(state),channel,now()))
         return await self.session(sid,c)
 
-    async def challenge(self,actor,opponent_id,fmt,channel):
+    async def challenge(self,actor,opponent_id,fmt,channel,size=5):
         if fmt not in (3,6):raise ValueError('Specify 3v3 or 6v6.')
+        if size not in (3,5):raise ValueError('Choose Quick (3 players) or Long (5 players).')
         async with self.tx() as c:
             clan=await self._officer(c,actor)
             other=await self.clan(clan_id=opponent_id,conn=c)
             if not other or clan['id']==opponent_id:raise ValueError('Choose another existing clan.')
             for cl in (clan,other):
-                if len(await self.members(cl['id'],c))!=5:raise ValueError('Both clans need exactly five members for a war.')
+                if len(await self.members(cl['id'],c))<size:raise ValueError(f'Both clans need at least {size} members for this war.')
                 if await self._clan_busy(c,cl['id']):raise ValueError('One of these clans is already in a war.')
             state={'clans':[clan['id'],other['id']],'format':fmt,'initiator':actor,'stage':'challenge','round':0,'rosters':[],
-                   'eliminated':[[],[]],'wins':{},'series':[],'sends':[None,None],'teams':[None,None],'initiative':None}
+                   'eliminated':[[],[]],'wins':{},'series':[],'sends':[None,None],'teams':[None,None],'initiative':None,'size':size,'participants':[[],[]]}
             return await self._create_session(c,'war',state,channel,'challenge')
 
     async def respond_war(self,sid,actor,accept):
@@ -495,9 +502,10 @@ class CommunityStore:
                 for cid in row['state']['clans']:
                     if await self._clan_busy(c,cid):raise ValueError('A clan is already in another war.')
                     members=await self.members(cid,c)
-                    if len(members)!=5:raise ValueError('Both clans must still have five members.')
+                    if len(members)<row['state'].get('size',5):raise ValueError('Both clans must still have enough members.')
                     rosters.append(members)
                 row['state'].update(rosters=rosters,stage='bans',bans=[None,None],round=1)
+                row['state']['deadlines']=[time.time()+WAR_WINDOW]*2
                 row['status']='active'
                 # Close competing pending challenges to avoid accepting two wars.
                 for other in await self.rows(c,"SELECT * FROM community_sessions WHERE kind='war' AND status='challenge' AND id<>?",(sid,)):
@@ -512,34 +520,41 @@ class CommunityStore:
 
     async def ban_war_unit(self,sid,actor,character_id):
         """Commit one immutable, blind exact-variant ban per clan leader."""
+        await self.expire_war(sid)
         async with self.tx() as c:
             row=await self.session(sid,c)
             if not row or row['kind']!='war' or row['status']!='active' or row['state']['stage']!='bans':
                 raise ValueError('That war is no longer waiting for bans.')
-            clan=await self._officer(c,actor,leader_only=True)
+            clan=await self._officer(c,actor)
             if clan['id'] not in row['state']['clans']:raise ValueError('This war belongs to other clans.')
             if character_id not in CHAR_BY_ID:raise ValueError('Choose a unit from the roster.')
             side=row['state']['clans'].index(clan['id']);bans=row['state']['bans']
+            self.war_action_open(row,side)
             if bans[side] is not None:raise ValueError('Your clan’s ban is already locked.')
             bans[side]=character_id
             # Identical blind choices are legal; rejecting them would leak the opposing ban.
-            if all(bans):row['state']['stage']='blind'
+            if all(bans):self.open_war_round(row['state'])
             await self._save(c,row);return row
 
     async def nominate(self,sid,actor,player,round_no):
+        await self.expire_war(sid)
         async with self.tx() as c:
             row=await self.session(sid,c)
             if not row or row['status']!='active':raise ValueError('That war is not waiting for sends.')
             state=row['state'];side=await self._war_officer_side(c,row,actor)
             if state['round']!=round_no:raise ValueError('That selection belongs to an earlier round.')
+            self.war_action_open(row,side)
             if player not in [r['user_id'] for r in state['rosters'][side]] or player in state['eliminated'][side]:raise ValueError('Choose a clan member who has not been knocked out.')
+            if player not in [m['user_id'] for m in self.eligible_war_members(state,side)]:raise ValueError('Your war roster is locked to the first three distinct players sent.')
             if state['sends'][side] is not None:raise ValueError('Your clan has already sent a player this round.')
             if state['stage']=='winner_send' and side!=state['initiative']:raise ValueError('The previous winner must send first.')
             if state['stage']=='response_send' and side==state['initiative']:raise ValueError('Wait for the other clan’s response.')
             if state['stage'] not in ('blind','winner_send','response_send'):raise ValueError('Sends are closed for this round.')
             state['sends'][side]=player
+            if player not in state['participants'][side]:state['participants'][side].append(player)
             if all(x is not None for x in state['sends']):state['stage']='teams'
-            elif state['stage']=='winner_send':state['stage']='response_send'
+            elif state['stage']=='winner_send':
+                state['stage']='response_send';state['deadlines'][1-side]=time.time()+WAR_WINDOW
             await self._save(c,row);return row
 
     async def _team_snapshot(self,c,uid,slot,fmt):
@@ -557,12 +572,14 @@ class CommunityStore:
         return snapshot_specs(specs)
 
     async def select_war_team(self,sid,uid,slot,round_no):
+        await self.expire_war(sid)
         async with self.tx() as c:
             row=await self.session(sid,c)
-            if not row or row['status']!='active' or row['state']['stage']!='teams' or row['state']['round']!=round_no:raise ValueError('That team selection is no longer active.')
+            if not row or row['status']!='active' or row['state']['stage'] not in ('blind','winner_send','response_send','teams') or row['state']['round']!=round_no:raise ValueError('That team selection is no longer active.')
             st=row['state']
             if uid not in st['sends']:raise ValueError('Only a sent player can select their team.')
             side=st['sends'].index(uid)
+            self.war_action_open(row,side)
             if st['teams'][side] is not None:raise ValueError('Your team is already locked for this series.')
             snapshot=await self._team_snapshot(c,uid,slot,st['format'])
             banned=set(st.get('bans',[]))-{None}
@@ -572,6 +589,7 @@ class CommunityStore:
             await self._save(c,row);return row
 
     async def resolve_claim(self,sid):
+        await self.expire_war(sid)
         async with self.tx() as c:
             row=await self.session(sid,c)
             if not row or row['status'] not in ('active','broken','running'):raise ValueError('That session is closed.')
@@ -605,9 +623,9 @@ class CommunityStore:
             st['eliminated'][loser].append(st['sends'][loser])
             uid=st['sends'][winner];st['wins'][str(uid)]=st['wins'].get(str(uid),0)+1
             st['series'].append({'round':round_no,'players':[a,b],'winner':winner,'score':score})
-            if len(st['eliminated'][loser])==5:await self._finish_war(c,row,winner)
+            if len(st['eliminated'][loser])>=st.get('size',5):await self._finish_war(c,row,winner)
             else:
-                row['status']='active';st.update(stage='winner_send',round=round_no+1,initiative=winner,sends=[None,None],teams=[None,None])
+                row['status']='active';st['round']=round_no+1;self.open_war_round(st,winner)
             await self._save(c,row);return row
 
     async def forfeit(self,sid,actor):
@@ -673,14 +691,15 @@ class CommunityStore:
             if row['kind']=='war':
                 clan=await self.clan(user_id=uid,conn=c)
                 if not clan or clan['id'] not in st['clans']:raise ValueError('That war belongs to other clans.')
-                if row['status'] not in ('challenge','broken') and not (broken and row['status'] in ('active','running')):
+                if row['status'] not in ('challenge','broken') and not (broken and row['status']=='running'):
                     raise ValueError('A functioning war cannot be closed with refresh. Use Forfeit to concede.')
                 row['status']='cancelled';st['stage']='cancelled';st['teams']=[None,None]
-            else:
+            elif row['kind']=='prefecture':
                 if uid!=st['host'] and uid not in [p['user_id'] for p in st['players']]:raise ValueError('You are not part of that lobby.')
                 if row['status']=='open':
                     if uid==st['host']:row['status']='cancelled'
                     else:st['players']=[p for p in st['players'] if p['user_id']!=uid]
                 elif row['status']=='broken' or (broken and row['status']=='running'):row['status']='cancelled'
                 else:raise ValueError('That battle is already complete or is running normally.')
+            else:raise ValueError('Use ;sealedview to reopen a Sealed Draft. Drafts expire automatically.')
             await self._save(c,row);return row

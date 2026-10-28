@@ -1127,5 +1127,277 @@
       ],
       "theme": "recovery"
     }
+  ],
+  "extreme": [
+    {
+      "theme": "tactics",
+      "name": "The Past & The Future",
+      "units": [
+        {
+          "character_id": "Tsuki — Tireless Taunter",
+          "lane": "front",
+          "merge": 10,
+          "boon": "def",
+          "bane": "hp",
+          "equipment_key": "manager_s_good_luck_charm"
+        },
+        {
+          "character_id": "Tenma Udai — The Original",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "rigorous_film_study"
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "back",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "second_wind"
+        },
+        {
+          "character_id": "Hinata — Wings of Dawn",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Nishinoya — Guardian Deity",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "manager_s_good_luck_charm"
+        }
+      ]
+    },
+    {
+      "theme": "tempo",
+      "name": "Soaring to the Top",
+      "units": [
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "rigorous_film_study"
+        },
+        {
+          "character_id": "Ushijima — Absolute Monarch",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "last_rally"
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "alternating_drills"
+        },
+        {
+          "character_id": "Suwa — Patience Weaver",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "spd",
+          "equipment_key": "pressure_board"
+        },
+        {
+          "character_id": "Yamagata — Last Line",
+          "lane": "back",
+          "merge": 10,
+          "boon": "qik",
+          "bane": "hp",
+          "equipment_key": "water_bottle"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "death_stare"
+        }
+      ]
+    },
+    {
+      "theme": "offense",
+      "name": "The Best Defense is Offense",
+      "units": [
+        {
+          "character_id": "Hinata — Wings of Dawn",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Kanoka — Ace of the other Side",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "jmp",
+          "equipment_key": "ultimate_impact"
+        },
+        {
+          "character_id": "Nishinoya — Guardian Deity",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "manager_s_good_luck_charm"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "second_wind"
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "back",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "pressure_board"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "smelling_salts"
+        }
+      ]
+    },
+    {
+      "theme": "defense",
+      "name": "Block Block Block! Hey Hey Hey!!",
+      "units": [
+        {
+          "character_id": "Aone — Wall of Steel",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "bonus_scrutiny"
+        },
+        {
+          "character_id": "Koganegawa — Towering Setter",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "second_wind"
+        },
+        {
+          "character_id": "Kosuke — Behind the Iron Wall",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "pressure_board"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "recruit_s_knee_pads"
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "back",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "death_stare"
+        },
+        {
+          "character_id": "Bokuto — Star of the Owls",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "firm_contact"
+        }
+      ]
+    },
+    {
+      "theme": "recovery",
+      "name": "Ferocious Felines & their 9 Lives",
+      "units": [
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "rigorous_film_study"
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "front",
+          "merge": 10,
+          "boon": "qik",
+          "bane": "jmp",
+          "equipment_key": "rigorous_film_study"
+        },
+        {
+          "character_id": "Kanoka — Ace of the other Side",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "jmp",
+          "equipment_key": "rigorous_film_study"
+        },
+        {
+          "character_id": "Usuri — Calculated Distraction",
+          "lane": "back",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "matchbreaker"
+        },
+        {
+          "character_id": "Kiryu — Last Hope",
+          "lane": "back",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "jmp",
+          "equipment_key": "captain_s_armband"
+        },
+        {
+          "character_id": "Kenma — Max Level Gamer",
+          "lane": "back",
+          "merge": 10,
+          "boon": "rec",
+          "bane": "jmp",
+          "equipment_key": "rock_solid_game_plan"
+        }
+      ]
+    }
   ]
 }

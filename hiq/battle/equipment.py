@@ -82,7 +82,7 @@ class EquipmentEffects:
     def equipment_mods(self,ctx,u,foe,initiated,mods):
         key=equipment_key(u.card) or ''
         if key in ('loaded_approach','loaded_reception') and initiated==(key=='loaded_approach'):
-            for stat in ('pow','qik'):mods[stat]+=u.max_cd+2
+            for stat in (('pow','qik') if key=='loaded_approach' else ('def','rec')):mods[stat]+=u.max_cd+2
         if key=='specialist_badge' and not any(a is not u and a.character.position==u.character.position for a in self.team(u).units):
             mods['pow']+=6;mods['qik']+=6
         if key.startswith('fresh_') and ctx.temp_flags.get('start_team_hp',{}).get(u.side,self.team(u).hp)>=ctx.temp_flags.get('start_team_hp',{}).get(foe.side,self.team(foe).hp)+12:
@@ -139,8 +139,8 @@ class EquipmentEffects:
             if self.gear(u,'disruptive_whistle'):
                 target=ctx.defender if u is ctx.attacker else ctx.attacker
                 for foe in self.enemy_team(u).units:
-                    if self.formation_distance(target,foe)<=2:
-                        for stat in ('pow','qik'):foe.add_debuff(stat,-5)
+                    if foe.lane==target.lane:
+                        for stat in ('pow','qik'):foe.add_debuff(stat,-4)
             if self.gear(u,'manager_s_good_luck_charm'):self.heal_team(u,10)
             if self.gear(u,'worthless_pride') and not(ctx.temp_flags.get('relay_teradomari') and u is ctx.attacker):
                 team=self.team(u)

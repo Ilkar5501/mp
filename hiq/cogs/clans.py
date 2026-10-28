@@ -117,13 +117,13 @@ class WarBanView(SafeView):
 class WarSendView(SafeView):
     def __init__(self,cog,row,side,actor):
         super().__init__(timeout=180);self.cog=cog;self.actor=actor
-        st=row['state'];members=[r for r in st['rosters'][side] if r['user_id'] not in st['eliminated'][side]]
+        st=row['state'];members=cog.store.eligible_war_members(st,side)
         select=discord.ui.Select(placeholder='Send an eligible clan member',options=[discord.SelectOption(label=r['username'][:100],value=str(r['user_id'])) for r in sorted(members,key=lambda r:r['username'].casefold())])
         async def choose(i):
             selected=await cog.store.nominate(row['id'],i.user.id,int(select.values[0]),st['round'])
             await i.response.edit_message(content='Player sent. Opening sends remain hidden until both sides commit.' if st['round']==1 else 'Player sent and revealed on the war board.',view=None)
             await cog.update_board(row['id'])
-            if selected['state']['stage']=='teams':await cog.notify_players(selected)
+            await cog.notify_players(selected)
         select.callback=choose;self.add_item(select)
     async def interaction_check(self,i):
         if i.user.id!=self.actor:await i.response.send_message('This send selector belongs to another leader.',ephemeral=True);return False
@@ -167,22 +167,24 @@ class WarView(SafeView):
             self.accept.disabled=self.decline.disabled=row['status']!='challenge'
             self.ban.disabled=not(row['status']=='active' and row['state']['stage']=='bans')
             self.send.disabled=not(row['status']=='active' and row['state']['stage'] in ('blind','winner_send','response_send'))
-            self.team.disabled=not(row['status']=='active' and row['state']['stage']=='teams')
+            self.team.disabled=not(row['status']=='active' and row['state']['stage'] in ('blind','winner_send','response_send','teams'))
             self.forfeit.disabled=row['status'] not in ('active','running','broken')
     @discord.ui.button(label='Accept War',style=discord.ButtonStyle.success,custom_id='accept',row=0)
     async def accept(self,i,button):
         await self.cog.store.respond_war(self.sid,i.user.id,True)
         await i.response.defer();await self.cog.update_board(self.sid)
+        if i.guild is None:await i.edit_original_response(content='War accepted. Submit your clan’s ban on the war board within 24 hours.',embed=None,view=None)
     @discord.ui.button(label='Decline War',style=discord.ButtonStyle.danger,custom_id='decline',row=0)
     async def decline(self,i,button):
         await self.cog.store.respond_war(self.sid,i.user.id,False)
         await i.response.defer();await self.cog.update_board(self.sid)
-    @discord.ui.button(label='Ban Unit (leader)',style=discord.ButtonStyle.primary,custom_id='ban',row=0)
+        if i.guild is None:await i.edit_original_response(content='War declined.',embed=None,view=None)
+    @discord.ui.button(label='Ban Unit (officers)',style=discord.ButtonStyle.primary,custom_id='ban',row=0)
     async def ban(self,i,button):
         row=await self.cog.store.session(self.sid)
         clan=await self.cog.store.clan(user_id=i.user.id)
         if not row or row['status']!='active' or row['state']['stage']!='bans':raise ValueError('That war is not waiting for bans.')
-        if not clan or clan['leader_id']!=i.user.id or clan['id'] not in row['state']['clans']:raise ValueError('Only the two participating clan leaders can ban units.')
+        if not clan or i.user.id not in (clan['leader_id'],clan['co_id']) or clan['id'] not in row['state']['clans']:raise ValueError('Only participating leaders or co-leaders can ban units.')
         if row['state']['bans'][row['state']['clans'].index(clan['id'])] is not None:raise ValueError('Your clan’s ban is already locked.')
         view=WarBanView(self.cog,self.sid,i.user.id)
         await i.response.send_message(f'Choose one exact unit variant. Selection immediately locks your ban for both sides. Your choice stays hidden until both leaders finish. Page 1/{(len(view.units)+19)//20}.',view=view,ephemeral=True)
@@ -210,10 +212,12 @@ class WarView(SafeView):
 
 
 class ClanCog(commands.Cog):
-    def __init__(self,bot):self.bot=bot;self.store=CommunityStore(bot.db);self.jobs={};self.restore_task=None
-    async def cog_load(self):self.restore_task=asyncio.create_task(self.restore())
+    def __init__(self,bot):self.bot=bot;self.store=CommunityStore(bot.db);self.jobs={};self.restore_task=None;self.activity_task=None
+    async def cog_load(self):
+        self.restore_task=asyncio.create_task(self.restore());self.activity_task=asyncio.create_task(self.watch_activity())
     def cog_unload(self):
         if self.restore_task:self.restore_task.cancel()
+        if self.activity_task:self.activity_task.cancel()
         for task in self.jobs.values():task.cancel()
     async def dm(self,uid,content,**kwargs):
         try:
@@ -227,10 +231,25 @@ class ClanCog(commands.Cog):
         for app in apps:self.bot.add_view(ApplicationView(self,app['id']))
         for row in await self.store.sessions('war'):
             if row['status'] in ('challenge','active','running','broken'):
-                self.bot.add_view(WarView(self,row['id'],row),message_id=row['message_id'])
+                self.bot.add_view(WarView(self,row['id'],row))
                 if row['status']=='running':self.launch(row['id'])
+    async def watch_activity(self):
+        await self.bot.wait_until_ready()
+        while True:
+            try:
+                for row in await self.store.sessions('war',('active',)):
+                    if await self.store.expire_war(row['id']):
+                        await self.update_board(row['id'])
+                        fresh=await self.store.session(row['id'])
+                        if fresh['status'] in ('complete','cancelled'):
+                            channel=self.bot.get_channel(fresh['channel_id']) or await self.bot.fetch_channel(fresh['channel_id'])
+                            await channel.send(f'War `{fresh["id"]}`: '+fresh['state'].get('inactivity_reason','Activity deadline resolved.'),allowed_mentions=discord.AllowedMentions.none())
+            except asyncio.CancelledError:raise
+            except Exception:log.exception('War activity check failed; retrying.')
+            await asyncio.sleep(30)
     async def team_view(self,row,uid):
-        if not row or row['status']!='active' or row['state']['stage']!='teams' or uid not in row['state']['sends']:raise ValueError('You are not currently waiting to choose a war team.')
+        if not row or row['status']!='active' or row['state']['stage'] not in ('blind','winner_send','response_send','teams') or uid not in row['state']['sends']:raise ValueError('You are not currently waiting to choose a war team.')
+        self.store.war_action_open(row,row['state']['sends'].index(uid))
         if row['state']['teams'][row['state']['sends'].index(uid)] is not None:raise ValueError('Your team is already locked.')
         fmt=row['state']['format'];teams=[t for t in await self.bot.db.list_saved_teams(uid) if t.complete and t.team_format==fmt]
         banned=set(row['state'].get('bans',[]))-{None}
@@ -241,6 +260,9 @@ class ClanCog(commands.Cog):
         return WarTeamView(self,row['id'],uid,row['state']['round'],teams)
     async def notify_players(self,row):
         for uid in row['state']['sends']:
+            if uid is None:continue
+            if row['state']['sends'].index(uid) in row['state'].get('auto_losses',[]):continue
+            if row['state']['teams'][row['state']['sends'].index(uid)] is not None:continue
             try:view=await self.team_view(row,uid)
             except ValueError:
                 await self.dm(uid,f'You were sent in war `{row["id"]}`. Create a complete {row["state"]["format"]}v{row["state"]["format"]} team without banned units, then use **Choose My Team** on the war board.');continue
@@ -248,17 +270,18 @@ class ClanCog(commands.Cog):
     async def board(self,row):
         st=row['state'];clans=[await self.store.clan(clan_id=cid) for cid in st['clans']]
         names=[discord.utils.escape_markdown(cl['name']) if cl else cid for cl,cid in zip(clans,st['clans'])]
-        e=discord.Embed(title=f'Clan War • {st["format"]}v{st["format"]}',color=PURPLE)
+        size=st.get('size',5)
+        e=discord.Embed(title=f'Clan War • {st["format"]}v{st["format"]} • {"Quick" if size==3 else "Long"} ({size} players)',color=PURPLE)
         e.description=f'**{names[0]} vs {names[1]}** • {row["status"].title()}\n'
-        if row['status']=='challenge':e.description+='Do you accept or decline this offer? Both clans need five members. No war cooldown.'
+        if row['status']=='challenge':e.description+=f'Do you accept or decline this offer? Both clans need at least {size} members. Quick rosters lock to the first three distinct players sent.'
         elif row['status']=='complete':
-            e.description+=f'🏆 **{names[st["winner"]]} wins!**'+(' Opponent forfeited.' if 'forfeit' in st else ' Five opposing players knocked out.')
+            e.description+=f'🏆 **{names[st["winner"]]} wins!**'+(' Opponent forfeited.' if 'forfeit' in st else f' {size} opposing players knocked out.')
             rewards=await self.store.rewards(row['id'])
             e.add_field(name='War rewards • daily caps applied',value='\n'.join(f'<@{r["user_id"]}>: **{st.get("gold_rewards",{}).get(str(r["user_id"]),0)} coins + {r["amount"]} clan coins**' for r in rewards) or 'No rewards.',inline=False)
         elif row['status'] in ('cancelled','declined'):e.description+='Closed without clan wins, losses or rewards.'
         else:
             e.description+=f'Round **{st["round"]}** • '
-            if st['stage']=='bans':e.description+='Both clan leaders lock one blind unit ban before sends.'
+            if st['stage']=='bans':e.description+='Each leader/co-leader locks one blind unit ban before sends.'
             elif st['stage']=='blind':e.description+='Both clans send privately.'
             elif st['stage']=='winner_send':e.description+=f'**{names[st["initiative"]]}** sends first, publicly.'
             elif st['stage']=='response_send':e.description+='The other clan now responds with its send.'
@@ -266,6 +289,15 @@ class ClanCog(commands.Cog):
             elif row['status']=='broken':e.description+='Processing paused. Reopen to resume, or ;refresh to close without a clan result.'
             else:e.description+='Best-of-three in progress.'
         bans=st.get('bans',[])
+        if st.get('inactivity_reason'):e.description+='\n'+st['inactivity_reason']
+        if row['status']=='active':
+            self.store.war_clock(row)
+            clocks=[]
+            for side,d in enumerate(st['deadlines']):
+                done=bool(st['bans'][side]) if st['stage']=='bans' else st['teams'][side] is not None
+                status='✅ submitted' if done else 'Auto-loss due to inactivity' if side in st['auto_losses'] else f'<t:{int(d)}:R> • <t:{int(d)}:f>' if d else 'Waiting for opposing send'
+                clocks.append(f'{names[side]}: {status}')
+            e.add_field(name='Activity deadlines • 24 hours per side',value='\n'.join(clocks)+'\nSend and team submission share the same window.',inline=False)
         if bans:
             revealed=all(bans)
             ban_lines=[f'{names[side]}: '+(f'**{CHAR_BY_ID[cid].name} — {CHAR_BY_ID[cid].title}**' if revealed else '✅ hidden ban locked' if cid else 'Awaiting leader’s ban') for side,cid in enumerate(bans)]
@@ -279,9 +311,11 @@ class ClanCog(commands.Cog):
                     if uid in st['eliminated'][side]:
                         last=next(r for r in reversed(st['series']) if r['players'][side]==uid and r['winner']!=side)
                         winner=last['players'][1-side];score=last['score']
-                        line=f'~~{line}~~ — {score[1-side]}–{score[side]}’d by *[{names[1-side]}] <@{winner}>*'
+                        line=f'~~{line}~~ — Auto-loss due to inactivity' if side in last.get('auto_losses',[]) else f'~~{line}~~ — {score[1-side]}–{score[side]}’d by *[{names[1-side]}] <@{winner}>*'
+                    elif side in st.get('auto_losses',[]) and st['sends'][side]==uid:line=f'~~{line}~~ — Auto-loss due to inactivity'
+                    elif len(st.get('participants',[[],[]])[side])>=size and uid not in st['participants'][side]:line+=' • Not on this war’s roster'
                     lines.append(line)
-                e.add_field(name=f'{names[side]} • {len(st["eliminated"][side])}/5 knocked out',value='\n'.join(lines),inline=False)
+                e.add_field(name=f'{names[side]} • {len(st["eliminated"][side])}/{size} knocked out',value='\n'.join(lines),inline=False)
             sends=[]
             for side,uid in enumerate(st['sends']):
                 visible=st['round']>1 or all(x is not None for x in st['sends'])
@@ -411,16 +445,33 @@ class ClanCog(commands.Cog):
                 except discord.HTTPException:pass
             lines.append(f'**{discord.utils.escape_markdown(str(user) if user else member["username"])}** • <@{member["user_id"]}> • {"✅" if member["last_checkin"]==today else "❌"}')
         await ctx.send(embed=discord.Embed(title=f'{clan["name"]} — Members',description='\n'.join(lines),color=PURPLE),allowed_mentions=discord.AllowedMentions.none())
-    @commands.hybrid_command(name='clanwar',description='Challenge another full clan to a 3v3 or 6v6 war.')
-    async def clanwar(self,ctx,clan_id:str,format:str):
-        fmt={'3':3,'3v3':3,'6':6,'6v6':6}.get(format.casefold())
+    @commands.hybrid_command(name='clanwar',description='Choose a clan, battle format, and Quick (3 players) or Long (5 players) war.')
+    async def clanwar(self,ctx,clan_id:str='',format:str='',length:str=''):
         if not ctx.guild:await ctx.send('Start clan wars from a server channel.');return
-        try:row=await self.store.challenge(ctx.author.id,clan_id,fmt,ctx.channel.id)
+        clan=await self.store.clan(user_id=ctx.author.id)
+        if not clan or ctx.author.id not in (clan['leader_id'],clan['co_id']):await ctx.send('Only leaders and co-leaders can challenge a clan.');return
+        fmt={'3':3,'3v3':3,'6':6,'6v6':6}.get(format.casefold()) if format else 3
+        size={'quick':3,'3':3,'long':5,'5':5}.get(length.casefold()) if length else 3
+        if fmt is None or size is None:await ctx.send('Use ;clanwar [clanID] [3v3|6v6] [quick|long], or ;clanwar for a menu.');return
+        if not(clan_id and format and length):
+            from .war_setup import WarSetupView
+            clans=[c for c in await self.store.all_clans() if c['id']!=clan['id']]
+            if clan_id and not any(c['id']==clan_id for c in clans):await ctx.send('Choose an existing opposing clan.');return
+            view=WarSetupView(self,ctx,clans,clan_id or None,fmt,size)
+            await ctx.send(embed=view.embed(),view=view);return
+        await self.send_war_offer(ctx,clan_id,fmt,size)
+
+    async def send_war_offer(self,ctx,clan_id,fmt,size):
+        try:row=await self.store.challenge(ctx.author.id,clan_id,fmt,ctx.channel.id,size)
         except ValueError as exc:await ctx.send(str(exc));return
         other=await self.store.clan(clan_id=clan_id);officers={other['leader_id'],other['co_id']}-{None}
         mentions=' / '.join(f'<@{uid}>' for uid in sorted(officers))
         msg=await ctx.send(f'{ctx.author.display_name} is challenging {mentions}’s **{discord.utils.escape_markdown(other["name"])}** to a **{fmt}v{fmt}** war! Do you accept or decline?',embed=await self.board(row),view=WarView(self,row['id'],row),allowed_mentions=discord.AllowedMentions(users=[discord.Object(id=uid) for uid in officers],roles=False,everyone=False))
         await self.store.set_message(row['id'],msg.id)
+        self.bot.add_view(WarView(self,row['id'],row))
+        for uid in officers:
+            await self.dm(uid,f'**{discord.utils.escape_markdown(ctx.author.display_name)}** offered your clan a **{fmt}v{fmt} {"Quick" if size==3 else "Long"} War ({size} players)** in <#{ctx.channel.id}>. Accept or decline here or in the channel.',embed=await self.board(row),view=WarView(self,row['id'],row))
+        return row
     @commands.hybrid_command(name='clanwarview',description='Reopen your clan war controls or a public scoreboard.')
     async def clanwarview(self,ctx,war_id:str|None=None):
         if not war_id:
@@ -429,6 +480,7 @@ class ClanCog(commands.Cog):
             row=rows[-1] if rows else None
         else:row=await self.store.session(war_id)
         if not row or row['kind']!='war':await ctx.send('No matching clan war.');return
+        await self.store.expire_war(row['id']);row=await self.store.session(row['id'])
         if ctx.channel.id!=row['channel_id']:await ctx.send('Reopen this war from its original channel.');return
         view=WarView(self,row['id'],row) if row['status'] in ('challenge','active','running','broken') else None
         msg=await ctx.send(embed=await self.board(row),view=view,allowed_mentions=discord.AllowedMentions.none())

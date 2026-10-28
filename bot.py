@@ -28,6 +28,7 @@ EXTENSIONS = (
     'hiq.cogs.community',
     'hiq.cogs.utility',
     'hiq.cogs.raids',
+    'hiq.cogs.sealed',
 )
 PURPLE = discord.Color.from_rgb(72, 42, 115)
 
@@ -146,7 +147,7 @@ def tutorial_embed(page: int, *, review: bool = False) -> discord.Embed:
             '• **`;to` / `;tournament`** opens an 8-player 6v6 double-elimination lobby; two losses eliminate you. Champion gets 100 coins with CPUs or 150 with eight humans, up to three wins daily across modes; losses give 0.\n'
             '• **`;gauntlet regional`** runs all **12** Regional matches in order.\n'
             '• **`;gauntlet national`** runs all **20** National matches in order.\n'
-            'You must win every match to become Champion. Each mode pays **100 coins for the first daily clear and 50 for the second**. Further clears give no coins.\n\n'
+            'You must win every match to become Champion. Each mode pays **150 coins for the first daily clear and 50 for the second**. Further clears give no coins.\n\n'
             'Battle results include per-unit offense/defense stats, **OPOM**, and **DPOM**. Gauntlets provide per-game performance panels instead of one giant combined log. Run **`;help`** at any time for commands.'
         ),
         (
@@ -295,16 +296,18 @@ async def help_cmd(ctx: commands.Context):
             '`;clanapply ID` — apply. Leaders/co-leaders receive DM Accept/Decline controls; `;clanapplications` is a fallback.',
             '`;clanco @member` — leader appoints/removes the single co-leader.',
             '`;memberview` — any clan member can see their clan’s usernames and last check-in dates.',
-            '`;raid [theme]` — choose 3v3/6v6 and Easy/Hard; win to advance and earn a drop.',
+            '`;raid [theme]` — Easy: 1 drop; Hard: 1–2 drops; Extreme: 1–3 drops, 6v6 only. Currency drops are 100 each, capped at 300 coins / 300 clan coins daily.',
             '`;raidresume [ID]` — recover a raid or show a saved result.',
             '`;items [name:query] [text:query]` — equipment catalogue; ;item also works. Filters -n / -t.',
             '`;craft [item/player name]` — Items/Characters menu with shard counts, or craft by name.',
             '`;equip [cardID] [itemID]` — choose a card/item or equip directly. ;co and ;cv show equipment controls.',
             '`;clanleave`, `;clankick @member`, `;clanlead @member` — membership/leadership. Personal currency/items remain.',
-            '`;clanwar ID 3v3` / `6v6` — challenge a full clan. `;clanwarview [ID]` reopens sends/team choices.',
+            '`;clanwar` — choose a clan, 3v3/6v6, and Quick (3 players) or Long (5 players). Officers may ban; send and team submission share a 24-hour deadline. `;clanwarview [ID]` reopens controls.',
+            '`;sealed @User1 @User2 …` — 2–7 players draft 8 private characters, build 6v6 teams, then play an automatic best-of-three single-elimination tournament. `;sealedview [ID]` reopens; expires after 30 minutes.',
+            '`;inv toggle` / `;inv view` — switch stacked and ID views. `;recycle water bottle 5` — recycle exactly five unequipped copies. `;allcraft` — craft all item and character shards; school shards are preserved.',
             'War: private opening sends; then previous winning clan sends publicly first. Fresh teams each series. First to two simulations wins; one player is knocked out. Five knockouts end the war.',
-            '`;donate cardID` — confirm-delete a card; every clan member earns stars × 10 × (merge+1) clan coins. Three daily donations.',
-            '`;checkin` — 100 daily clan coins; all five checking in gives everyone another 100.',
+            '`;donate cardID` — confirm-delete a card; every clan member earns stars × 10 × (merge+1) clan coins. Six daily donations.',
+            '`;checkin` — 150 daily clan coins; all five checking in gives everyone another 50.',
             '`;clanshop`, `;clanbuy mergecopy|blessing|starpack stars` — inventory items. Use `;inv` for IDs.',
         ]),
     ]

@@ -6,7 +6,7 @@ from discord.ext import commands
 from ..items import ITEMS,ITEM_BY_KEY,THEMES,find_items,normalize
 from ..query_text import split_query
 from ..raid_store import RaidStore
-from ..raids import RAID_TEAMS,RAID_POOLS,DIFFICULTIES,team_index
+from ..raids import RAID_TEAMS,RAID_POOLS,DIFFICULTIES,team_index,raid_team
 from ..data import find_character
 from ..cards import card_embed,display_title
 from ..tournament import restore_specs,restore_result
@@ -91,19 +91,21 @@ class RaidSetupView(SafeView):
         registry=getattr(cog.bot,'session_registry',None)
         if registry:registry.add_view({self.uid},self)
     def embed(self):
-        e=discord.Embed(title='Raids',description='Choose a raid, format, stage and saved team. Win to earn one drop and advance; losses and draws keep the same opponent. Each raid cycles through three teams per format.',color=PURPLE)
+        e=discord.Embed(title='Raids',description='Choose a raid, format, stage and saved team. Easy wins roll 1 drop; Hard rolls 1–2; Extreme rolls 1–3. Extreme has one 6v6 team per theme.',color=PURPLE)
         e.add_field(name='Selected',value=f'{self.theme.title()} • {self.fmt}v{self.fmt} • {self.difficulty.title()} • team slot {self.slot or "choose"}',inline=False)
         from ..data import CHAR_BY_ID
         progress=self.previews[(self.theme,self.fmt)]
-        opponent=RAID_TEAMS[str(self.fmt)][team_index(self.fmt,self.theme,progress)]
+        opponent=raid_team(self.fmt,team_index(self.fmt,self.theme,progress,self.difficulty),self.difficulty)
         lines=[]
         for raw in opponent['units']:
             char=CHAR_BY_ID[raw['character_id']]
-            lines.append(f'**{"F" if raw["lane"]=="front" else "B"} • {char.name} — {char.title} +{raw["merge"] if self.difficulty=="hard" else 0}** • +{raw["boon"].upper()}/−{raw["bane"].upper()}')
-        e.add_field(name=f'Next opponent ({progress+1}/3): {opponent["name"]}',value='\n'.join(lines),inline=False)
-        rewards=('40% item shard • 50% character shard • 5% coins • 5% clan coins.\nCharacter rarity: 1★ 30%, 2★ 30%, 3★ 25%, 4★ 10%, 5★ 5%.' if self.difficulty=='easy' else '75.5% item shard • 14.5% character shard • 5% coins • 5% clan coins.')
-        e.add_field(name='Rewards',value=rewards+'\nBase odds before caps. Each win rolls one eligible reward. Currency drops: 50 coins (up to 300/day) or 25 clan coins (up to 100/day), in either stage.\nShared caps: twice each item’s recipe cost in shards per day; 50 character shards/day and 350/week. Capped rewards leave the pool; remaining odds increase proportionally. No empty drops until this theme’s entire reward pool is capped.',inline=False)
-        e.add_field(name='Rotation',value=' → '.join(RAID_TEAMS[str(self.fmt)][n]['name'] for n in RAID_POOLS[self.theme][self.fmt])+' → repeat. Easy and Hard share progress; 3v3 and 6v6 progress separately.',inline=False)
+            gear=' • '+ITEM_BY_KEY[raw['equipment_key']]['name'] if raw.get('equipment_key') else ''
+            lines.append(f'**{"F" if raw["lane"]=="front" else "B"} • {char.name} — {char.title} +{raw["merge"] if self.difficulty!="easy" else 0}** • +{raw["boon"].upper()}/−{raw["bane"].upper()}'+gear)
+        e.add_field(name=f'Next opponent ({1 if self.difficulty=="extreme" else progress+1}/{1 if self.difficulty=="extreme" else 3}): {opponent["name"]}',value='\n'.join(lines),inline=False)
+        rewards={'easy':'1 drop always. Character rarity: 40% 1★, 30% 2★, 25% 3★, 4% 4★, 1% 5★.', 'hard':'70% 1 drop / 30% 2 drops. Character rarity: 30% 1★, 25% 2★, 20% 3★, 15% 4★, 10% 5★.', 'extreme':'5% 1 drop / 40% 2 drops / 55% 3 drops. Character rarity: 27% 3★, 40% 4★, 33% 5★.'}[self.difficulty]
+        rewards+='\nBase drop types: '+('40% item shards / 50% character shards' if self.difficulty=='easy' else '75.5% item shards / 14.5% character shards')+' / 5% coins / 5% clan coins.'
+        e.add_field(name='Rewards',value=rewards+'\nEvery slot independently rolls an eligible drop; duplicates allowed. Currency drops: 100 coins or 100 clan coins, each capped at 300/day across all raids.\nShared shard caps: twice each item’s recipe cost/day; 50 character shards/day and 350/week. Caps are checked after each slot. Remaining odds increase proportionally; empty slots occur only when all rewards are capped.',inline=False)
+        e.add_field(name='Rotation',value='One fixed 6v6 team for this theme.' if self.difficulty=='extreme' else ' → '.join(RAID_TEAMS[str(self.fmt)][n]['name'] for n in RAID_POOLS[self.theme][self.fmt])+' → repeat. Easy and Hard share progress; 3v3 and 6v6 progress separately.',inline=False)
         e.add_field(name='Item pool',value=', '.join(it['name'] for it in ITEMS if it['theme']==self.theme),inline=False)
         e.set_footer(text='Use ;items for recipes/effects/eligibility, ;inv for drops, and ;craft name to craft.')
         return e
@@ -113,10 +115,13 @@ class RaidSetupView(SafeView):
         return True
     def build(self):
         self.clear_items()
-        for row,kind,values in [(0,'theme',[(t,t.title()) for t in sorted(THEMES)]),(1,'fmt',[(str(n),f'{n}v{n}') for n in (3,6)]),(2,'difficulty',[(d,d.title()) for d in DIFFICULTIES])]:
+        # Discord cannot disable one select option, so a disabled 3v3 button marks
+        # the unavailable format while the Extreme select offers only 6v6.
+        for row,kind,values in [(0,'theme',[(t,t.title()) for t in sorted(THEMES)]),(1,'fmt',[(str(n),f'{n}v{n}') for n in ((6,) if self.difficulty=='extreme' else (3,6))]),(2,'difficulty',[(d,d.title()) for d in DIFFICULTIES])]:
             select=discord.ui.Select(placeholder={'fmt':'Choose format','theme':'Choose raid','difficulty':'Choose stage'}[kind],options=[discord.SelectOption(label=label,value=value,default=str(getattr(self,kind))==value) for value,label in values],row=row)
             async def choose(i,s=select,k=kind):
                 setattr(self,k,int(s.values[0]) if k=='fmt' else s.values[0]);self.slot=None if k=='fmt' else self.slot
+                if self.difficulty=='extreme' and self.fmt!=6:self.fmt=6;self.slot=None
                 self.build();await i.response.edit_message(embed=self.embed(),view=self)
             select.callback=choose;self.add_item(select)
         teams=[t for t in self.teams if t.complete and t.team_format==self.fmt]
@@ -129,10 +134,11 @@ class RaidSetupView(SafeView):
             self.started=True
             try:row=await self.cog.store.start(self.uid,str(self.ctx.author),self.ctx.channel.id,self.slot,self.fmt,self.theme,self.previews[(self.theme,self.fmt)],self.difficulty)
             except Exception:self.started=False;raise
-            await i.response.edit_message(content=f'Raid `{row["id"]}` running against **{RAID_TEAMS[str(self.fmt)][row["state"]["index"]]["name"]}**…',embed=None,view=None)
+            await i.response.edit_message(content=f'Raid `{row["id"]}` running against **{row["state"]["opponent_name"]}**…',embed=None,view=None)
             self.stop()
             self.cog.launch(row['id'])
         button.callback=start;self.add_item(button)
+        if self.difficulty=='extreme':self.add_item(discord.ui.Button(label='3v3 unavailable for Extreme',disabled=True,row=4))
 
 class RaidCog(commands.Cog):
     def __init__(self,bot):self.bot=bot;self.store=RaidStore(bot.db);self.jobs={};self.restore_task=None
@@ -163,7 +169,9 @@ class RaidCog(commands.Cog):
             if reward['kind'] in ('coins','clancoins'):text=f'**{reward["amount"]} {"clan coins" if reward["kind"]=="clancoins" else "coins"}**'
             else:text=f'**+{reward.get("amount",1)} {item_label(reward)}** • added to your shard balance. Use ;inv.'
         currency=st.get('currency',{})
-        e.add_field(name='Raid reward',value=text if st.get('reward_version')==2 else f'**+{currency.get("coins",0)} coins • +{currency.get("clan_coins",0)} clan coins**\n'+text,inline=False)
+        if st.get('reward_version')==3 and st.get('rewards'):
+            text='\n'.join(f'**+{r["amount"]} {"clan coins" if r["kind"]=="clancoins" else "coins"}**' if r['kind'] in ('coins','clancoins') else f'**+{r.get("amount",1)} {item_label(r)}**' for r in st['rewards'])
+        e.add_field(name='Raid rewards',value=text if st.get('reward_version',0)>=2 else f'**+{currency.get("coins",0)} coins • +{currency.get("clan_coins",0)} clan coins**\n'+text,inline=False)
         e.set_footer(text=f'Raid ID {row["id"]} • ;raidresume {row["id"]} shows this result without awarding again.')
         file=discord.File(await render_battle_summary(result,a,b,st['username'],cpu),filename='raid.png');e.set_image(url='attachment://raid.png')
         await sender.send(embed=e,file=file,view=BattleLogLauncher({row['owner_id']},'Raid Battle Log',result.log),allowed_mentions=discord.AllowedMentions.none())
@@ -191,12 +199,13 @@ class RaidCog(commands.Cog):
         theme=theme.casefold();difficulty=difficulty.casefold()
         if theme and theme not in THEMES:notes.append('Choose a valid raid theme.');valid=False
         theme=theme if theme in THEMES else 'tactics'
-        if difficulty and difficulty not in DIFFICULTIES:notes.append('Choose Easy or Hard.');valid=False
+        if difficulty and difficulty not in DIFFICULTIES:notes.append('Choose Easy, Hard or Extreme.');valid=False
         difficulty=difficulty if difficulty in DIFFICULTIES else 'hard'
         teams=await self.bot.db.list_saved_teams(ctx.author.id);active=await self.bot.db.active_team(ctx.author.id)
         default_format=active.team_format if active and active.team_format in (3,6) else 3
         fmt={'3':3,'3v3':3,'6':6,'6v6':6}.get(format.casefold()) if format else default_format
         if fmt not in (3,6):notes.append('Choose 3v3 or 6v6.');valid=False;fmt=default_format
+        if difficulty=='extreme' and fmt!=6:notes.append('Extreme raids are 6v6 only.');valid=False;fmt=6;slot=None
         if slot is not None:
             try:slot=int(slot)
             except (ValueError,TypeError):notes.append('Choose a valid saved-team slot.');valid=False;slot=None
@@ -241,14 +250,14 @@ class RaidCog(commands.Cog):
         view=ItemBrowser(self.bot,ctx.author.id,matches,await self.store.shard_progress(ctx.author.id))
         await ctx.send(embed=view.embed(),view=view)
 
-    @commands.hybrid_command(name='allcraft',description='Craft the maximum possible quantity of every equipment item.')
+    @commands.hybrid_command(name='allcraft',description='Craft all item and character shards; never consumes school shards.')
     async def allcraft(self,ctx):
         await ctx.defer()
-        results=await self.store.craft_all_items(ctx.author.id)
-        if not results:await ctx.send('You do not have enough shards to craft any equipment.');return
+        results=await self.store.craft_all_items(ctx.author.id,str(ctx.author))
+        if not results:await ctx.send('You do not have enough item or character shards to craft anything. School shards were preserved.');return
         from ..ui import text_pages
-        lines=[f'**{r["item"]["name"]} ×{r["count"]}**\nUsed {r["count"]*r["item"]["shard_cost"]} shards. Items added to ;inv.' for r in results]
-        pages=[discord.Embed(title='Equipment Crafted',description='\n\n'.join(lines[n:n+3]),color=PURPLE) for n in range(0,len(lines),3)]
+        lines=[f'**{r["item"]["name"] if "item" in r else r["character"].id} ×{r["count"]}**\n'+('Equipment added to ;inv.' if 'item' in r else 'Neutral +0 cards added to ;collection.') for r in results]
+        pages=[discord.Embed(title='All Crafted • school shards preserved',description='\n\n'.join(lines[n:n+3]),color=PURPLE) for n in range(0,len(lines),3)]
         pager=EmbedPager(pages,ctx.author.id)
         if len(pages)==1:pager.clear_items()
         await ctx.send(embed=pager.embed(),view=pager)
