@@ -58,7 +58,7 @@
     "school": "Karasuno",
     "rarity": 5,
     "role_class": "Support",
-    "card_art": "https://i.pinimg.com/736x/9e/6e/ec/9e6eecf5346c6818a8c09e59c1d46b45.jpg",
+    "card_art": "https://i.pinimg.com/1200x/ca/47/b8/ca47b8830f6e6ff23a8af56f57e52327.jpg",
     "character_icon": "https://i.pinimg.com/736x/bb/e0/06/bbe00688036f2ede5842c811027d7af8.jpg",
     "stats": {
       "hp": 162,
@@ -3308,5 +3308,54 @@
       }
     },
     "extended": {}
+  },
+  {
+    "id": "Iizuna — Peerless Anchor",
+    "name": "Iizuna",
+    "position": "S",
+    "title": "Peerless Anchor",
+    "school": "Itachiyama",
+    "rarity": 5,
+    "role_class": "Support",
+    "card_art": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkdwE8sN-Fqgvq3_b8pxAhy9eAQ91NUYYjo366-8HTkg&s=10",
+    "character_icon": "https://static1.personalitydatabase.net/2/pdb-images-prod/d09adee/profile_images/4e56db25ea10487597997fca73842a7d.png",
+    "stats": {
+      "hp": 160,
+      "pow": 0,
+      "qik": 53,
+      "def": 30,
+      "rec": 34,
+      "spd": 35,
+      "jmp": 30,
+      "bst": 342
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Regal Rally",
+        "text": "When unit's Ultimate triggers on unit's attack, adds damage equal to 80% of unit's Rec. After that hit resolves, if unit and foe are not both Qik attackers, attempts to inflict [Guiding Break] on the foe with the highest Jmp through that foe's next action. If that foe is already marked or two foes have [Guiding Break], the mark fails; no other foe is chosen.",
+        "timing": "ULTIMATE_TRIGGER > DAMAGE_RESULT"
+      },
+      "A": {
+        "name": "Discipline's Key",
+        "text": "If unit initiates combat, grants Qik/Def/Rec+4 and neutralizes unit's visible Qik/Def/Rec penalties during combat. After unit's combat, if two foes have [Guiding Break], reduces unit's remaining Ultimate cooldown count by 1, whether unit initiated or defended.",
+        "timing": "COMBAT_LIVE > COMBAT_END"
+      },
+      "B": {
+        "name": "In Spite of Heartbreak",
+        "text": "If unit or an ally initiates combat and their foe lands a defensive critical hit, immediately inflicts [Guiding Break] on that foe through their next action. No more than two foes may have [Guiding Break]; this effect does not trigger while two are marked. During unit's or an ally's initiated combat, adds damage per hit equal to (10 × X)% of the attacking unit's Rec; X is the number of foes with [Guiding Break].",
+        "timing": "CRITICAL_RESULT > COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Clean Floor",
+        "text": "If foe initiates combat against unit or an ally and the defending unit's Rec > foe's Rec, grants the defender [Clean Receive] through their next action and reduces damage from foe's attacks by 15% of the defender's Rec (flat reduction). Also reduces damage from foe's follow-up attack by 30%. Percentage reduction applies before flat reduction.",
+        "timing": "COMBAT_START > DAMAGE_RESULT"
+      }
+    },
+    "extended": {
+      "Guiding Break": "Cleansable negative status. A marked unit cannot be selected as an attack target or enter combat as a savior while another member of its team would be targeted. Expires after the marked unit's next action. At most two foes may be marked.",
+      "Clean Receive": "Positive [Bonus] status. The opposing team cannot restore HP during or immediately after combat involving this unit. The status lasts through the complete after-combat window of the unit's next action and expires afterward."
+    },
+    "clarification_count": 2
   }
 ]

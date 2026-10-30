@@ -35,15 +35,20 @@ class PodBattleEngine(BattleEngine):
         if candidates is not None or not hasattr(self,'pod_by_uid'):
             return super().targeting_distribution(defending_team,offense_key,candidates,actor=actor)
         out={}
-        for pod in range(3):
-            units=[u for u in defending_team.units if self.pod_by_uid[u.uid]==pod]
-            for uid,weight in super().targeting_distribution(defending_team,offense_key,units,actor=actor).items():out[uid]=weight/3
+        legal=[u for u in defending_team.units if self.attack_target_allowed(u)]
+        pods=sorted({self.pod_by_uid[u.uid] for u in legal})
+        for pod in pods:
+            units=[u for u in legal if self.pod_by_uid[u.uid]==pod]
+            for uid,weight in super().targeting_distribution(defending_team,offense_key,units,actor=actor).items():out[uid]=weight/len(pods)
         return out
 
     def choose_target(self,actor):
         team=self.enemy_team(actor)
-        pod=self.rng.randrange(3)
-        enemies=[u for u in team.units if self.pod_by_uid[u.uid]==pod]
+        legal=[u for u in team.units if self.attack_target_allowed(u)]
+        if not legal:return None,False
+        pods=sorted({self.pod_by_uid[u.uid] for u in legal})
+        pod=pods[self.rng.randrange(len(pods))]
+        enemies=[u for u in legal if self.pod_by_uid[u.uid]==pod]
         hunted=[u for u in enemies if 'Hunted' in u.statuses]
         if hunted:return hunted[0],True
         if has(actor,'Teradomari'):return min(enemies,key=lambda u:u.noncombat_stat('def')+u.noncombat_stat('rec')),True
@@ -56,7 +61,7 @@ class PodBattleEngine(BattleEngine):
 
     def maybe_save(self,attacker,intended):
         if has(attacker,'Kiryu') or 'Free Ball' in intended.statuses:return intended,False
-        eligible=[u for u in self.team(intended).units if u is not intended and u.cd==0 and 'UltimateDisabled' not in u.statuses
+        eligible=[u for u in self.team(intended).units if u is not intended and u.cd==0 and 'UltimateDisabled' not in u.statuses and self.attack_target_allowed(u)
                   and (has(u,'Hirugami') or has(u,'Konoha') or (has(u,'Nishinoya') and attacker.offense_key=='qik'))]
         if not eligible:return intended,False
         local=[u for u in eligible if self.pod_by_uid[u.uid]==self.pod_by_uid[intended.uid]]

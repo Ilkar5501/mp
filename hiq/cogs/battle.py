@@ -400,7 +400,7 @@ class BattleCog(commands.Cog):
                ('gauntlet_regional','Regional clears',2,200,'First clear: 150; second: 50.'),
                ('gauntlet_national','National clears',2,200,'First clear: 150; second: 50.'),
                ('raid','Raid',3,300,'Easy: 1 drop; Hard: 1–2; Extreme: 1–3. Currency drops: 100 each, capped at 300 coins and 300 clan coins/day.'),
-               ('pvp','PvP',8,400,'50 per distinct opponent defeated today; repeat opponents give 0.'),
+               ('pvp','PvP',4,400,'100 per distinct opponent defeated today; repeat opponents give 0.'),
                ('prefecture','Prefecture',6,300,'50 per win.'),
                ('war','Clan-war victories',1,200,'200 coins + 200 clan coins for one victory; losses give 0.')]
         for key,label,limit,cap,text in rules:

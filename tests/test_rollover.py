@@ -93,7 +93,7 @@ class RolloverTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([(await self.rewards.award(1,'war',day=SUN))['coins'] for _ in range(2)],[200,0])
         for opponent in range(10,19):
             value=await self.rewards.award(1,'pvp',day=SUN,opponent=opponent)
-            self.assertEqual(value['coins'],50 if opponent<18 else 0)
+            self.assertEqual(value['coins'],100 if opponent<14 else 0)
         duplicate=await self.rewards.award(1,'pvp',day=SUN,opponent=10)
         self.assertTrue(duplicate['duplicate'])
         self.assertEqual((await self.rewards.award(1,'battle',day=NEXT))['coins'],50)
