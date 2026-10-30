@@ -3,7 +3,7 @@ from .economy import local_date_key
 from .allowances import allowance_days
 
 LIMITS={'battle':50,'tournament':3,'gauntlet_regional':2,'gauntlet_national':2,
-        'pvp':8,'prefecture':6,'war':1}
+        'pvp':4,'prefecture':6,'war':1}
 ROLLOVER_MODES={'tournament','gauntlet_regional','gauntlet_national','prefecture','raid'}
 
 SCHEMA = '''
@@ -57,8 +57,8 @@ async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=
         if duplicate:
             progress=(await daily(conn,uid,day)).get(key,{})
             return dict(coins=0,clan_coins=0,wins=progress.get('wins',0),duplicate=True,allowance_day=None)
-        chosen=day if wins_on(day)<8 else None
-        if chosen:coins=50
+        chosen=day if wins_on(day)<LIMITS['pvp'] else None
+        if chosen:coins=min(100,max(0,400-rows.get(day,{}).get('coins',0)))
     else:
         # Bank each day's high-paying tier separately from its lower-paying tier.
         # Extra unpaid wins never spend tomorrow's not-yet-accrued allowance.

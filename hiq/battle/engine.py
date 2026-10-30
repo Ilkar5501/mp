@@ -14,6 +14,7 @@ from .types import BattleResult, BattleTeam, BattleUnit, CombatContext
 from .equipment import EquipmentEffects,add_base_equipment,equipment_key
 from .talent import ProdigiousTalentEffects
 from .expansion import ExpansionEffects
+from .anchor import AnchorEffects
 
 STATS = ('pow','qik','def','rec','spd','jmp')
 
@@ -30,7 +31,7 @@ def has(u: BattleUnit, name: str, title: str | None = None) -> bool:
     return u.name == name and (title is None or u.title == title)
 
 
-class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
+class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
     """Deterministic-enough 3v3 / 6v6 simulator for the current HiQ Battler rules.
 
     The spreadsheet remains the display/source-of-truth. Character-specific mechanics that cannot
@@ -378,7 +379,8 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
         The method is intentionally offense-specific so every team has a distinct
         targeting_vs_POW and targeting_vs_QIK state at any moment.
         """
-        units=list(candidates if candidates is not None else defending_team.units)
+        units=[u for u in (candidates if candidates is not None else defending_team.units)
+               if self.attack_target_allowed(u)]
         if not units:
             return {}
         offense_key=offense_key.casefold()
@@ -413,7 +415,7 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
         }
 
     def choose_target(self, actor: BattleUnit) -> tuple[BattleUnit,bool]:
-        enemies=[e for e in self.enemy_team(actor).units if 'Untargetable' not in e.statuses]
+        enemies=[e for e in self.enemy_team(actor).units if self.attack_target_allowed(e)]
         if not enemies: return None, False
         # Hunted has absolute priority.
         hunted=[e for e in enemies if 'Hunted' in e.statuses]
@@ -450,7 +452,7 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
         team=self.team(intended)
         eligible=[]
         for u in team.units:
-            if u is intended or u.cd!=0 or 'UltimateDisabled' in u.statuses: continue
+            if u is intended or u.cd!=0 or 'UltimateDisabled' in u.statuses or not self.attack_target_allowed(u): continue
             if has(u,'Hirugami') or has(u,'Konoha') or (has(u,'Nishinoya') and attacker.offense_key=='qik'):
                 eligible.append(u)
         if not eligible: return self.passive_save(attacker,intended)
@@ -476,6 +478,8 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
         if has(u,'Kita') and ctx and ctx.defender is u: neutral_penalty.update(('def','rec'))
         if has(u,'Asahi') and self.team_hp_pct(u)<=75: neutral_penalty.update(('pow','jmp'))
         if has(u,'Tenma Udai'): neutral_penalty.update(STATS)
+        if has(u,'Iizuna') and ctx and ctx.attacker is u:
+            neutral_penalty.update(('qik','def','rec'))
         if has(u,'Kiryu','Last Hope') and ctx and ctx.attacker is u and u.burden_stacks>=5:
             neutral_penalty.update(STATS)
         out={}
@@ -518,6 +522,8 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
     def _combat_mods(self,ctx,u,foe,us,fs,initiated):
         m=defaultdict(int)
         team=self.team(u)
+        if has(u,'Iizuna') and initiated:
+            for stat in ('qik','def','rec'):m[stat]+=4
         # Own skills
         if has(u,'Hinata','Wings of Dawn') and initiated: m['qik']+=4; m['spd']+=4
         if has(u,'Kageyama','Crown of Precision') and initiated: m['pow']+=6
@@ -934,6 +940,7 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
 
         if defensive_crit:
             ctx.temp_flags.setdefault('defensive_crit_uids',set()).add(defender.uid)
+        self.anchor_critical(ctx,attacker,defender,defensive_crit)
         critical_unit=attacker if offensive_crit else defender if defensive_crit else None
         if critical_unit is not None:
             ctx.temp_flags.setdefault('critical_unit_uids',set()).add(critical_unit.uid)
@@ -963,7 +970,8 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
         attack_power_before_def=attack_stat
         raw=max(0,attack_power_before_def-effective_def)
 
-        bonus=self.expansion_damage_bonus(ctx,attacker,stats)
+        bonus=self.expansion_damage_bonus(ctx,attacker,stats)+self.anchor_damage_bonus(ctx,attacker,stats)
+        if off_trigger and has(attacker,'Iizuna'):bonus+=max(0,floori(a['rec']*.8))
         if self.gear(attacker,'firm_contact') and hit_index==0:bonus+=3
         if off_trigger and self.gear(attacker,'ultimate_impact'):bonus+=attacker.max_cd*4
         if has(attacker,'Kageyama','Prodigious Talent') and len(self.distinct_bonuses(ctx,attacker,stats))>=6: bonus+=5
@@ -1061,12 +1069,15 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
             drs.append(0.30)
         item_dr=self.equipment_hit_reduction(ctx,attacker,defender)
         if item_dr:drs.append(item_dr)
+        receiving=self.anchor_receiving(ctx,attacker,defender,stats)
+        if receiving and followup:drs.append(.30)
         if 'Perfect Window' in attacker.statuses: drs=drs[ultimate_start:ultimate_end]
         if neutralize_percent_dr: drs=[]
         for dr in drs: damage=floori(damage*(1-dr))
 
         # Flat reduction.
         flat=self.expansion_flat_reduction(ctx,defender,attacker,stats)
+        if receiving:flat+=max(0,floori(d['rec']*.15))
         if def_trigger and has(defender,'Yaku'): flat+=5
         if def_trigger and has(defender,'Unnan'): flat+=5
         if has(defender,'Koganegawa') and ctx.defender is defender and d['jmp']>a['jmp']:
@@ -1099,6 +1110,7 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
             defender.stored_attack_bonus+=floori(d['spd']*0.40)
 
         self.expansion_hit_result(ctx,attacker,defender,damage,offensive_crit,off_trigger,def_trigger)
+        self.anchor_ultimate_result(ctx,attacker,defender,off_trigger)
 
         # Oikawa crit reward happens only if an offensive crit dealt damage.
         if offensive_crit and damage>0:
@@ -1144,6 +1156,7 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
         self.equipment_after_combat(ctx)
         self.talent_after_combat(ctx)
         self.expansion_after_combat(ctx)
+        self.anchor_after_combat(ctx)
         critical_uids=ctx.temp_flags.get('critical_unit_uids',set())
         for source in self.units:
             if not has(source,'Kiryu','Last Hope') or not self.source_allowed(ctx,source): continue
@@ -1186,11 +1199,14 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
 
     def heal_team(self,u,amount):
         if amount<=0:return
+        t=self.team(u)
+        # Healing effects cannot revive a team after lethal damage.
+        if t.hp<=0:return
         context=getattr(self,'effect_context',None)
+        if context and self.clean_receive_blocks_healing(context,u):return
         if context and self.gear(context.attacker,'recovery_denial') and u.side==context.defender.side:
             if getattr(self,'in_post_combat',False):return
             amount=floori(amount*.5)
-        t=self.team(u)
         if any('Heal Block' in ally.statuses for ally in t.units):
             self._log(f'{self._unit_label(u)} cannot restore team HP while Heal Block is active.')
             return
@@ -1214,6 +1230,7 @@ class BattleEngine(ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
         ctx.temp_flags['start_hp_pct']={'A':pct(self.team_a.hp,self.team_a.max_hp),'B':pct(self.team_b.hp,self.team_b.max_hp)}
         for u in (a,d): u.ult_triggered_this_combat=False; u.attacks_this_combat=0
         self.expansion_combat_start(ctx)
+        self.anchor_combat_start(ctx)
         # Siphon applies to each ally's first initiation this turn, once after combat.
         if a.uid not in self.siphon_used and any(has(source,'Usuri') and source is not a and self.source_allowed(ctx,source) for source in self.team(a).units):
             self.siphon_used.add(a.uid)

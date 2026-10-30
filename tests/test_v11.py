@@ -345,6 +345,23 @@ class PureTests(unittest.TestCase):
         context=CombatContext(engine,engine.team_a.units[0],engine.team_b.units[0],engine.team_a.units[0],engine.team_b.units[0])
         return engine,context
 
+    def test_kanbayashi_postcombat_heal_cannot_revive_defeated_team(self):
+        for hp,expected in ((0,0),(1,7)):
+            with self.subTest(hp=hp):
+                engine,context=self.gear_engine()
+                source=engine.team_b.units[-1]
+                source.character=replace(source.character,name='Kanbayashi')
+                engine.team_b.hp=hp
+                context.temp_flags['offensive_crit_uids']={context.attacker.uid}
+                engine._new_unit_after_combat(context)
+                self.assertEqual(engine.team_b.hp,expected)
+
+    def test_equipment_healing_cannot_revive_defeated_team(self):
+        engine,context=self.gear_engine(right_key='manager_s_good_luck_charm')
+        engine.team_b.hp=0
+        engine._new_unit_after_combat(context)
+        self.assertEqual(engine.team_b.hp,0)
+
     def test_firm_contact_once_per_attack_including_brave(self):
         totals=[]
         for gear in (None,'firm_contact'):

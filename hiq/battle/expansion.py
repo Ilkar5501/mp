@@ -101,7 +101,7 @@ class ExpansionEffects:
         if attacker.name=='Fukunaga' or intended.name=='Fukunaga': return intended,False
         eligible=[]
         for unit in self.team(intended).units:
-            if unit is intended or self.passive_save_used[(self.turn,unit.uid)]>=2: continue
+            if unit is intended or self.passive_save_used[(self.turn,unit.uid)]>=2 or not self.attack_target_allowed(unit): continue
             chance=0
             if unit.name=='Matsukawa' and unit.lane=='front' and attacker.offense_key=='qik': chance=.5
             if (unit.name=='Maruyama' and unit.lane=='back' and attacker.offense_key=='qik') or (unit.name=='Atema' and unit.lane=='front' and attacker.offense_key=='pow'):
