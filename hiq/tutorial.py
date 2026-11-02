@@ -52,10 +52,10 @@ PAGES=[
  '“Cooldown count −1” gives an immediate step toward ready. “Cooldown charge +1” speeds up charging on qualifying hits. “Maximum cooldown −1” changes the cost itself. Read the timing, not just the number.'),
 ('Clans and the next step',
  'Join a clan to use `;checkin`, `;donate`, and `;clanshop`. Check-in gives 150 Clan Dollars, plus 50 when all five members check in. Donations consume an unlocked card and reward your clan; you can donate six times daily.\n\n'
- 'Try `;clancontest` to see today’s featured unit and six passive supports. Enter with `;clancontest <6v6 team slot>` and deal damage over 20 turns. Retry to improve your best daily score. Participation gives 200 Clan Dollars once a day; `;contestboard` shows weekly clan and player rankings.\n\nLeaders and co-leaders use `;clanwar` to arrange Quick (three-player) or Long (five-player) wars. Bans, player sends, and team submissions have activity deadlines, so check `;clanwarview`.\n\n'
+ 'Try `;clancontest` to see today’s featured unit and six passive supports. Enter with `;clancontest <6v6 team slot>` and deal damage over 20 turns. Retry to improve your best daily score. Participation gives 200 Clan Dollars once a day; `;contestboard` shows weekly clan and player rankings.\n\nLeaders and co-leaders use `;clanwar` to arrange Quick (three-player) or Long (five-player) wars. Opening bans and sends share a 24-hour deadline. In later rounds the winner sends within 24 hours, then the opponent gets 24 hours to respond. Once both sends are in, both players get 24 hours to choose teams. Missing a ban/send loses the war; missing a team loses that player’s match. Officers get DM reminders; check `;clanwarview` for timers.\n\n'
  'Read your cards carefully, try a few teams, and ask when something is unclear. `;help` and `;abbreviations` are always there. Finish below to claim your one-time Neutral +0 Suga; reviewing the tutorial never grants another.')
 ]
 
-if os.getenv('COMMUNITY_SERVER_URL'):
+if os.getenv('COMMUNITY_SERVER_URL','https://discord.gg/pnAhQaKUNN'):
     title,text=PAGES[-1]
-    PAGES[-1]=(title,text+'\n\nJoin our main server for questions and redeem codes: '+os.environ['COMMUNITY_SERVER_URL'])
+    PAGES[-1]=(title,text+'\n\nJoin our main server for questions and redeem codes: '+os.getenv('COMMUNITY_SERVER_URL','https://discord.gg/pnAhQaKUNN'))

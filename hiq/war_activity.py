@@ -10,6 +10,7 @@ class WarActivity:
     def open_war_round(self,st,initiative=None):
         deadline=time.time()+WAR_WINDOW
         st.update(stage='blind' if initiative is None else 'winner_send',initiative=initiative,
+                  clock_version=2,clock_phase='officers',
                   sends=[None,None],teams=[None,None],auto_losses=[],
                   deadlines=[deadline,deadline] if initiative is None else [deadline if s==initiative else None for s in (0,1)])
 
@@ -22,6 +23,18 @@ class WarActivity:
         st.setdefault('auto_losses',[])
         st.setdefault('size',5)
         st.setdefault('participants',[[],[]])
+        if st.get('clock_version')!=2:
+            # Old wars shared officer/player windows. Give pending players a
+            # fresh window when migrating; never shorten an existing deadline.
+            if st['stage']=='teams':
+                deadline=time.time()+WAR_WINDOW
+                st['deadlines']=[max(d or 0,deadline) for d in st['deadlines']]
+            st['clock_phase']='teams' if st['stage']=='teams' else 'officers'
+            st['clock_version']=2
+
+    def open_war_teams(self,st):
+        deadline=time.time()+WAR_WINDOW
+        st.update(stage='teams',clock_phase='teams',deadlines=[deadline,deadline])
 
     def war_action_open(self,row,side):
         self.war_clock(row)
@@ -39,18 +52,19 @@ class WarActivity:
         async with self.tx() as c:
             row=await self.session(sid,c)
             if not row or row['kind']!='war' or row['status']!='active':return False
-            st=row['state'];migrated='deadlines' not in st;self.war_clock(row)
+            st=row['state'];migrated=st.get('clock_version')!=2;self.war_clock(row)
             expired=[s for s,d in enumerate(st['deadlines']) if d is not None and at>=d]
-            if st['stage']=='bans':
-                missing=[s for s in expired if st['bans'][s] is None]
-            else:missing=[s for s in expired if st['sends'][s] is None]
+            missing=[]
+            if st['clock_phase']=='officers':
+                missing=[s for s in expired if st['sends'][s] is None or
+                         (st['round']==1 and st.get('bans',[None,None])[s] is None)]
             if missing:
-                st['inactivity_reason']='Auto-forfeit due to inactivity: missing '+('ban' if st['stage']=='bans' else 'player send')
+                st['inactivity_reason']='Auto-forfeit due to inactivity: missing '+('opening ban or player send' if st['round']==1 else 'player send')
                 if len(missing)==2:row['status']='cancelled';st['stage']='cancelled';st['inactivity_reason']='Both clans inactive; cancelled without wins or losses.'
                 else:st['forfeit']=missing[0];await self._finish_war(c,row,1-missing[0])
                 await self._save(c,row);return True
             changed=migrated
-            if st['stage']!='bans':
+            if st['clock_phase']=='teams':
                 for side in expired:
                     if st['sends'][side] is not None and st['teams'][side] is None and side not in st['auto_losses']:
                         st['auto_losses'].append(side);changed=True
