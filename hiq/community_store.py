@@ -506,6 +506,7 @@ class CommunityStore(WarActivity):
                     rosters.append(members)
                 row['state'].update(rosters=rosters,stage='bans',bans=[None,None],round=1)
                 row['state']['deadlines']=[time.time()+WAR_WINDOW]*2
+                row['state'].update(clock_version=2,clock_phase='officers')
                 row['status']='active'
                 # Close competing pending challenges to avoid accepting two wars.
                 for other in await self.rows(c,"SELECT * FROM community_sessions WHERE kind='war' AND status='challenge' AND id<>?",(sid,)):
@@ -533,7 +534,7 @@ class CommunityStore(WarActivity):
             if bans[side] is not None:raise ValueError('Your clan’s ban is already locked.')
             bans[side]=character_id
             # Identical blind choices are legal; rejecting them would leak the opposing ban.
-            if all(bans):self.open_war_round(row['state'])
+            if all(bans):row['state']['stage']='blind'
             await self._save(c,row);return row
 
     async def nominate(self,sid,actor,player,round_no):
@@ -544,15 +545,16 @@ class CommunityStore(WarActivity):
             state=row['state'];side=await self._war_officer_side(c,row,actor)
             if state['round']!=round_no:raise ValueError('That selection belongs to an earlier round.')
             self.war_action_open(row,side)
+            if state['round']==1 and state['bans'][side] is None:raise ValueError('Lock your clan’s ban before sending a player.')
             if player not in [r['user_id'] for r in state['rosters'][side]] or player in state['eliminated'][side]:raise ValueError('Choose a clan member who has not been knocked out.')
             if player not in [m['user_id'] for m in self.eligible_war_members(state,side)]:raise ValueError('Your war roster is locked to the first three distinct players sent.')
             if state['sends'][side] is not None:raise ValueError('Your clan has already sent a player this round.')
             if state['stage']=='winner_send' and side!=state['initiative']:raise ValueError('The previous winner must send first.')
             if state['stage']=='response_send' and side==state['initiative']:raise ValueError('Wait for the other clan’s response.')
-            if state['stage'] not in ('blind','winner_send','response_send'):raise ValueError('Sends are closed for this round.')
+            if state['stage'] not in ('bans','blind','winner_send','response_send'):raise ValueError('Sends are closed for this round.')
             state['sends'][side]=player
             if player not in state['participants'][side]:state['participants'][side].append(player)
-            if all(x is not None for x in state['sends']):state['stage']='teams'
+            if all(x is not None for x in state['sends']):self.open_war_teams(state)
             elif state['stage']=='winner_send':
                 state['stage']='response_send';state['deadlines'][1-side]=time.time()+WAR_WINDOW
             await self._save(c,row);return row
@@ -575,7 +577,7 @@ class CommunityStore(WarActivity):
         await self.expire_war(sid)
         async with self.tx() as c:
             row=await self.session(sid,c)
-            if not row or row['status']!='active' or row['state']['stage'] not in ('blind','winner_send','response_send','teams') or row['state']['round']!=round_no:raise ValueError('That team selection is no longer active.')
+            if not row or row['status']!='active' or row['state']['stage']!='teams' or row['state']['round']!=round_no:raise ValueError('Team selection opens after both clans have sent a player.')
             st=row['state']
             if uid not in st['sends']:raise ValueError('Only a sent player can select their team.')
             side=st['sends'].index(uid)

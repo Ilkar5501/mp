@@ -143,6 +143,7 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
     async def test_war_one_missing_ban_loses_and_reward_once(self):
         row=await self.war(bans=False)
         await self.store.ban_war_unit(row['id'],2,CHARACTERS[0].id)
+        await self.store.nominate(row['id'],1,2,1)
         await self.store.expire_war(row['id'],at=max(row['state']['deadlines'])+1)
         done=await self.store.session(row['id']);self.assertEqual(done['state']['winner'],0)
         self.assertEqual((await self.store.clan(user_id=6))['losses'],1)
@@ -158,7 +159,7 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
         await self.store.expire_war(row['id'],at=max(row['state']['deadlines'])+1)
         self.assertEqual((await self.store.session(row['id']))['state']['winner'],0)
 
-    async def test_war_send_does_not_reset_team_deadline(self):
+    async def test_war_first_send_keeps_officer_clock_then_opens_team_clock(self):
         row=await self.war();before=row['state']['deadlines'][0]
         row=await self.store.nominate(row['id'],1,2,1)
         self.assertEqual(row['state']['deadlines'][0],before)
@@ -262,13 +263,15 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await store.session(sid))['state']['matches'],complete['state']['matches'])
         for uid in range(1,8):self.assertEqual((await self.db.get_user(uid)).coins,0)
 
-    async def test_war_team_can_submit_before_opposing_send_and_rejects_late(self):
+    async def test_war_team_waits_for_both_sends_and_rejects_late(self):
         row=await self.war();row=await self.store.nominate(row['id'],1,2,1)
         await self.db.ensure_saved_team(2,1)
         async with self.store.tx() as c:cards=[await self.store._issue_card(c,2,'Two',char) for char in CHARACTERS[:3]]
         await self.db.replace_saved_team(2,1,*(card.instance_id for card in cards))
+        with self.assertRaises(ValueError):await self.store.select_war_team(row['id'],2,1,1)
+        row=await self.store.nominate(row['id'],6,7,1)
         row=await self.store.select_war_team(row['id'],2,1,1)
-        self.assertIsNotNone(row['state']['teams'][0]);self.assertIsNone(row['state']['sends'][1])
+        self.assertIsNotNone(row['state']['teams'][0]);self.assertEqual(row['state']['sends'][1],7)
         with self.assertRaises(ValueError):await self.store.select_war_team(row['id'],3,1,1)
         row['state']['teams'][0]=None;row['state']['deadlines']=[time.time()-1,time.time()+100];await self.save(row)
         with self.assertRaises(ValueError):await self.store.select_war_team(row['id'],2,1,1)
@@ -315,7 +318,7 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_both_final_players_inactive_cancels_without_clan_result(self):
         row=await self.war(size=3);st=row['state'];st['participants']=[[1,2,3],[6,7,8]]
-        st['eliminated']=[[1,2],[6,7]];st['sends']=[3,8];st['stage']='teams';await self.save(row)
+        st['eliminated']=[[1,2],[6,7]];st['sends']=[3,8];self.store.open_war_teams(st);await self.save(row)
         await self.store.expire_war(row['id'],at=max(st['deadlines'])+1)
         self.assertEqual((await self.store.session(row['id']))['status'],'cancelled')
         self.assertEqual((await self.store.clan(user_id=1))['losses'],0)
