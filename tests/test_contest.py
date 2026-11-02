@@ -2,12 +2,13 @@ import asyncio,tempfile,unittest
 from datetime import datetime,timedelta
 from pathlib import Path
 from unittest.mock import patch
-from hiq.contest import ContestEngine,PRESETS,preset_specs,SUPPORT_SLOTS
+from hiq.contest import ContestEngine,PRESETS,LEGACY_PRESETS,preset_specs,support_slots,character
 from hiq.contest_store import ContestStore
 from hiq.data import CHARACTERS
 from hiq.sealed import team_specs
 from hiq.database import Database
 from hiq.economy import week_key,local_date_key,week_key_for
+from hiq.battle.types import CombatContext
 
 
 def players():return team_specs('contest-test',1,[c.id for c in list({c.name:c for c in CHARACTERS}.values())[:6]])
@@ -20,9 +21,133 @@ class ContestEngineTests(unittest.TestCase):
             specs=preset_specs(i)
             self.assertEqual(len(specs),7)
             self.assertEqual(specs[0][0].merge_level,10)
-            self.assertTrue(all(c.name in SUPPORT_SLOTS for _,c,_ in specs[1:]))
+            self.assertTrue(all(support_slots(c) for _,c,_ in specs[1:]))
             self.assertNotIn(specs[0][1].name,[c.name for _,c,_ in specs[1:]])
             self.assertFalse(any(card.equipment_key or card.boon_stat or card.bane_stat for card,_,_ in specs))
+
+    def engine_for(self,name,title=None,lane=None):
+        index=next(i for i,p in enumerate(PRESETS) if p[1]==name and (title is None or p[2]==title) and (lane is None or p[3]==lane))
+        return ContestEngine(players(),index,seed=42)
+
+    def context(self,e,initiates=True):
+        a,d=(e.feature,e.team_a.units[0]) if initiates else (e.team_a.units[0],e.feature)
+        return CombatContext(e,a,d,a,d)
+
+    def test_featured_roles_and_required_pairings(self):
+        self.assertEqual({p[3] for p in PRESETS if p[1]=='Korai'},{'front','back'})
+        self.assertNotIn('Iizuna',[p[1] for p in PRESETS]);self.assertNotIn('Suwa',[p[1] for p in PRESETS])
+        kanoka=self.engine_for('Kanoka')
+        self.assertTrue({'Kiryu','Kanbayashi','Usuri','Atsumu','Suna'}<={u.name for u in kanoka.supports})
+        self.assertEqual(next(u.title for u in kanoka.supports if u.name=='Kiryu'),'Last Hope')
+        self.assertIn('Iizuna',[u.name for u in self.engine_for('Iwaizumi').supports])
+        self.assertEqual(sum(any(c.name=='Oikawa' for _,c,_ in preset_specs(i)[1:]) for i in range(14)),3)
+        kiryu=self.engine_for('Kiryu','Last Hope')
+        self.assertIn('Usuri',[u.name for u in kiryu.supports])
+        kiryu.end_turn();self.assertEqual(kiryu.feature.burden_stacks,2)
+        for name,school,bond in [('Bokuto','Fukurodani',4),('Aone','Date Tech',3),('Kuroo','Nekoma',4)]:
+            e=self.engine_for(name)
+            self.assertEqual(sum(u.character.school==school for u in e.supports),bond)
+            self.assertEqual(e.feature.base['hp'],e.feature.character.stats['hp']+2+bond)
+
+    def test_slot_limits_prevent_usuri_siphon_and_excellence(self):
+        e=self.engine_for('Kanoka');e.turn=1;ctx=self.context(e)
+        usuri=next(u for u in e.supports if u.name=='Usuri')
+        atsumu=next(u for u in e.supports if u.name=='Atsumu')
+        self.assertFalse(e.skill_enabled(usuri,'A'));self.assertFalse(e.skill_enabled(usuri,'B'))
+        self.assertTrue(e.skill_enabled(usuri,'C'));self.assertFalse(e.skill_enabled(atsumu,'B'))
+        stats=e.combat_stats(ctx)
+        self.assertNotIn(('named','Excellence'),e.distinct_bonuses(ctx,e.feature,stats))
+        self.assertFalse(any(uid==usuri.uid for uid,slot in e.ally_skill_impacts(ctx,e.feature,stats)))
+        with patch.object(e,'attack_action'):
+            e.combat(ctx)
+        self.assertNotIn('siphon',ctx.temp_flags)
+
+    def test_supports_cannot_trigger_ultimates_or_unlisted_match_start(self):
+        e=self.engine_for('Ushijima');before=e.feature.max_cd;e.apply_match_start()
+        self.assertEqual(e.feature.max_cd,before)  # Shirabu A is not an eligible support slot.
+        for source in e.supports:
+            source.cd=0
+            self.assertFalse(e.trigger_ultimate(source,None,'post'))
+        e.start_turn()
+        self.assertEqual(e.feature.visible_bonus('pow'),6)  # Shirabu C still works.
+
+    def test_kanbayashi_a_is_not_run_and_kiryu_burden_is_ignored(self):
+        e=self.engine_for('Kanoka');e.team_b.hp=e.team_b.max_hp//2;e.start_turn()
+        self.assertEqual(e.feature.visible_bonus('def'),0)
+        self.assertEqual(e.feature.visible_bonus('rec'),0)
+        ctx=self.context(e,False);foe=ctx.attacker
+        ctx.temp_flags['critical_unit_uids']={foe.uid}
+        e._new_unit_after_combat(ctx)
+        kiryu=next(u for u in e.supports if u.name=='Kiryu')
+        self.assertEqual(kiryu.burden_stacks,0)
+        self.assertEqual(foe.visible_penalty('def'),-4)
+        e.end_turn();self.assertEqual(kiryu.burden_stacks,0)
+
+    def test_kanbayashi_critical_reduction_and_healing(self):
+        e=self.engine_for('Kanoka');ctx=self.context(e,False)
+        a,d=ctx.attacker,ctx.defender
+        a.base.update(pow=100,qik=100,jmp=100,spd=0);d.base.update({'def':10,'rec':10,'jmp':0,'spd':0})
+        a.cd=d.cd=99
+        source=next(u for u in e.supports if u.name=='Kanbayashi')
+        e.team_b.hp=50
+        with patch.object(e.rng,'random',return_value=0):
+            e.resolve_hit(ctx,a,d)
+        reduced=d.damage_taken
+        self.assertGreater(reduced,0)
+        self.assertIn(a.uid,ctx.temp_flags.get('offensive_crit_uids',set()))
+        e.team_b.hp=50;e._new_unit_after_combat(ctx)
+        self.assertEqual(e.team_b.hp,56)
+        # Same crit with the C-slot source in another row removes its 30% reduction.
+        source.lane='back';d.damage_taken=0;a.cd=d.cd=99
+        ctx=self.context(e,False)
+        with patch.object(e.rng,'random',return_value=0):e.resolve_hit(ctx,a,d)
+        self.assertGreater(d.damage_taken,reduced)
+
+    def test_kenma_support_does_not_inflict_fatigue(self):
+        e=self.engine_for('Kuroo');e.start_turn();ctx=self.context(e,False)
+        self.assertFalse(e.skill_enabled(next(u for u in e.supports if u.name=='Kenma'),'A'))
+        e.after_combat(ctx)
+        self.assertFalse(any('Fatigue' in u.statuses for u in e.team_a.units))
+        self.assertTrue(any(u.visible_penalty('jmp')==-7 for u in e.team_a.units))
+
+    def test_cooldown_support_and_kageyama_bonus_threshold(self):
+        aone=self.engine_for('Aone');before=aone.feature.cd;aone.start_turn()
+        self.assertEqual(aone.feature.cd,before-1)  # Gao C.
+        korai=self.engine_for('Korai',lane='back');before=korai.feature.cd;korai.start_turn()
+        self.assertEqual(korai.feature.cd,before-1)  # Lev lifts Rec above Def for Maruyama C.
+        e=self.engine_for('Kageyama','Prodigious Talent');e.start_turn();ctx=self.context(e)
+        stats=e.combat_stats(ctx)
+        self.assertGreaterEqual(len(e.distinct_bonuses(ctx,e.feature,stats)),6)
+        self.assertTrue(e.followup(ctx,e.feature,ctx.defender,True))
+
+    def test_iizuna_receiving_and_positional_exceptions(self):
+        e=self.engine_for('Iwaizumi');e.start_turn();ctx=self.context(e,False)
+        ctx.attacker.base['rec']=1
+        e.anchor_combat_start(ctx)
+        self.assertIn('Clean Receive',e.feature.statuses)
+        stats=e.combat_stats(ctx)
+        self.assertTrue(e.anchor_receiving(ctx,ctx.attacker,e.feature,stats))
+        noya=next(u for u in e.supports if u.name=='Nishinoya')
+        kai=next(u for u in e.supports if u.name=='Kai')
+        self.assertEqual(kai.lane,'back')
+        self.assertIn((noya.uid,'C'),e.ally_skill_impacts(ctx,e.feature,stats))
+        # A Nozawa support's opposing bond penalty survives the target-only proxy.
+        same_school=character('Suga')
+        ctx.attacker.character=same_school
+        e.team_a.units[1].character=character('Daichi')
+        self.assertEqual(e.expansion_bond_penalty(ctx,ctx.attacker),1)
+
+    def test_open_play_support_alternates_active_recipient(self):
+        e=self.engine_for('Hinata','Wings of Dawn');e.start_turn()
+        self.assertIn('Open Play',e.feature.statuses)
+        e.feature.actions_taken+=1;e.feature.expire_after_action();e.end_turn();e.start_turn()
+        self.assertNotIn('Open Play',e.feature.statuses)
+        e.end_turn();e.start_turn();self.assertIn('Open Play',e.feature.statuses)
+
+    def test_saved_legacy_attempt_keeps_original_opponent(self):
+        e=ContestEngine(players(),8,rules_version=1,seed=8)
+        self.assertEqual(e.feature.name,LEGACY_PRESETS[8][1]);self.assertEqual(e.feature.name,'Suwa')
+        self.assertEqual(e.run().mode,'clancontest')
 
     def test_cycling_preserves_overkill_and_thresholds(self):
         e=ContestEngine(players(),0,seed=1);bar=e.team_b.max_hp
@@ -82,6 +207,14 @@ class ContestStoreTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(set(indices),set(range(14)))
         self.assertEqual(await self.store.rotation('2026-11-01'),await ContestStore(self.db).rotation('2026-11-01'))
         self.assertNotEqual((await self.store.rotation('2026-11-14'))[1],(await self.store.rotation('2026-11-15'))[1])
+
+    async def test_new_attempt_saves_formation_rules_version(self):
+        from hiq.contest import RULES_VERSION
+        from hiq.tournament import snapshot_specs
+        with patch.object(self.store,'_team_snapshot',return_value=snapshot_specs(players())):
+            row=await self.store.start(1,'Tester',1,123)
+        saved=await ContestStore(self.db).run(row['id'])
+        self.assertEqual(saved['state']['contest_rules'],RULES_VERSION)
 
     async def test_weekly_prizes_settle_exactly_once_after_restart(self):
         old=(datetime.fromisoformat(local_date_key())-timedelta(days=7)).date().isoformat()

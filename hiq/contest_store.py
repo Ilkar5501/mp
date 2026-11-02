@@ -4,6 +4,7 @@ from datetime import date,timedelta,datetime
 from .community_store import CommunityStore,now
 from .economy import local_date_key,week_key_for
 from .tournament import snapshot_specs
+from .contest import RULES_VERSION
 
 SCHEMA='''
 CREATE TABLE IF NOT EXISTS contest_rotations (start_day TEXT PRIMARY KEY,order_json TEXT NOT NULL);
@@ -36,7 +37,7 @@ class ContestStore(CommunityStore):
             if await self.one(c,"SELECT 1 FROM contest_runs WHERE owner_id=? AND status='running'",(uid,)):raise ValueError('Your contest attempt is still running. Use ;contestresume to recover it.')
             players=await self._team_snapshot(c,uid,slot,6)
             index,_=await self.rotation(day,c);sid='contest-'+uuid.uuid4().hex[:12]
-            state=dict(players=players,index=index,username=username,channel=channel)
+            state=dict(players=players,index=index,username=username,channel=channel,contest_rules=RULES_VERSION)
             await c.execute("INSERT INTO contest_runs VALUES (?,?,?,?,'running',?)",(sid,uid,day,clan['id'],json.dumps(state)))
             return await self.run(sid,c)
 

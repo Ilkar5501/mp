@@ -65,7 +65,7 @@ class ProdigiousTalentEffects:
             return
         for source in self.team(ctx.attacker).units:
             key = (self.turn, source.uid)
-            if talent(source) and source is not ctx.attacker and self.source_allowed(ctx, source) and self.talent_tempo_used[key] < 2:
+            if talent(source) and self.skill_enabled(source,'B') and source is not ctx.attacker and self.source_allowed(ctx, source) and self.talent_tempo_used[key] < 2:
                 self.talent_tempo_used[key] += 1
                 source.cd = max(0, source.cd - 1)
                 self._log(f'{self._unit_label(source)} B: allied initiating Ultimate; remaining CD -1 ({self.talent_tempo_used[key]}/2 this turn).')
@@ -102,7 +102,7 @@ class ProdigiousTalentEffects:
         for source in self.team(unit).units:
             if source is unit or not self.source_allowed(ctx, source):
                 continue
-            if source.name == 'Atsumu':
+            if source.name == 'Atsumu' and self.skill_enabled(source,'B'):
                 bonuses.add(('named', 'Excellence'))
             if source.name == 'Reon' and not initiated and not self.gear(foe, 'own_tempo'):
                 bonuses.add((source.uid, 'C', 'combat'))

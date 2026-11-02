@@ -27,7 +27,7 @@ async def render_contest(specs):
     feature=specs[0][1]
     draw.text((540,225),f'{feature.name} — {feature.school}',font=_font(21,True),fill='white',anchor='mt')
     bond=sum(char.school==feature.school for _,char,_ in specs[1:])
-    draw.text((540,258),f'Featured unit • School Bond +{bond}',font=_font(18),fill='#c3cbdd',anchor='mt')
+    draw.text((540,258),f'Featured unit • {specs[0][2].title()} line • School Bond +{bond}',font=_font(18),fill='#c3cbdd',anchor='mt')
     for i,(_,char,_) in enumerate(specs[1:]):
         x=35+i*175;canvas.paste(images[i+1].resize((110,110)),(x+25,320))
         draw.text((x+80,441),char.name,font=_font(16,True),fill='white',anchor='mt')
