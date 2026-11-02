@@ -53,10 +53,10 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
     async def test_reward_totals_and_day_reset(self):
         rewards=RewardStore(self.db)
         values=[(await rewards.award(1,'battle',day='2026-10-27'))['coins'] for _ in range(51)]
-        self.assertEqual(values[:5],[50]*5);self.assertEqual(values[5:50],[4]*45);self.assertEqual(sum(values),430)
+        self.assertEqual(values,[50]*9+[0]*42);self.assertEqual(sum(values),450)
         self.assertEqual((await rewards.award(1,'battle',day='2026-10-28'))['coins'],50)
         for key in ('gauntlet_regional','gauntlet_national'):
-            self.assertEqual([(await rewards.award(1,key))['coins'] for _ in range(3)],[150,50,0])
+            self.assertEqual([(await rewards.award(1,key,day='2026-11-02',lineup=[c.id for c in CHARACTERS[:3]]))['coins'] for _ in range(3)],[250,0,0])
         self.assertEqual([(await rewards.award(1,'war'))['clan_coins'] for _ in range(2)],[200,0])
 
     async def test_checkin_and_six_donations(self):

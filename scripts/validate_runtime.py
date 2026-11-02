@@ -16,7 +16,7 @@ def main():
     from hiq.search import filter_characters,parse_filters
     from hiq.tournament_cpu import CPU_TEAMS,cpu_specs as tournament_cpu_specs
     if len(FORMATIONS)!=10:raise ValueError('Expected ten Prefecture CPU formations.')
-    if (PREFECTURE_WIN_REWARD,PREFECTURE_DAILY_CAP)!=(50,300):raise ValueError('Unexpected Prefecture reward settings.')
+    if (PREFECTURE_WIN_REWARD,PREFECTURE_DAILY_CAP)!=(100,300):raise ValueError('Unexpected Prefecture reward settings.')
     for i,formation in enumerate(FORMATIONS):
         specs=cpu_specs(i)
         if len(formation['pods'])!=3 or any(len(pod)!=3 for pod in formation['pods']):raise ValueError(f'Formation {i+1} needs three pods of three.')

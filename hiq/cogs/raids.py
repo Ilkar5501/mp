@@ -23,6 +23,7 @@ class EquipmentView(SafeView):
     @classmethod
     async def create(cls,bot,uid,card):return cls(bot,uid,card,await RaidStore(bot.db).equipment_options(uid,card))
     async def interaction_check(self,i):
+        if i.data.get('custom_id')=='card:learnmore':return True
         if i.user.id!=self.uid:await i.response.send_message('Only this card’s owner can change equipment.',ephemeral=True);return False
         return True
     def build(self):
@@ -38,6 +39,9 @@ class EquipmentView(SafeView):
             button=discord.ui.Button(emoji=emoji,disabled=self.page==0 if delta==-1 else self.page==pages-1,row=1)
             async def nav(i,d=delta):self.page+=d;self.build();await i.response.edit_message(view=self)
             button.callback=nav;self.add_item(button)
+        from ..character_notes import add_learn_more
+        from ..data import CHAR_BY_ID
+        add_learn_more(self,CHAR_BY_ID[self.card.character_id])
 
 class CraftSourceView(SafeView):
     def __init__(self,bot,uid,username,char):super().__init__(timeout=180);self.bot=bot;self.uid=uid;self.username=username;self.char=char;self.finished=False

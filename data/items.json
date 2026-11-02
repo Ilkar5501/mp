@@ -433,7 +433,7 @@
   },
   {
     "key": "loaded_approach",
-    "name": "Loaded Approach",
+    "name": "Ace's Approach",
     "theme": "offense",
     "shard_cost": 25,
     "weekly_cap": 50,
@@ -441,11 +441,14 @@
     "drop_rate": 0.005,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, grants Pow/Qik during combat equal to unit’s maximum Ultimate cooldown count +2.",
-    "emoji": "🏐"
+    "emoji": "🏐",
+    "aliases": [
+      "Loaded Approach"
+    ]
   },
   {
     "key": "loaded_reception",
-    "name": "Loaded Reception",
+    "name": "Ace's Defense",
     "theme": "defense",
     "shard_cost": 25,
     "weekly_cap": 50,
@@ -453,7 +456,10 @@
     "drop_rate": 0.005,
     "eligible": "Anyone",
     "effect": "If foe initiates combat, grants Def/Rec during combat equal to unit’s maximum Ultimate cooldown count +2.",
-    "emoji": "🛡️"
+    "emoji": "🛡️",
+    "aliases": [
+      "Loaded Reception"
+    ]
   },
   {
     "key": "weighted_wristbands",
@@ -481,7 +487,7 @@
   },
   {
     "key": "last_rally",
-    "name": "Last Rally",
+    "name": "Emergency Tape",
     "theme": "tempo",
     "shard_cost": 20,
     "weekly_cap": 40,
@@ -489,11 +495,14 @@
     "drop_rate": 0.01,
     "eligible": "Anyone",
     "effect": "If unit initiates combat against a foe that can counterattack and team’s HP ≤50% at combat start, unit makes a guaranteed follow-up attack.",
-    "emoji": "👟"
+    "emoji": "👟",
+    "aliases": [
+      "Last Rally"
+    ]
   },
   {
     "key": "pressure_board",
-    "name": "Pressure Board",
+    "name": "Scouting Clipboard",
     "theme": "tactics",
     "shard_cost": 25,
     "weekly_cap": 50,
@@ -501,7 +510,10 @@
     "drop_rate": 0.005,
     "eligible": "Anyone",
     "effect": "At start of turn, converts visible stat bonuses on foes in cardinal directions with maximum HP ≤ unit’s maximum HP into visible penalties through their next actions.",
-    "emoji": "📋"
+    "emoji": "📋",
+    "aliases": [
+      "Pressure Board"
+    ]
   },
   {
     "key": "block_breaker",
@@ -529,7 +541,7 @@
   },
   {
     "key": "specialist_badge",
-    "name": "Specialist Badge",
+    "name": "Signature Move",
     "theme": "offense",
     "shard_cost": 20,
     "weekly_cap": 40,
@@ -537,11 +549,14 @@
     "drop_rate": 0.01,
     "eligible": "Anyone",
     "effect": "If no other ally shares unit’s volleyball position, grants Pow/Qik+6 during combat.",
-    "emoji": "🏐"
+    "emoji": "🏐",
+    "aliases": [
+      "Specialist Badge"
+    ]
   },
   {
     "key": "disruptive_whistle",
-    "name": "Disruptive Whistle",
+    "name": "Coach's Whistle",
     "theme": "tactics",
     "shard_cost": 10,
     "weekly_cap": 20,
@@ -549,7 +564,10 @@
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "After combat, inflicts Pow/Qik−4 on foe and foes in same line as foe through their next actions.",
-    "emoji": "📋"
+    "emoji": "📋",
+    "aliases": [
+      "Disruptive Whistle"
+    ]
   },
   {
     "key": "fresh_legs",
@@ -577,7 +595,7 @@
   },
   {
     "key": "fresh_focus",
-    "name": "Fresh Focus",
+    "name": "Cooling Towel",
     "theme": "defense",
     "shard_cost": 5,
     "weekly_cap": 10,
@@ -585,7 +603,10 @@
     "drop_rate": 0.04,
     "eligible": "Anyone",
     "effect": "At combat start, if unit’s team HP ≥ foe’s team HP+12, grants Rec+6 during combat.",
-    "emoji": "🛡️"
+    "emoji": "🛡️",
+    "aliases": [
+      "Fresh Focus"
+    ]
   },
   {
     "key": "recovery_snack",
@@ -601,7 +622,7 @@
   },
   {
     "key": "seam_finder",
-    "name": "Seam Finder",
+    "name": "Targeting Tape",
     "theme": "offense",
     "shard_cost": 10,
     "weekly_cap": 20,
@@ -609,11 +630,14 @@
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "Inflicts Def/Rec−3 on foe and neutralizes foe’s visible Def/Rec bonuses during combat.",
-    "emoji": "🏐"
+    "emoji": "🏐",
+    "aliases": [
+      "Seam Finder"
+    ]
   },
   {
     "key": "pace_disruptor",
-    "name": "Pace Disruptor",
+    "name": "Weighted Insoles",
     "theme": "tactics",
     "shard_cost": 10,
     "weekly_cap": 20,
@@ -621,11 +645,14 @@
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If foe’s Spd ≥ unit’s Spd, inflicts Pow/Qik−4 on foe during combat.",
-    "emoji": "📋"
+    "emoji": "📋",
+    "aliases": [
+      "Pace Disruptor"
+    ]
   },
   {
     "key": "rally_momentum",
-    "name": "Rally Momentum",
+    "name": "Resistance Bands",
     "theme": "offense",
     "shard_cost": 10,
     "weekly_cap": 20,
@@ -633,11 +660,14 @@
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, grants Pow/Qik during combat equal to 2 + twice the number of other allies that have already acted this turn (maximum 6).",
-    "emoji": "🏐"
+    "emoji": "🏐",
+    "aliases": [
+      "Rally Momentum"
+    ]
   },
   {
     "key": "rally_footwork",
-    "name": "Rally Footwork",
+    "name": "Agility Ladder",
     "theme": "tempo",
     "shard_cost": 10,
     "weekly_cap": 20,
@@ -645,11 +675,14 @@
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, grants Spd during combat equal to 2 + twice the number of other allies that have already acted this turn (maximum 6).",
-    "emoji": "👟"
+    "emoji": "👟",
+    "aliases": [
+      "Rally Footwork"
+    ]
   },
   {
     "key": "rally_elevation",
-    "name": "Rally Elevation",
+    "name": "Jump Rope",
     "theme": "tempo",
     "shard_cost": 10,
     "weekly_cap": 20,
@@ -657,11 +690,14 @@
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, grants Jmp during combat equal to 1 + twice the number of other allies that have already acted this turn (maximum 5).",
-    "emoji": "👟"
+    "emoji": "👟",
+    "aliases": [
+      "Rally Elevation"
+    ]
   },
   {
     "key": "recovery_denial",
-    "name": "Recovery Denial",
+    "name": "Conditioning Circuit",
     "theme": "recovery",
     "shard_cost": 10,
     "weekly_cap": 20,
@@ -669,7 +705,10 @@
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, reduces the foe team’s in-combat HP restoration by 50% and prevents that team from restoring HP after that combat.",
-    "emoji": "💧"
+    "emoji": "💧",
+    "aliases": [
+      "Recovery Denial"
+    ]
   },
   {
     "key": "firm_contact",

@@ -30,42 +30,43 @@ class RolloverTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_all_seven_days_of_gauntlets_available_on_sunday(self):
         for mode in ('gauntlet_regional','gauntlet_national'):
-            amounts=[(await self.rewards.award(1,mode,day=SUN))['coins'] for _ in range(15)]
-            self.assertEqual(amounts,[150]*7+[50]*7+[0])
-            self.assertEqual((await self.rewards.daily(1,SUN))[mode]['coins'],1400)
+            amounts=[(await self.rewards.award(1,mode,day=SUN,lineup=[c.id for c in CHARACTERS[i:i+3]]))['coins'] for i in range(15)]
+            self.assertEqual(amounts,[250]*7+[0]*8)
+            self.assertEqual((await self.rewards.daily(1,SUN))[mode]['coins'],1750)
 
     async def test_partial_completions_preserve_both_gauntlet_tiers(self):
-        self.assertEqual((await self.rewards.award(1,'gauntlet_regional',day=MON))['coins'],150)
-        self.assertEqual((await self.rewards.award(1,'gauntlet_regional',day=TUE))['coins'],150)
-        rest=[(await self.rewards.award(1,'gauntlet_regional',day=SUN))['coins'] for _ in range(13)]
-        self.assertEqual(rest,[150]*5+[50]*7+[0])
+        self.assertEqual((await self.rewards.award(1,'gauntlet_regional',day=MON,lineup=[c.id for c in CHARACTERS[:3]]))['coins'],250)
+        self.assertEqual((await self.rewards.award(1,'gauntlet_regional',day=TUE,lineup=[c.id for c in CHARACTERS[:3]]))['coins'],200)
+        rest=[(await self.rewards.award(1,'gauntlet_regional',day=SUN,lineup=[c.id for c in CHARACTERS[i+1:i+4]]))['coins'] for i in range(13)]
+        self.assertEqual(rest,[50]+[250]*5+[0]*7)
 
-    async def test_tournament_shared_allowance_is_21_championships(self):
+    async def test_tournament_base_and_human_bonus_bank_separately(self):
         first=[(await self.rewards.award(1,'tournament',day=MON))['coins'] for _ in range(3)]
-        self.assertEqual(first,[100]*3)
-        amounts=[(await self.rewards.award(1,'tournament',day=SUN,human_tournament=bool(i%2)))['coins'] for i in range(19)]
-        self.assertEqual(amounts[:-1],[100 if i%2==0 else 150 for i in range(18)])
-        self.assertEqual(amounts[-1],0)
-        self.assertEqual((await self.rewards.daily(1,SUN))['tournament']['wins'],21)
+        self.assertEqual(first,[300,0,0])
+        base=[(await self.rewards.award(1,'tournament',day=SUN))['coins'] for _ in range(7)]
+        self.assertEqual(base,[300]*6+[0])
+        bonus=[(await self.rewards.award(1,'tournament',day=SUN,human_tournament=True))['coins'] for _ in range(8)]
+        self.assertEqual(bonus,[150]*7+[0])
+        self.assertEqual((await self.rewards.daily(1,SUN))['tournament']['coins'],3150)
 
-    async def test_prefecture_42_paid_wins_on_sunday(self):
-        amounts=[(await self.rewards.award(1,'prefecture',day=SUN))['coins'] for _ in range(43)]
-        self.assertEqual(amounts,[50]*42+[0]);self.assertEqual(sum(amounts),2100)
+    async def test_prefecture_21_paid_wins_on_sunday(self):
+        amounts=[(await self.rewards.award(1,'prefecture',day=SUN))['coins'] for _ in range(22)]
+        self.assertEqual(amounts,[100]*21+[0]);self.assertEqual(sum(amounts),2100)
 
     async def test_future_days_locked_and_unpaid_wins_do_not_spend_them(self):
         monday=[(await self.rewards.award(1,'prefecture',day=MON))['coins'] for _ in range(12)]
-        self.assertEqual(monday,[50]*6+[0]*6)
+        self.assertEqual(monday,[100]*3+[0]*9)
         tuesday=[(await self.rewards.award(1,'prefecture',day=TUE))['coins'] for _ in range(7)]
-        self.assertEqual(tuesday,[50]*6+[0])
-        self.assertEqual((await self.rewards.daily(1,TUE))['prefecture']['wins'],12)
+        self.assertEqual(tuesday,[100]*3+[0]*4)
+        self.assertEqual((await self.rewards.daily(1,TUE))['prefecture']['wins'],6)
 
     async def test_unused_bank_expires_monday_instead_of_becoming_eight_days(self):
         await self.rewards.award(1,'prefecture',day=MON)
         await self.rewards.award(1,'prefecture',day=SUN)
         self.assertEqual(await self.rewards.daily(1,NEXT),{})
         monday=[(await self.rewards.award(1,'prefecture',day=NEXT))['coins'] for _ in range(7)]
-        self.assertEqual(monday,[50]*6+[0])
-        self.assertEqual((await self.rewards.award(1,'gauntlet_regional',day=NEXT))['coins'],150)
+        self.assertEqual(monday,[100]*3+[0]*4)
+        self.assertEqual((await self.rewards.award(1,'gauntlet_regional',day=NEXT,lineup=[c.id for c in CHARACTERS[:3]]))['coins'],250)
 
     async def test_registration_day_limits_new_player_bank(self):
         async with self.store.tx() as c:await c.execute("UPDATE users SET created_at='2026-10-30T14:00:00+00:00' WHERE discord_id=1")
@@ -74,9 +75,9 @@ class RolloverTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sum(amounts),900);self.assertEqual(amounts[-1],0)
 
     async def test_concurrent_awards_cannot_spend_one_allowance_twice(self):
-        for _ in range(41):await self.rewards.award(1,'prefecture',day=SUN)
+        for _ in range(20):await self.rewards.award(1,'prefecture',day=SUN)
         result=await asyncio.gather(*(self.rewards.award(1,'prefecture',day=SUN) for _ in range(3)))
-        self.assertEqual(sorted(r['coins'] for r in result),[0,0,50])
+        self.assertEqual(sorted(r['coins'] for r in result),[0,0,100])
         self.assertEqual((await self.db.get_user(1)).coins,2100)
 
     async def test_existing_usage_survives_restart_without_reset_or_double_credit(self):
@@ -85,11 +86,11 @@ class RolloverTests(unittest.IsolatedAsyncioTestCase):
             await c.execute('UPDATE users SET coins=200 WHERE discord_id=1')
         await Database(self.db.path).init()
         amounts=[(await self.rewards.award(1,'prefecture',day=SUN))['coins'] for _ in range(39)]
-        self.assertEqual(amounts,[50]*38+[0]);self.assertEqual((await self.db.get_user(1)).coins,2100)
+        self.assertEqual(amounts,[100]*19+[0]*20);self.assertEqual((await self.db.get_user(1)).coins,2100)
 
-    async def test_battle_pvp_and_war_rewards_do_not_roll_over(self):
-        battle=[(await self.rewards.award(1,'battle',day=SUN))['coins'] for _ in range(51)]
-        self.assertEqual(battle,[50]*5+[4]*45+[0])
+    async def test_battle_rolls_over_but_pvp_and_war_stay_daily(self):
+        battle=[(await self.rewards.award(1,'battle',day=SUN))['coins'] for _ in range(64)]
+        self.assertEqual(battle,[50]*63+[0])
         self.assertEqual([(await self.rewards.award(1,'war',day=SUN))['coins'] for _ in range(2)],[200,0])
         for opponent in range(10,19):
             value=await self.rewards.award(1,'pvp',day=SUN,opponent=opponent)
@@ -176,14 +177,15 @@ class RolloverTests(unittest.IsolatedAsyncioTestCase):
         from hiq.cogs.battle import BattleCog
         from hiq.ui import EmbedPager
         context=SimpleNamespace(author=SimpleNamespace(id=1,display_name='One'),send=AsyncMock())
-        with patch('hiq.cogs.battle.local_date_key',return_value=SUN):
+        with patch('hiq.quest_pages.local_date_key',return_value=SUN):
             await BattleCog.questview.callback(BattleCog(SimpleNamespace(db=self.db)),context)
-        pager=context.send.call_args.kwargs['view'];fields= pager.pages[0].to_dict()['fields']
-        entries={f['name']:f['value'] for f in fields}
-        self.assertIn('/42 wins',entries['Prefecture • rolls over'])
-        self.assertIn('/50 wins',entries['Battle • daily'])
-        self.assertIn('/2100 coins',entries['Raid'])
-        self.assertIn('Daily Pack',str(pager.pages[1].to_dict()))
+        pages=context.send.call_args.kwargs['view'].pages
+        self.assertEqual(len(pages),4)
+        self.assertIn('Battle Count: 0 / 175',pages[0].description)
+        self.assertIn('0 / 3150',pages[0].description)
+        self.assertIn('0 / 2100',pages[0].description)
+        self.assertIn('do not carry over',pages[3].description)
+
 
 
 class CalendarTests(unittest.TestCase):

@@ -160,6 +160,8 @@ class Database:
     async def init(self) -> None:
         async with aiosqlite.connect(self.path) as db:
             await db.executescript(SCHEMA)
+            from .contest_store import SCHEMA as CONTEST_SCHEMA
+            await db.executescript(CONTEST_SCHEMA)
             from .tournament_store import SCHEMA as TOURNAMENT_SCHEMA
             await db.executescript(TOURNAMENT_SCHEMA)
             from .community_store import SCHEMA as COMMUNITY_SCHEMA
