@@ -157,6 +157,10 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
             return True
         return source in (ctx.attacker, ctx.defender)
 
+    def skill_enabled(self, unit: BattleUnit, slot: str) -> bool:
+        """Ordinary units have every slot; special modes can restrict supports."""
+        return True
+
     def _unit_label(self, u: BattleUnit) -> str:
         return f'[{self.team(u).owner_name}] {u.name}'
 
@@ -167,11 +171,11 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
     def apply_match_start(self):
         # Daichi permanently accelerates his own Ultimate.
         for u in self.units:
-            if has(u,'Daichi'):
+            if has(u,'Daichi') and self.skill_enabled(u,'B'):
                 u.max_cd = max(0,u.max_cd-1); u.cd = min(u.cd,u.max_cd)
         # Shirabu designates the highest-POW ally and permanently reduces their max CD by 1.
         for u in self.units:
-            if has(u,'Shirabu'):
+            if has(u,'Shirabu') and self.skill_enabled(u,'A'):
                 allies = [a for a in self.team(u).units if a is not u]
                 if allies:
                     target = max(allies, key=lambda x:(x.noncombat_stat('pow'), x.uid))
@@ -362,7 +366,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
             u.statuses.pop('Hunted',None)
             u.statuses.pop('UltimateDisabled',None)
         for u in self.units:
-            if has(u,'Kiryu','Last Hope'):
+            if has(u,'Kiryu','Last Hope') and self.skill_enabled(u,'B'):
                 gain=2 if self.allied(u,'Usuri') else 1
                 old=u.burden_stacks; u.burden_stacks=min(10,u.burden_stacks+gain)
                 if u.burden_stacks>old:
@@ -672,7 +676,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                     ctx.temp_flags.setdefault('ally_stat_impacts',{}).setdefault(u.uid,set()).add((a.uid,'B'))
         # Usuri supports one ally, selected from previous-turn damage (Kiryu priority).
         for source in team.units:
-            if has(source,'Usuri') and self.source_allowed(ctx,source):
+            if has(source,'Usuri') and self.skill_enabled(source,'B') and self.source_allowed(ctx,source):
                 allies = [ally for ally in team.units if ally is not source]
                 kiryu = next((ally for ally in allies if has(ally,'Kiryu')), None)
                 target = kiryu or (max(allies, key=lambda ally:self.previous_turn_damage.get(ally.uid,0)) if allies else None)
@@ -708,11 +712,11 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         if charge: impacts.update((uid,'C') for uid in (charge.payload or []))
         for source in self.team(u).units:
             if source.uid not in allowed: continue
-            if has(source,'Usuri') and ctx.attacker is u and ctx.temp_flags.get('siphon'):
+            if has(source,'Usuri') and self.skill_enabled(source,'A') and ctx.attacker is u and ctx.temp_flags.get('siphon'):
                 impacts.add((source.uid,'A'))
             if has(source,'Kageyama','Crown of Precision') and ctx.attacker is u and self.team_hp_pct(u)<=75 and self.skill_spd(u,stats[u.uid])>=self.skill_spd(foe,stats[foe.uid])+3 and self.followup(ctx,u,foe,True):
                 impacts.add((source.uid,'B'))
-            if has(source,'Atsumu') and self.skill_spd(u,stats[u.uid])>self.skill_spd(foe,stats[foe.uid]): impacts.add((source.uid,'B'))
+            if has(source,'Atsumu') and self.skill_enabled(source,'B') and self.skill_spd(u,stats[u.uid])>self.skill_spd(foe,stats[foe.uid]): impacts.add((source.uid,'B'))
             if has(source,'Iwaizumi') and ctx.temp_flags.get('offensive_crit_uid')==u.uid and not self.crits_disabled(ctx) and not has(foe,'Kanoka'): impacts.add((source.uid,'C'))
         return {(uid,slot) for uid,slot in impacts if uid in allowed}
 
@@ -796,6 +800,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         return has(ctx.attacker,'Fukunaga') or has(ctx.defender,'Fukunaga')
 
     def trigger_ultimate(self,u:BattleUnit,ctx:CombatContext|None,kind:str):
+        if not self.skill_enabled(u,'U'):return False
         if u.cd!=0 or 'UltimateDisabled' in u.statuses: return False
         if ctx and self.ultimates_suppressed(ctx): return False
         u.cd=u.max_cd; u.ult_triggered_this_combat=True
@@ -983,7 +988,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                         ally.noncombat_stat('def')>ally.noncombat_stat('rec')))
         # Always-on / live bonus damage.
         for ally in self.team(attacker).units:
-            if has(ally,'Atsumu') and self.source_allowed(ctx,ally) and self.skill_spd(attacker,a)>self.skill_spd(defender,d):
+            if has(ally,'Atsumu') and self.skill_enabled(ally,'B') and self.source_allowed(ctx,ally) and self.skill_spd(attacker,a)>self.skill_spd(defender,d):
                 bonus+=floori((self.skill_spd(attacker,a)-self.skill_spd(defender,d))*0.70)
         if has(attacker,'Yamamoto'):
             fatigue=defender.statuses.get('Fatigue'); n=int(fatigue.payload or 0) if fatigue else 0
@@ -1164,9 +1169,11 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
             key=(self.turn,source.uid)
             if foe is None or self.kiryu_pressure_used[key]>=2: continue
             self.kiryu_pressure_used[key]+=1
-            source.burden_stacks=min(10,source.burden_stacks+1)
+            # Clan Contest's C-only Kiryu support ignores Burden entirely.
+            if self.skill_enabled(source,'B'):source.burden_stacks=min(10,source.burden_stacks+1)
             for stat in ('def','rec','spd'): foe.add_debuff(stat,-4)
-            self._log(f'{self._unit_label(source)} C: gains 1 Burden ({source.burden_stacks}/10); {foe.name} Def/Rec/Spd-4 through next action.')
+            burden=f'gains 1 Burden ({source.burden_stacks}/10); ' if self.skill_enabled(source,'B') else ''
+            self._log(f'{self._unit_label(source)} C: {burden}{foe.name} Def/Rec/Spd-4 through next action.')
 
         # Burden recoil uses the updated stack count, including a C-slot stack
         # earned from this combat, and applies after every Kiryu initiation.
@@ -1235,7 +1242,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         self.expansion_combat_start(ctx)
         self.anchor_combat_start(ctx)
         # Siphon applies to each ally's first initiation this turn, once after combat.
-        if a.uid not in self.siphon_used and any(has(source,'Usuri') and source is not a and self.source_allowed(ctx,source) for source in self.team(a).units):
+        if a.uid not in self.siphon_used and any(has(source,'Usuri') and self.skill_enabled(source,'A') and source is not a and self.source_allowed(ctx,source) for source in self.team(a).units):
             self.siphon_used.add(a.uid)
             ctx.temp_flags['siphon'] = True
         ctx.temp_flags['tendo_attacks_before']=d.attacks_tanked
@@ -1300,7 +1307,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         for foe in (a,d):
             enemy_team=self.enemy_team(foe)
             for k in enemy_team.units:
-                if has(k,'Kenma'):
+                if has(k,'Kenma') and self.skill_enabled(k,'A'):
                     st=foe.statuses.get('Fatigue'); n=(int(st.payload or 0)+1) if st else 1
                     foe.add_status('Fatigue',False,payload=n)
         # Aran cooldown refund

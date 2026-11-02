@@ -2,7 +2,7 @@ import asyncio,hashlib,logging
 from dataclasses import asdict
 import discord
 from discord.ext import commands,tasks
-from ..contest import ContestEngine,PRESETS,preset_specs,SUPPORT_SLOTS
+from ..contest import ContestEngine,PRESETS,preset_specs,presets_for,support_slots
 from ..contest_store import ContestStore
 from ..tournament import restore_specs
 from ..ui import EmbedPager,PURPLE
@@ -37,7 +37,8 @@ class ContestCog(commands.Cog):
             row=await self.store.run(sid)
             if not row or row['status']!='running':return
             state=row['state'];seed=int.from_bytes(hashlib.sha256(sid.encode()).digest()[:8],'big')
-            engine=ContestEngine(restore_specs(state['players']),state['index'],seed=seed,name_a=state['username'],name_b=PRESETS[state['index']][0])
+            rules=state.get('contest_rules',1)
+            engine=ContestEngine(restore_specs(state['players']),state['index'],rules_version=rules,seed=seed,name_a=state['username'],name_b=presets_for(rules)[state['index']][0])
             result=await asyncio.wait_for(asyncio.to_thread(engine.run),60)
             row=await self.store.finish(sid,engine.score,asdict(result))
             channel=self.bot.get_channel(state['channel']) or await self.bot.fetch_channel(state['channel'])
@@ -50,8 +51,9 @@ class ContestCog(commands.Cog):
     async def board_embed(self):
         from ..contest_render import render_contest
         index,_=await self.store.rotation();specs=preset_specs(index);feature=specs[0][1]
-        supports="\n".join(f"**{char.name}** • {char.school} • "+" / ".join(slot+": "+char.abilities[slot].name for slot in SUPPORT_SLOTS[char.name]) for _,char,_ in specs[1:])
-        embed=discord.Embed(title=f'Clan Contest — {PRESETS[index][0]}',description=f'**{feature.name} — {feature.title}** • {feature.school}\n+10 • Neutral • No equipment\n\nBring a complete 6v6 team and deal as much damage as you can in 20 turns. The featured unit refills its HP bars; your team can be defeated. Only the featured unit fights.\n\n**Supports**\n{supports}\n\nThe best score from your retries counts each day. First participation pays **200 Clan Dollars**, once daily, with no rollover.\n\nUse `;clancontest <team slot>` to play, `;contestboard` for rankings.',color=PURPLE)
+        supports="\n".join(f"**{char.name} — {char.title}** • {char.school} • "+" / ".join(slot+": "+char.abilities[slot].name for slot in support_slots(char)) for _,char,_ in specs[1:])
+        bond=sum(char.school==feature.school for _,char,_ in specs[1:])
+        embed=discord.Embed(title=f'Clan Contest — {PRESETS[index][0]}',description=f'**{feature.name} — {feature.title}** • {feature.school}\n+10 • Neutral • No equipment • {specs[0][2].title()} line • School Bond +{bond}\n\nBring a complete 6v6 team and deal as much damage as you can in 20 turns. The featured unit refills its HP bars; your team can be defeated. Only the featured unit fights.\n\n**Supports**\n{supports}\n\nThe best score from your retries counts each day. First participation pays **200 Clan Dollars**, once daily, with no rollover.\n\nUse `;clancontest <team slot>` to play, `;contestboard` for rankings.',color=PURPLE)
         file=discord.File(await render_contest(specs),filename='contest.png');embed.set_image(url='attachment://contest.png')
         return embed,file
 
