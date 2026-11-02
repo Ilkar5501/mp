@@ -190,7 +190,7 @@ class TournamentStore:
             for owner in owners:
                 if is_cpu(owner):continue
                 from .rewards import award_in
-                payout=await award_in(db,owner,'tournament',day=day,human_tournament=len(owners)==8 and not any(is_cpu(uid) for uid in owners)) if owner==winner else {'coins':0}
+                payout=await award_in(db,owner,'tournament',day=day,human_tournament=sum(not is_cpu(uid) for uid in owners)>=4) if owner==winner else {'coins':0}
                 amount=payout['coins'];kind='win' if owner==winner else 'participation'
                 await db.execute('INSERT INTO tournament_rewards(tournament_id,owner_id,kind,amount,day_key,champion_coins,participation_coins) VALUES (?,?,?,?,?,?,?)',(tid,owner,kind,amount,day,amount,0))
             await db.execute("UPDATE tournaments SET status='complete',champion_id=?,finished_at=? WHERE id=?",(winner,now(),tid));await db.commit()

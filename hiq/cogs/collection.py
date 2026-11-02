@@ -5,6 +5,7 @@ import math
 import discord
 from discord.ext import commands
 
+from ..character_notes import CharacterNotesView
 from ..cards import card_embed, compact_card_line, display_title, nature_text, template_embed
 from ..config import GAME_CONFIG
 from ..data import CHARACTERS, CHAR_BY_ID, character_search_score
@@ -137,7 +138,7 @@ class ResultSelect(discord.ui.Select):
             if not c:
                 await interaction.response.send_message('That roster entry is no longer available.', ephemeral=True)
                 return
-            await interaction.response.send_message(embed=template_embed(self.parent_view.bot, c), ephemeral=False)
+            await interaction.response.send_message(embed=template_embed(self.parent_view.bot, c), view=CharacterNotesView(c), ephemeral=False)
 
 
 class SearchResultsView(OwnerOnlyView):
@@ -478,7 +479,7 @@ class CollectionCog(commands.Cog):
             await ctx.send(f'No roster templates matched **{filters_summary(f)}**.')
             return
         if len(matches) == 1:
-            await ctx.send(embed=template_embed(self.bot, matches[0]))
+            await ctx.send(embed=template_embed(self.bot, matches[0]),view=CharacterNotesView(matches[0]))
             return
         view = SearchResultsView(self.bot, ctx.author.id, matches, mode='gallery', query_summary=filters_summary(f))
         await ctx.send(embed=view.embed(), view=view)

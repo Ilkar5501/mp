@@ -34,7 +34,7 @@ class EquipmentEffects:
 
     def postcombat_damage(self,ctx,team,amount):
         protected=any(u.side==team.side and 'Safe Landing' in u.statuses for u in (ctx.attacker,ctx.defender))
-        if not protected:team.hp=max(0,team.hp-amount)
+        if not protected:self.damage_team(team,amount)
         else:self._log(f'Safe Landing prevents {amount} after-combat team damage.')
         return not protected
 

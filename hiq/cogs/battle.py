@@ -389,46 +389,9 @@ class BattleCog(commands.Cog):
 
     @commands.hybrid_command(name='questview', aliases=['quests', 'quest','qv'], description='View accrued activity allowances, daily rewards and weekly shards.')
     async def questview(self, ctx):
-        from ..rewards import RewardStore,ROLLOVER_MODES
-        from ..raid_store import RaidStore
-        today=local_date_key();uid=ctx.author.id
-        progress=await RewardStore(self.bot.db).daily(uid,today)
-        days=await RewardStore(self.bot.db).days(uid,today);accrued=len(days)
-        e=discord.Embed(title=f'{ctx.author.display_name} — Reward Allowances',color=PURPLE)
-        rules=[('battle','Battle',50,430,'First 5 wins: 50 each; next 45: 4 each.'),
-               ('tournament','Tournament championships',3,450,'100 with CPUs / 150 with eight humans; shared three-win allowance.'),
-               ('gauntlet_regional','Regional clears',2,200,'First clear: 150; second: 50.'),
-               ('gauntlet_national','National clears',2,200,'First clear: 150; second: 50.'),
-               ('raid','Raid',3,300,'Easy: 1 drop; Hard: 1–2; Extreme: 1–3. Currency drops: 100 each, capped at 300 coins and 300 clan coins/day.'),
-               ('pvp','PvP',4,400,'100 per distinct opponent defeated today; repeat opponents give 0.'),
-               ('prefecture','Prefecture',6,300,'50 per win.'),
-               ('war','Clan-war victories',1,200,'200 coins + 200 clan coins for one victory; losses give 0.')]
-        for key,label,limit,cap,text in rules:
-            banked=key in ROLLOVER_MODES
-            factor=accrued if banked else 1
-            limit*=factor;cap*=factor
-            row=progress.get(key,{})
-            if key=='raid':
-                e.add_field(name=label,value=f'**{row.get("coins",0)}/{cap} coins • {row.get("clan_coins",0)}/{cap} clan coins**\n'+text,inline=False)
-                continue
-            e.add_field(name=label+(' • rolls over' if banked else ' • daily'),value=f'**{min(limit,row.get("wins",0))}/{limit} wins • {row.get("coins",0)} coins**'+(f' (maximum {300*accrued}–{450*accrued})' if key=='tournament' else f' / {cap}')+'\nPer daily allowance: '+text,inline=False)
-        nxt=int(next_daily_at().timestamp())
-        reset=int(next_week_reset().timestamp())
-        e.set_footer(text='Rollover: Raids, Tournaments, Gauntlets and Prefecture only. Future allowances unlock daily.')
-        e.description=f'**{accrued} daily allowance(s) accrued for rollover modes.** Another unlocks <t:{nxt}:R>. Their unused portions expire at weekly reset <t:{reset}:R>. Other modes still reset daily.'
-        extra=discord.Embed(title=f'{ctx.author.display_name} — Clan Coins & Shards',color=PURPLE)
-        user=await self.bot.db.get_user(uid)
-        extra.add_field(name='Daily Pack',value='Claimed today.' if user.last_daily_date==today else 'Available with ;daily. Packs do not roll over.',inline=False)
-        clan=await CommunityStore(self.bot.db).progress(uid)
-        extra.add_field(name='Clan Coins',value=f'Check-in: 150; all five members checking in grants another 50.\nCheck-in today: {"done" if clan["checked_in"] else "available if in a clan"}.\nRaid coins: **{progress.get("raid",{}).get("clan_coins",0)}/{300*accrued}** (rolls over) • War coins: **{clan["war"]}/200** today.\nDonations: **{clan["donations"]}/6** today. Check-ins and donations do not roll over.',inline=False)
-        shards=await RaidStore(self.bot.db).shard_progress(uid)
-        extra.add_field(name='Raid Shards',value=f'Character shards: **{shards.get("character_shard",0)}/{50*accrued} accrued allowance** and **{shards.get("character_shard_weekly",0)}/350 weekly cap**.\nEach item unlocks twice its recipe cost in shards per day; unused allowance banks until weekly reset. See ;items.',inline=False)
-        training=[];balances=await self.bot.db.get_shards(uid)
-        for school in TRAINING_SCHOOLS:
-            wins=await self.bot.db.training_wins(uid,school,week_key())
-            if wins or balances.get(school,0):training.append(f'**{school}:** {wins}/9 weekly • {balances.get(school,0)} shards')
-        if training:extra.add_field(name='Training / School Shards',value='\n'.join(training),inline=False)
-        pager=EmbedPager([e,extra],uid)
+        from ..quest_pages import quest_pages
+        pages=await quest_pages(self.bot.db,ctx.author.id)
+        pager=EmbedPager(pages,ctx.author.id)
         await ctx.send(embed=pager.embed(),view=pager)
 
     @commands.hybrid_command(name='gauntlet', aliases=['gn'], description='Run the Regional or National school gauntlet.')
@@ -490,7 +453,7 @@ class BattleCog(commands.Cog):
         reward=0
         if completed:
             from ..rewards import RewardStore
-            reward=(await RewardStore(self.bot.db).award(ctx.author.id,'gauntlet_'+mode))['coins']
+            reward=(await RewardStore(self.bot.db).award(ctx.author.id,'gauntlet_'+mode,lineup=[char.id for _,char,_ in a_specs]))['coins']
 
         color=discord.Color.gold() if completed else discord.Color.red()
         final=discord.Embed(

@@ -18,7 +18,7 @@ from .war_activity import WarActivity,WAR_WINDOW
 import time
 
 ADMIN_ID = 626255484411969536
-PREFECTURE_WIN_REWARD = 50
+PREFECTURE_WIN_REWARD = 100
 PREFECTURE_DAILY_CAP = 300
 CLAN_ICONS = ('🏐','🦅','🦉','🐈','🦊','🐦','🐉','🐺','🦁','🐯','🐍','🦈','🔥','⚡','🌊','❄️','🌸','🌙','⭐','👑')
 SCHEMA = '''

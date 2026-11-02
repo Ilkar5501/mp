@@ -315,7 +315,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                     for s in ('def','rec','jmp'): a.add_buff(s,4,source=(u.uid,'C'))
         # Futakuchi: chip then convert visible bonuses to penalties.
         if has(u,'Futakuchi'):
-            enemy.hp=max(0,enemy.hp-20)
+            self.damage_team(enemy,20)
             for f in enemy.units:
                 for stat,mod in list(f.visible_buffs.items()):
                     if mod.value>0:
@@ -1088,7 +1088,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         # Barrier is tied to the targeted/defending unit but protects team HP.
         if defender.barrier>0 and damage>0:
             absorbed=min(defender.barrier,damage); defender.barrier-=absorbed; damage-=absorbed
-        t=self.team(defender); t.hp=max(0,t.hp-damage)
+        t=self.team(defender); self.damage_team(t,damage)
         attacker.attacks_made += 1
         defender.attacks_tanked += 1
         attacker.damage_dealt+=damage; defender.damage_taken+=damage
@@ -1196,6 +1196,9 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
             if has(unit,'Kanoka'):
                 for foe in self.enemy_team(unit).units: foe.cd=min(foe.max_cd,foe.cd+1)
                 self._log(f'{self._unit_label(unit)} C: all foes remaining Ultimate CD +1 (up to maximum).')
+
+    def damage_team(self,team,amount):
+        team.hp=max(0,team.hp-max(0,amount))
 
     def heal_team(self,u,amount):
         if amount<=0:return

@@ -132,7 +132,7 @@ def pack_cost(pack_type: str) -> int:
 
 
 def daily_win_reward(win_number: int) -> int:
-    return 30 if 1 <= win_number <= 5 else 4 if 6 <= win_number <= 50 else 0
+    return 50 if 1 <= win_number <= 9 else 0
 
 
 def weekly_milestone_rewards(old_wins: int, new_wins: int, already_claimed: set[int]) -> tuple[int, set[int]]:

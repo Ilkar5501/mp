@@ -61,16 +61,6 @@ def ability_block(c: CharacterDef, slot: str) -> str:
     ability = c.abilities[slot]
     kind = 'Ultimate' if slot == 'U' else 'Skill'
     lines = [_ability_line(kind, ability.name, ability.text)]
-    notes = []
-    tags = set(re.findall(r'\[([^\]]+)\]', ability.text))
-    for source_slot, explanation in c.extended.items():
-        if not explanation:
-            continue
-        definition = re.match(r'\[([^\]]+)\]', explanation)
-        relevant = definition.group(1) in tags if definition else source_slot == slot
-        if relevant and explanation not in notes:
-            notes.append(explanation)
-    lines.extend('-# ' + note.replace('\n', '\n-# ') for note in notes)
     return '\n'.join(lines)
 
 

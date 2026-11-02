@@ -14,7 +14,7 @@ def normalize(text):return re.sub(r'[^a-z0-9]+',' ',text.casefold().replace("'",
 def find_items(text=''):
     q=normalize(text)
     if not q:return list(ITEMS)
-    exact=[i for i in ITEMS if q in (normalize(i['name']),normalize(i['key']))]
+    exact=[i for i in ITEMS if q in (normalize(i['name']),normalize(i['key']),*(normalize(a) for a in i.get('aliases',[])))]
     if exact:return exact
     partial=[i for i in ITEMS if q in normalize(i['name'])]
     if partial:return partial
