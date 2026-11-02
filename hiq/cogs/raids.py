@@ -266,13 +266,18 @@ class RaidCog(commands.Cog):
         if len(pages)==1:pager.clear_items()
         await ctx.send(embed=pager.embed(),view=pager)
 
-    @commands.hybrid_command(name='allrecycle',description='Recycle every unequipped copy of a named equipment item for clan coins.')
-    async def allrecycle(self,ctx,*,item_name:str):
+    @commands.hybrid_command(name='allrecycle',description='Recycle all unequipped equipment, or every copy of a named item, for Clan Dollars.')
+    async def allrecycle(self,ctx,*,item_name:str=''):
+        if not item_name.strip():
+            try:result=await self.store.recycle_equipment(ctx.author.id,all_items=True)
+            except ValueError as exc:await ctx.send(str(exc));return
+            await ctx.send(f'Recycled **{result["count"]} unequipped equipment items** • +{result["clan_coins"]} Clan Dollars.')
+            return
         matches=find_items(item_name)
         if len(matches)!=1:await ctx.send('Use a more specific item name.');return
         try:result=await self.store.recycle_equipment(ctx.author.id,key=matches[0]['key'])
         except ValueError as exc:await ctx.send(str(exc));return
-        await ctx.send(f'Recycled **{matches[0]["name"]} ×{result["count"]}** • +{result["clan_coins"]} clan coins.')
+        await ctx.send(f'Recycled **{matches[0]["name"]} ×{result["count"]}** • +{result["clan_coins"]} Clan Dollars.')
 
     @commands.hybrid_command(name='equip',description='Equip an owned item to an owned card.')
     async def equip(self,ctx,card_id:str|None=None,item_id:str|None=None):

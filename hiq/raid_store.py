@@ -62,11 +62,17 @@ class RaidStore(CommunityStore):
                 crafted.append(dict(character=char,count=count,ids=ids,cost=cost))
         return crafted
 
-    async def recycle_equipment(self,uid,*,item_id=None,key=None,count=None):
-        if (item_id is None)==(key is None):raise ValueError('Choose an item ID or item name.')
+    async def recycle_equipment(self,uid,*,item_id=None,key=None,count=None,all_items=False):
+        if all_items:
+            if item_id is not None or key is not None or count is not None:raise ValueError('Choose all equipment or one item, not both.')
+        elif (item_id is None)==(key is None):raise ValueError('Choose an item ID or item name.')
         if count is not None and (isinstance(count,bool) or not isinstance(count,int) or count<1):raise ValueError('Quantity must be a positive whole number.')
         async with self.tx() as c:
-            rows=await self.rows(c,"SELECT i.* FROM inventory_items i WHERE i.owner_id=? AND i.kind='equipment' AND "+('i.id=?' if item_id else 'i.detail=?')+' AND NOT EXISTS (SELECT 1 FROM cards WHERE equipped_item_id=i.id)',(uid,item_id or key))
+            query="SELECT i.* FROM inventory_items i WHERE i.owner_id=? AND i.kind='equipment'"
+            args=(uid,)
+            if not all_items:
+                query+=' AND '+('i.id=?' if item_id else 'i.detail=?');args+=(item_id or key,)
+            rows=await self.rows(c,query+' AND NOT EXISTS (SELECT 1 FROM cards WHERE equipped_item_id=i.id)',args)
             if not rows:raise ValueError('No matching unequipped equipment is available in your inventory.')
             rows.sort(key=lambda r:(r['created_at'],r['id']))
             if count is not None:
