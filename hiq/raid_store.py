@@ -79,7 +79,7 @@ class RaidStore(CommunityStore):
                 if len(rows)<count:raise ValueError(f'Only {len(rows)} matching unequipped items are available; nothing was recycled.')
                 rows=rows[:count]
             if any(r['detail'] not in ITEM_BY_KEY for r in rows):raise ValueError('An item has no valid recycling recipe.')
-            payout=sum(ITEM_BY_KEY[r['detail']]['shard_cost'] for r in rows)
+            payout=sum(ITEM_BY_KEY[r['detail']].get('recycle_value',ITEM_BY_KEY[r['detail']]['shard_cost']) for r in rows)
             for row in rows:await c.execute('DELETE FROM inventory_items WHERE id=? AND owner_id=?',(row['id'],uid))
             await self._credit(c,uid,payout)
             return dict(count=len(rows),clan_coins=payout)
