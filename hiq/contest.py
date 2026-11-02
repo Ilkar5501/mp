@@ -8,7 +8,7 @@ from .battle.engine import BattleEngine, has
 from .data import CHARACTERS
 from .models import CardInstance
 
-RULES_VERSION=2
+RULES_VERSION=3
 SUPPORT_SLOTS={'Oikawa':('B','C'),'Ushijima':('C',),'Aran':('C',),
     'Tenma Udai':('C',),'Suga':('C',),'Lev':('C',),'Suna':('C',),
     'Hirugami':('C',),'Suwa':('C',),'Kita':('C',),'Konoha':('C',),
@@ -20,7 +20,7 @@ SUPPORT_SLOTS={'Oikawa':('B','C'),'Ushijima':('C',),'Aran':('C',),
     'Kuroo':('C',),'Nishinoya':('C',),'Nozawa':('C',),'Kai':('C',),
     'Yamamoto':('C',),'Washio':('C',),'Komi':('C',),'Kosuke':('B','C'),
     'Futakuchi':('C',),'Gao':('C',),'Maruyama':('C',),'Watari':('C',),
-    'Shirabu':('C',)}
+    'Shirabu':('C',),'Yamagata':('C',),'Echigo':('C',)}
 
 
 def support_slots(char):
@@ -57,7 +57,7 @@ LEGACY_PRESETS=[
 
 # Six support characters per formation; explicit variants and source lanes prevent
 # an accidental change of skill or Korai aura. Only active allies receive grants.
-PRESETS=[
+V2_PRESETS=[
  ('Monarch Above the Net','Ushijima',None,'front',
   ['Oikawa','Iwaizumi','Kenma','Konoha','Suga','Shirabu']),
  ('Little Giant — Jump','Korai',None,'front',
@@ -87,9 +87,39 @@ PRESETS=[
  ('Anchor-Powered Ace','Iwaizumi',None,'front',
   ['Iizuna','Lev','Nishinoya','Nozawa','Kai@back','Maruyama'])]
 
+PRESETS=[
+ ('Monarch Above the Net','Ushijima',None,'front',
+  ['Oikawa','Iwaizumi','Tenma Udai','Konoha','Suga','Shirabu']),
+ ('Little Giant — Jump','Korai',None,'front',
+  ['Oikawa','Ushijima','Iwaizumi','Suwa','Konoha','Nozawa']),
+ ('Conductor — Jump','Oikawa',None,'front',
+  ['Ushijima','Iwaizumi','Echigo','Konoha','Kyotani','Watari']),
+ ('Little Giant — Speed','Korai',None,'back',
+  ['Atsumu','Suna','Osamu','Tenma Udai','Lev','Maruyama']),
+ ('Fukurodani Encore','Bokuto',None,'front',
+  ['Akaashi','Konoha','Washio','Komi','Watari','Iizuna']),
+ ('Date Tech Iron Wall','Aone',None,'front',
+  ['Koganegawa','Kosuke','Futakuchi','Gao','Reon','Nozawa']),
+ ('Wings at Full Speed','Hinata','Wings of Dawn','front',
+  ['Kageyama — Crown of Precision','Atsumu','Korai@back','Suga','Tenma Udai','Daichi']),
+ ('Twin Shadow — Speed','Osamu',None,'front',
+  ['Atsumu','Suna','Kita','Hinata — Miracle Maker','Watari','Suwa']),
+ ('Nekoma Counterplay','Kuroo',None,'front',
+  ['Yamagata','Kanbayashi','Daichi','Aran','Nozawa','Iizuna']),
+ ('Last Hope — Burden and Break','Kiryu','Last Hope','front',
+  ['Usuri','Iizuna','Reon','Aran','Suwa','Korai@back']),
+ ('Prodigious Stat Ball','Kageyama','Prodigious Talent','front',
+  ['Suga','Tenma Udai','Konoha','Hinata — Miracle Maker','Lev','Suwa']),
+ ('Unshaken at Full Speed','Kanoka',None,'front',
+  ['Kiryu — Last Hope','Kanbayashi','Usuri','Atsumu','Suna','Korai@back']),
+ ('Original Giant — Crit and Speed','Tenma Udai',None,'front',
+  ['Oikawa','Ushijima','Iwaizumi','Atsumu','Suga','Kageyama — Prodigious Talent']),
+ ('Anchor-Powered Ace','Iwaizumi',None,'front',
+  ['Iizuna','Kyotani','Kanbayashi','Nishinoya','Watari','Maruyama'])]
+
 
 def presets_for(rules_version=RULES_VERSION):
-    return LEGACY_PRESETS if rules_version==1 else PRESETS
+    return LEGACY_PRESETS if rules_version==1 else V2_PRESETS if rules_version==2 else PRESETS
 
 
 def preset_specs(index,rules_version=RULES_VERSION):
@@ -233,6 +263,8 @@ class ContestEngine(BattleEngine):
             max(self.team_a.units,key=lambda foe:foe.noncombat_stat('jmp')).add_debuff('jmp',-7)
             if f.lane=='front':buffs={'pow':4,'qik':4}
             if any(foe.statuses.get('Fatigue') and int(foe.statuses['Fatigue'].payload or 0)>=3 for foe in self.team_a.units):buffs['spd']=3
+        elif name=='Yamagata' and self.team_hp_pct(f)<=50:
+            f.barrier+=f.base['hp']//10;f.barrier_sources.add((source.uid,'C'))
         elif name=='Gao' and f.noncombat_stat('def')>f.noncombat_stat('rec'):f.cd=max(0,f.cd-1)
         elif name=='Maruyama' and f.character.position=='WS' and f.noncombat_stat('rec')>f.noncombat_stat('def'):f.cd=max(0,f.cd-1)
         elif has(source,'Kageyama','Prodigious Talent'):

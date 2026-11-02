@@ -44,7 +44,7 @@ class ContestEngineTests(unittest.TestCase):
         kiryu=self.engine_for('Kiryu','Last Hope')
         self.assertIn('Usuri',[u.name for u in kiryu.supports])
         kiryu.end_turn();self.assertEqual(kiryu.feature.burden_stacks,2)
-        for name,school,bond in [('Bokuto','Fukurodani',4),('Aone','Date Tech',3),('Kuroo','Nekoma',4)]:
+        for name,school,bond in [('Bokuto','Fukurodani',4),('Aone','Date Tech',3),('Kuroo','Nekoma',0)]:
             e=self.engine_for(name)
             self.assertEqual(sum(u.character.school==school for u in e.supports),bond)
             self.assertEqual(e.feature.base['hp'],e.feature.character.stats['hp']+2+bond)
@@ -104,7 +104,8 @@ class ContestEngineTests(unittest.TestCase):
         self.assertGreater(d.damage_taken,reduced)
 
     def test_kenma_support_does_not_inflict_fatigue(self):
-        e=self.engine_for('Kuroo');e.start_turn();ctx=self.context(e,False)
+        e=self.engine_for('Kuroo')
+        e.supports[0].character=character('Kenma');e.start_turn();ctx=self.context(e,False)
         self.assertFalse(e.skill_enabled(next(u for u in e.supports if u.name=='Kenma'),'A'))
         e.after_combat(ctx)
         self.assertFalse(any('Fatigue' in u.statuses for u in e.team_a.units))
@@ -128,17 +129,17 @@ class ContestEngineTests(unittest.TestCase):
         stats=e.combat_stats(ctx)
         self.assertTrue(e.anchor_receiving(ctx,ctx.attacker,e.feature,stats))
         noya=next(u for u in e.supports if u.name=='Nishinoya')
-        kai=next(u for u in e.supports if u.name=='Kai')
-        self.assertEqual(kai.lane,'back')
         self.assertIn((noya.uid,'C'),e.ally_skill_impacts(ctx,e.feature,stats))
         # A Nozawa support's opposing bond penalty survives the target-only proxy.
         same_school=character('Suga')
         ctx.attacker.character=same_school
         e.team_a.units[1].character=character('Daichi')
-        self.assertEqual(e.expansion_bond_penalty(ctx,ctx.attacker),1)
+        other=self.engine_for('Aone');ctx=self.context(other,False)
+        ctx.attacker.character=character('Suga');other.team_a.units[1].character=character('Daichi')
+        self.assertEqual(other.expansion_bond_penalty(ctx,ctx.attacker),1)
 
     def test_open_play_support_alternates_active_recipient(self):
-        e=self.engine_for('Hinata','Wings of Dawn');e.start_turn()
+        e=self.engine_for('Tenma Udai');e.start_turn()
         self.assertIn('Open Play',e.feature.statuses)
         e.feature.actions_taken+=1;e.feature.expire_after_action();e.end_turn();e.start_turn()
         self.assertNotIn('Open Play',e.feature.statuses)
@@ -148,6 +149,27 @@ class ContestEngineTests(unittest.TestCase):
         e=ContestEngine(players(),8,rules_version=1,seed=8)
         self.assertEqual(e.feature.name,LEGACY_PRESETS[8][1]);self.assertEqual(e.feature.name,'Suwa')
         self.assertEqual(e.run().mode,'clancontest')
+
+    def test_revised_supports_have_specific_payoffs(self):
+        self.assertFalse(any(c.name=='Kenma' for i in range(14) for _,c,_ in preset_specs(i)[1:]))
+        e=self.engine_for('Ushijima');e.start_turn()
+        self.assertEqual(e.feature.visible_bonus('def'),4)
+        self.assertEqual(e.feature.visible_bonus('rec'),4)
+        e=self.engine_for('Hinata','Wings of Dawn');e.start_turn()
+        self.assertEqual(next(u.title for u in e.supports if u.name=='Kageyama'),'Crown of Precision')
+        e.team_b.hp=e.team_b.max_hp//2;ctx=self.context(e)
+        ctx.defender.base['spd']=0
+        self.assertTrue(e.attacks_twice(ctx,e.feature))
+        self.assertTrue(e.followup(ctx,e.feature,ctx.defender,True))
+        e=self.engine_for('Kuroo');e.team_b.hp=e.team_b.max_hp//2;e.start_turn()
+        self.assertEqual(e.feature.barrier,e.feature.base['hp']//10)
+        self.assertTrue(all(not e.skill_enabled(u,'B') for u in e.supports if u.name=='Yamagata'))
+        e=self.engine_for('Iwaizumi');e.start_turn();ctx=self.context(e)
+        self.assertEqual(e.feature.visible_bonus('pow'),7)
+        self.assertIn('Kyotani',[u.name for u in e.supports])
+        self.assertIn('Kanbayashi',[u.name for u in e.supports])
+        old=ContestEngine(players(),8,rules_version=2)
+        self.assertIn('Yamamoto',[u.name for u in old.supports])
 
     def test_cycling_preserves_overkill_and_thresholds(self):
         e=ContestEngine(players(),0,seed=1);bar=e.team_b.max_hp
