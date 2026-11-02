@@ -22,7 +22,7 @@ class AllRecycleTests(unittest.IsolatedAsyncioTestCase):
             card=await self.store._issue_card(c,1,'One',CHARACTERS[0])
             await c.execute('UPDATE cards SET equipped_item_id=?,equipment_key=? WHERE instance_id=?',(equipped,keys[0],card.instance_id))
         result=await raid.recycle_equipment(1,all_items=True)
-        self.assertEqual(result,dict(count=2,clan_coins=sum(i['shard_cost'] for i in ITEMS[:2])))
+        self.assertEqual(result,dict(count=2,clan_coins=sum(i.get('recycle_value',i['shard_cost']) for i in ITEMS[:2])))
         self.assertEqual({i['id'] for i in await self.store.items(1)},set(preserved+[equipped]))
         self.assertEqual({i['id'] for i in await self.store.items(2)},{other})
         self.assertEqual((await self.db.get_card(card.instance_id)).equipped_item_id,equipped)
@@ -33,7 +33,7 @@ class AllRecycleTests(unittest.IsolatedAsyncioTestCase):
         raid=RaidStore(self.db)
         results=await asyncio.gather(raid.recycle_equipment(1,all_items=True),raid.recycle_equipment(1,all_items=True),return_exceptions=True)
         self.assertEqual(sum(isinstance(r,dict) for r in results),1)
-        self.assertEqual(await self.store.wallet(1),ITEMS[0]['shard_cost'])
+        self.assertEqual(await self.store.wallet(1),ITEMS[0].get('recycle_value',ITEMS[0]['shard_cost']))
 
     async def test_command_without_name_uses_bulk_path(self):
         store=SimpleNamespace(recycle_equipment=AsyncMock(return_value=dict(count=3,clan_coins=20)))
