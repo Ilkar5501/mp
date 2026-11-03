@@ -10,7 +10,7 @@ from ..stats import permanent_stats
 from ..config import GAME_CONFIG
 from ..data import CHAR_BY_ID, CHARACTERS
 from ..models import CardInstance, CharacterDef
-from .types import BattleResult, BattleTeam, BattleUnit, CombatContext
+from .types import BattleResult, BattleTeam, BattleUnit, CombatContext, fatigue_stacks
 from .equipment import EquipmentEffects,add_base_equipment,equipment_key
 from .talent import ProdigiousTalentEffects
 from .expansion import ExpansionEffects
@@ -309,7 +309,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
             target.add_debuff('jmp',-7)
             for a in team.units:
                 if a.lane=='front': a.add_buff('pow',4,source=(u.uid,'C')); a.add_buff('qik',4,source=(u.uid,'C'))
-            if any(int(x.statuses.get('Fatigue').payload or 0)>=3 for x in enemy.units if x.statuses.get('Fatigue')):
+            if any(fatigue_stacks(x)>=3 for x in enemy.units if x.statuses.get('Fatigue')):
                 for a in team.units: a.add_buff('spd',3,source=(u.uid,'C'))
         # Suga's visible opening support.
         if has(u,'Suga'):
@@ -505,7 +505,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         # Kenma's Fatigue is an in-combat penalty that persists independently of visible debuffs.
         f=u.statuses.get('Fatigue')
         if f:
-            n=int(f.payload or 0)
+            n=fatigue_stacks(u)
             out['spd']-=n; out['jmp']-=n
             out['pow']-=max(n-1,0); out['qik']-=max(n-1,0)
             out['def']-=max(n-2,0); out['rec']-=max(n-2,0)
@@ -713,7 +713,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         # Visible bonuses count only if they survive this foe's neutralization.
         active=self._base_combat_stats(u,foe,ctx)
         fatigue=u.statuses.get('Fatigue')
-        n=int(fatigue.payload or 0) if fatigue else 0
+        n=fatigue_stacks(u)
         fatigue_penalties={'spd':n,'jmp':n,'pow':max(n-1,0),'qik':max(n-1,0),'def':max(n-2,0),'rec':max(n-2,0)}
         for stat,mod in u.visible_buffs.items():
             if active[stat]==u.noncombat_stat(stat)-fatigue_penalties[stat]-self.expansion_bond_penalty(ctx,u): impacts.update(mod.sources)
@@ -1004,7 +1004,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
             if has(ally,'Atsumu') and self.skill_enabled(ally,'B') and self.source_allowed(ctx,ally) and self.skill_spd(attacker,a)>self.skill_spd(defender,d):
                 bonus+=floori((self.skill_spd(attacker,a)-self.skill_spd(defender,d))*0.70)
         if has(attacker,'Yamamoto'):
-            fatigue=defender.statuses.get('Fatigue'); n=int(fatigue.payload or 0) if fatigue else 0
+            n=fatigue_stacks(defender)
             bonus+=min(14,3*n)
         if has(attacker,'Kiryu','Reluctant Titan') and ctx.attacker is attacker:
             bonus+=floori(d['def']*0.30)
@@ -1321,7 +1321,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
             enemy_team=self.enemy_team(foe)
             for k in enemy_team.units:
                 if has(k,'Kenma') and self.skill_enabled(k,'A'):
-                    st=foe.statuses.get('Fatigue'); n=(int(st.payload or 0)+1) if st else 1
+                    n=fatigue_stacks(foe)+1
                     foe.add_status('Fatigue',False,payload=n)
         # Aran cooldown refund
         for x in (a,d):
