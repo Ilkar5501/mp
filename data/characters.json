@@ -2175,7 +2175,7 @@
       },
       "B": {
         "name": "Cover the Seam",
-        "text": "If foe selects Kai despite an ally's applicable targeting modifier, grants Def/Rec+5 to Kai during combat. Also grants Def/Rec+5 to an ally entering combat through a save. Does not stack.",
+        "text": "If foe selects Kai despite an ally's applicable targeting modifier, grants Def/Rec+5 to Kai during combat. Also grants Def/Rec+5 to a defending ally whose own targeting skill applies to that foe, or who enters combat through a skill or Ultimate save. Forced target selection that bypasses the ally's targeting skill does not activate that skill's bonus. Does not stack.",
         "timing": "COMBAT_START"
       },
       "C": {

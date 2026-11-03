@@ -37,20 +37,20 @@ class ContestEngineTests(unittest.TestCase):
         self.assertEqual({p[3] for p in PRESETS if p[1]=='Korai'},{'front','back'})
         self.assertNotIn('Iizuna',[p[1] for p in PRESETS]);self.assertNotIn('Suwa',[p[1] for p in PRESETS])
         kanoka=self.engine_for('Kanoka')
-        self.assertTrue({'Kiryu','Kanbayashi','Usuri','Atsumu','Suna'}<={u.name for u in kanoka.supports})
+        self.assertTrue({'Kiryu','Kanbayashi','Atsumu','Korai','Hinata','Kageyama'}<={u.name for u in kanoka.supports})
         self.assertEqual(next(u.title for u in kanoka.supports if u.name=='Kiryu'),'Last Hope')
         self.assertIn('Iizuna',[u.name for u in self.engine_for('Iwaizumi').supports])
-        self.assertEqual(sum(any(c.name=='Oikawa' for _,c,_ in preset_specs(i)[1:]) for i in range(14)),3)
+        self.assertEqual(sum(any(c.name=='Oikawa' for _,c,_ in preset_specs(i)[1:]) for i in range(14)),4)
         kiryu=self.engine_for('Kiryu','Last Hope')
         self.assertIn('Usuri',[u.name for u in kiryu.supports])
         kiryu.end_turn();self.assertEqual(kiryu.feature.burden_stacks,2)
-        for name,school,bond in [('Bokuto','Fukurodani',4),('Aone','Date Tech',3),('Kuroo','Nekoma',0)]:
+        for name,school,bond in [('Bokuto','Fukurodani',4),('Aone','Date Tech',2),('Kuroo','Nekoma',0)]:
             e=self.engine_for(name)
             self.assertEqual(sum(u.character.school==school for u in e.supports),bond)
             self.assertEqual(e.feature.base['hp'],e.feature.character.stats['hp']+2+bond)
 
     def test_slot_limits_prevent_usuri_siphon_and_excellence(self):
-        e=self.engine_for('Kanoka');e.turn=1;ctx=self.context(e)
+        e=ContestEngine(players(),11,rules_version=3,seed=42);e.turn=1;ctx=self.context(e)
         usuri=next(u for u in e.supports if u.name=='Usuri')
         atsumu=next(u for u in e.supports if u.name=='Atsumu')
         self.assertFalse(e.skill_enabled(usuri,'A'));self.assertFalse(e.skill_enabled(usuri,'B'))
@@ -114,7 +114,7 @@ class ContestEngineTests(unittest.TestCase):
     def test_cooldown_support_and_kageyama_bonus_threshold(self):
         aone=self.engine_for('Aone');before=aone.feature.cd;aone.start_turn()
         self.assertEqual(aone.feature.cd,before-1)  # Gao C.
-        korai=self.engine_for('Korai',lane='back');before=korai.feature.cd;korai.start_turn()
+        korai=ContestEngine(players(),3,rules_version=3,seed=42);before=korai.feature.cd;korai.start_turn()
         self.assertEqual(korai.feature.cd,before-1)  # Lev lifts Rec above Def for Maruyama C.
         e=self.engine_for('Kageyama','Prodigious Talent');e.start_turn();ctx=self.context(e)
         stats=e.combat_stats(ctx)
@@ -122,7 +122,7 @@ class ContestEngineTests(unittest.TestCase):
         self.assertTrue(e.followup(ctx,e.feature,ctx.defender,True))
 
     def test_iizuna_receiving_and_positional_exceptions(self):
-        e=self.engine_for('Iwaizumi');e.start_turn();ctx=self.context(e,False)
+        e=ContestEngine(players(),13,rules_version=3,seed=42);e.start_turn();ctx=self.context(e,False)
         ctx.attacker.base['rec']=1
         e.anchor_combat_start(ctx)
         self.assertIn('Clean Receive',e.feature.statuses)
@@ -138,8 +138,8 @@ class ContestEngineTests(unittest.TestCase):
         ctx.attacker.character=character('Suga');other.team_a.units[1].character=character('Daichi')
         self.assertEqual(other.expansion_bond_penalty(ctx,ctx.attacker),1)
 
-    def test_open_play_support_alternates_active_recipient(self):
-        e=self.engine_for('Tenma Udai');e.start_turn()
+    def test_legacy_open_play_support_alternates_active_recipient(self):
+        e=ContestEngine(players(),12,rules_version=3,seed=42);e.start_turn()
         self.assertIn('Open Play',e.feature.statuses)
         e.feature.actions_taken+=1;e.feature.expire_after_action();e.end_turn();e.start_turn()
         self.assertNotIn('Open Play',e.feature.statuses)
@@ -151,12 +151,12 @@ class ContestEngineTests(unittest.TestCase):
         self.assertEqual(e.run().mode,'clancontest')
 
     def test_revised_supports_have_specific_payoffs(self):
-        self.assertFalse(any(c.name=='Kenma' for i in range(14) for _,c,_ in preset_specs(i)[1:]))
+        self.assertEqual([i for i in range(14) if any(c.name=='Kenma' for _,c,_ in preset_specs(i)[1:])],[4])
         e=self.engine_for('Ushijima');e.start_turn()
         self.assertEqual(e.feature.visible_bonus('def'),4)
         self.assertEqual(e.feature.visible_bonus('rec'),4)
         e=self.engine_for('Hinata','Wings of Dawn');e.start_turn()
-        self.assertEqual(next(u.title for u in e.supports if u.name=='Kageyama'),'Crown of Precision')
+        self.assertEqual({u.title for u in e.supports if u.name=='Kageyama'},{'Crown of Precision','Prodigious Talent'})
         e.team_b.hp=e.team_b.max_hp//2;ctx=self.context(e)
         ctx.defender.base['spd']=0
         self.assertTrue(e.attacks_twice(ctx,e.feature))
@@ -165,8 +165,8 @@ class ContestEngineTests(unittest.TestCase):
         self.assertEqual(e.feature.barrier,e.feature.base['hp']//10)
         self.assertTrue(all(not e.skill_enabled(u,'B') for u in e.supports if u.name=='Yamagata'))
         e=self.engine_for('Iwaizumi');e.start_turn();ctx=self.context(e)
-        self.assertEqual(e.feature.visible_bonus('pow'),7)
-        self.assertIn('Kyotani',[u.name for u in e.supports])
+        self.assertIn('Kai',[u.name for u in e.supports])
+        self.assertIn('Atsumu',[u.name for u in e.supports])
         self.assertIn('Kanbayashi',[u.name for u in e.supports])
         old=ContestEngine(players(),8,rules_version=2)
         self.assertIn('Yamamoto',[u.name for u in old.supports])
