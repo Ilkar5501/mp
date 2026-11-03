@@ -161,6 +161,19 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         """Ordinary units have every slot; special modes can restrict supports."""
         return True
 
+    def support_target_lane(self, source: BattleUnit, target: BattleUnit) -> str:
+        return target.lane
+
+    def received_targeting_redirect(self, ctx: CombatContext, unit: BattleUnit) -> bool:
+        """Saves replace a defender; draw skills modify ordinary target selection."""
+        if unit is not ctx.defender:return False
+        if ctx.save_triggered:return True
+        if ctx.override_targeting:return False
+        foe=ctx.original_actor
+        return ((has(unit,'Tsuki') and unit.lane=='front' and foe.offense_key=='pow') or
+                (has(unit,'Komi') and unit.lane=='back' and foe.offense_key=='qik') or
+                (has(unit,'Iwaizumi') and foe.offense_key=='qik'))
+
     def _unit_label(self, u: BattleUnit) -> str:
         return f'[{self.team(u).owner_name}] {u.name}'
 
@@ -643,7 +656,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                 if a is u: continue
                 before=dict(m)
                 if has(a,'Hinata','Miracle Maker'):
-                    if u.lane=='front': m['pow']+=3; m['qik']+=3; m['spd']+=3
+                    if self.support_target_lane(a,u)=='front': m['pow']+=3; m['qik']+=3; m['spd']+=3
                     else: m['def']+=3; m['rec']+=3
                 if has(a,'Kuroo') and u.lane=='back': m['rec']+=4
                 if has(a,'Nishinoya') and u.lane=='back': m['rec']+=4
@@ -667,11 +680,11 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                 if has(a,'Kyotani'): m['pow']+=3
                 if has(a,'Reon') and not initiated: m['def']+=3; m['rec']+=3
                 if has(a,'Korai'):
-                    if a.lane=='front' and u.lane=='back': m['def']+=3; m['jmp']+=3
-                    elif a.lane=='back' and u.lane=='front': m['rec']+=3; m['spd']+=3
+                    if a.lane=='front' and self.support_target_lane(a,u)=='back': m['def']+=3; m['jmp']+=3
+                    elif a.lane=='back' and self.support_target_lane(a,u)=='front': m['rec']+=3; m['spd']+=3
                 if any(m.get(stat,0)!=before.get(stat,0) for stat in STATS):
                     ctx.temp_flags.setdefault('ally_stat_impacts',{}).setdefault(u.uid,set()).add((a.uid,'B' if has(a,'Akaashi') or has(a,'Reon') else 'C'))
-                if has(a,'Kai') and u is ctx.defender and ctx.save_triggered:
+                if has(a,'Kai') and self.skill_enabled(a,'B') and self.received_targeting_redirect(ctx,u):
                     m['def']+=5; m['rec']+=5
                     ctx.temp_flags.setdefault('ally_stat_impacts',{}).setdefault(u.uid,set()).add((a.uid,'B'))
         # Usuri supports one ally, selected from previous-turn damage (Kiryu priority).

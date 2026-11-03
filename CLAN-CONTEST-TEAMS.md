@@ -1,159 +1,195 @@
-# Clan Contest: revised support pools — v11.3.4
+# Clan Contest formations — v11.3.5
 
-All featured units are +10, Neutral and unequipped. Six inactive supports grant only their listed eligible slots. The 14-day rotation remains. Visible buffs use the highest value per stat; they do not add together.
+The 14 formations below use the requested manual support pools. Featured units are +10, Neutral and unequipped. Supports never act, enter combat or become attack targets; only the listed slots apply.
 
-## 1. Ushijima — Absolute Monarch (front)
+## Contest exceptions
 
-Tenma adds visible Def/Rec+4 alongside Suga Pow/Qik/Spd+6 and Konoha Jmp+3. These distinct stat bonuses feed Ushijima A; Shirabu adds a bond and cleansing, while Oikawa/Iwaizumi support crit damage and cooldown.
+- Both distinct Kageyama variants may appear together as supports. Normal player-team name restrictions are unchanged.
+- Prodigious Talent support grants persistent Open Play to the eligible featured unit. It survives that unit's actions; the consecutive-target restriction does not apply to this passive support in Clan Contest. Normal battles retain their existing timing and restrictions.
+- Front-line Korai support on Oikawa grants Def/Jmp+3 even though Oikawa is front-line.
+- Miracle Maker support treats Osamu as front-line (Pow/Qik/Spd+3), and Kanoka as back-line (Def/Rec+3). These are source-specific projections; they do not move either featured unit or affect other supports.
+- Kai is back-line and grants both B and C. His C grants Iwaizumi Rec+3 and front-line Def+3. His B adds Def/Rec+5 when Iwaizumi's Qik-targeting skill applies, or an ally enters through a skill/Ultimate save. Forced targeting that bypasses the draw skill does not trigger its bonus. B does not stack with itself.
+- Last Hope Kiryu support is C-only and ignores Burden. Usuri and Atsumu support are C-only, so they do not grant Siphon, Usuri's B aura or Excellence. Kenma support is B/C-only and does not generate Fatigue.
+- Same-school bonds still count each support character. Existing saved attempts retain their previous support pools and Open Play timing.
 
-- **Oikawa — Grand Conductor** (front): B: Critical Cadence; C: Skyward Command
-- **Iwaizumi — Fitness Fanatic** (front): C: No Half Measures
-- **Tenma Udai — The Original** (front): C: Murder of Crows
-- **Konoha — Plug and Play** (front): C: Reaching Hands
-- **Suga — Relentless Setter** (front): C: Passing the Torch
-- **Shirabu — Emperor's Devotee** (front): C: Targeted Delivery
+## 1. Ushijima — Absolute Monarch (front line)
 
-## 2. Korai — Little Giant (front)
+Shiratorizawa · School Bond +1
 
-Nozawa supplies a bond, Rec and opposing bond suppression. Suwa supplies Bunch Block. Oikawa/Iwaizumi support crits; Ushijima and Konoha provide visible Jmp.
+**Supports:**
 
-- **Oikawa — Grand Conductor** (front): B: Critical Cadence; C: Skyward Command
-- **Ushijima — Absolute Monarch** (front): C: Ace's Pulse
-- **Iwaizumi — Fitness Fanatic** (front): C: No Half Measures
-- **Suwa — Patience Weaver** (front): C: Bunch Formation
-- **Konoha — Plug and Play** (front): C: Reaching Hands
-- **Nozawa — Carefree Fighter** (front): C: Coastal Discipline
+- **Oikawa — Grand Conductor** (Aoba Johsai, front line): B: Critical Cadence; C: Skyward Command
+- **Iwaizumi — Fitness Fanatic** (Aoba Johsai, front line): C: No Half Measures
+- **Tenma Udai — The Original** (Karasuno, front line): C: Murder of Crows
+- **Konoha — Plug and Play** (Fukurodani, front line): C: Reaching Hands
+- **Suga — Relentless Setter** (Karasuno, front line): C: Passing the Torch
+- **Shirabu — Emperor's Devotee** (Shiratorizawa, front line): C: Targeted Delivery
 
-## 3. Oikawa — Grand Conductor (front)
+## 2. Korai — Little Giant (front line)
 
-Ushijima/Konoha add visible Jmp; Iwaizumi improves crit damage. Kyotani adds combat Pow and Watari supplies visible Pow. Echigo removes follow-up prevention at low HP.
+Kamomedai · School Bond +1
 
-- **Ushijima — Absolute Monarch** (front): C: Ace's Pulse
-- **Iwaizumi — Fitness Fanatic** (front): C: No Half Measures
-- **Echigo — Cool Headed** (front): C: Unbroken Ascent
-- **Konoha — Plug and Play** (front): C: Reaching Hands
-- **Kyotani — Mad Dog** (front): C: Rabid Energy
-- **Watari — Flashing Jump** (front): C: Second Wind
+**Supports:**
 
-## 4. Korai — Little Giant (back)
+- **Oikawa — Grand Conductor** (Aoba Johsai, front line): B: Critical Cadence; C: Skyward Command
+- **Ushijima — Absolute Monarch** (Shiratorizawa, front line): C: Ace's Pulse
+- **Usuri — Calculated Distraction** (Mujinazaka, front line): C: Mental Break
+- **Suwa — Patience Weaver** (Kamomedai, front line): C: Bunch Formation
+- **Konoha — Plug and Play** (Fukurodani, front line): C: Reaching Hands
+- **Akaashi — Architect of Calm** (Fukurodani, front line): B: Weakness Whisperer; C: Saving the Show
 
-Suna supplies visible Speed; Atsumu grows combat Speed. Osamu rewards Speed wins with Jmp. Tenma/Lev support durability, and Lev raises Rec above Def for Maruyama cooldown reduction.
+## 3. Oikawa — Grand Conductor (front line)
 
-- **Atsumu — Arrogant Genius** (front): C: Gear Shift
-- **Suna — Coiled Serpent** (front): C: Dancing to a Tune
-- **Osamu — Twin Shadow** (front): C: Quickened Pulse
-- **Tenma Udai — The Original** (back): C: Murder of Crows
-- **Lev — Young Lion** (front): C: Intuitive Cover
-- **Maruyama — Steady Wing** (front): C: Wing Relay
+Aoba Johsai · School Bond +3
 
-## 5. Bokuto — Star of the Owls (front)
+**Supports:**
 
-Four Fukurodani bonds. Akaashi turns penalties into combat stats and attack charge; Konoha/Washio/Komi reward debuffs. Watari supplies Pow/Qik and Iizuna adds receiving protection.
+- **Ushijima — Absolute Monarch** (Shiratorizawa, front line): C: Ace's Pulse
+- **Iwaizumi — Fitness Fanatic** (Aoba Johsai, front line): C: No Half Measures
+- **Korai — Little Giant** (Kamomedai, front line): C: Universal Support — Front-line support; grants featured unit Def/Jmp+3.
+- **Konoha — Plug and Play** (Fukurodani, front line): C: Reaching Hands
+- **Kyotani — Mad Dog** (Aoba Johsai, front line): C: Rabid Energy
+- **Watari — Flashing Jump** (Aoba Johsai, front line): C: Second Wind
 
-- **Akaashi — Architect of Calm** (front): B: Weakness Whisperer; C: Saving the Show
-- **Konoha — Plug and Play** (front): C: Reaching Hands
-- **Washio — Silent Pillar** (front): C: Strong Hands
-- **Komi — Energizing Spirit** (front): C: Swift Hands
-- **Watari — Flashing Jump** (front): C: Second Wind
-- **Iizuna — Peerless Anchor** (front): B: In Spite of Heartbreak; C: Clean Floor
+## 4. Korai — Little Giant (back line)
 
-## 6. Aone — Wall of Steel (front)
+Kamomedai · School Bond +0
 
-Date Tech bonds, Koganegawa defensive buffs, Kosuke counterattacks/healing, Futakuchi chip/conversion, Gao cooldown reduction, Reon guard and Nozawa receiving support.
+**Supports:**
 
-- **Koganegawa — Towering Setter** (front): C: Rising Iron Wall
-- **Kosuke — Behind the Iron Wall** (front): B: Connected Wall; C: Turn the Block Around
-- **Futakuchi — Smirking Thorn** (front): C: Trash Talk
-- **Gao — Hulking Giant** (front): C: Tall Order
-- **Reon — Benkei** (front): B: Safety Net; C: Slow the Assault
-- **Nozawa — Carefree Fighter** (front): C: Coastal Discipline
+- **Atsumu — Arrogant Genius** (Inarizaki, front line): C: Gear Shift
+- **Suna — Coiled Serpent** (Inarizaki, front line): C: Dancing to a Tune
+- **Akaashi — Architect of Calm** (Fukurodani, front line): B: Weakness Whisperer; C: Saving the Show
+- **Kageyama — Prodigious Talent** (Karasuno, front line): C: The Golden Road — Open Play persists on the featured unit.
+- **Kageyama — Crown of Precision** (Karasuno, front line): B: Fast-Break Tempo
+- **Daichi — Steadfast Captain** (Karasuno, front line): C: Captain's Rallying Cry
 
-## 7. Hinata — Wings of Dawn (front)
+## 5. Bokuto — Star of the Owls (front line)
 
-Crown of Precision enables Wings' two-hit attacks and a separate low-HP follow-up when the Speed condition is met. Suga/Tenma provide visible buffs; Atsumu/back-line Korai add combat Speed, and Daichi cleanses on Ultimates.
+Fukurodani · School Bond +4
 
-- **Kageyama — Crown of Precision** (front): B: Fast-Break Tempo
-- **Atsumu — Arrogant Genius** (front): C: Gear Shift
-- **Korai — Little Giant** (back): C: Universal Support
-- **Suga — Relentless Setter** (front): C: Passing the Torch
-- **Tenma Udai — The Original** (front): C: Murder of Crows
-- **Daichi — Steadfast Captain** (front): C: Captain's Rallying Cry
+**Supports:**
 
-## 8. Osamu — Twin Shadow (front)
+- **Akaashi — Architect of Calm** (Fukurodani, front line): B: Weakness Whisperer; C: Saving the Show
+- **Konoha — Plug and Play** (Fukurodani, front line): C: Reaching Hands
+- **Washio — Silent Pillar** (Fukurodani, front line): C: Strong Hands
+- **Komi — Energizing Spirit** (Fukurodani, front line): C: Swift Hands
+- **Kenma — Max Level Gamer** (Nekoma, front line): B: Mouse Trap; C: Rallying the Troops
+- **Kageyama — Prodigious Talent** (Karasuno, front line): C: The Golden Road — Open Play persists on the featured unit.
 
-Atsumu enables stronger Ultimate penetration; Suna adds visible Speed and Miracle Maker adds combat Qik/Speed. Watari supplies visible Qik+7; Kita adds defense and Suwa adds defensive charge.
+## 6. Aone — Wall of Steel (front line)
 
-- **Atsumu — Arrogant Genius** (front): C: Gear Shift
-- **Suna — Coiled Serpent** (front): C: Dancing to a Tune
-- **Kita — Flawless Routine** (front): C: Fundamentalist
-- **Hinata — Miracle Maker** (front): C: Decoy Duty
-- **Watari — Flashing Jump** (front): C: Second Wind
-- **Suwa — Patience Weaver** (front): C: Bunch Formation
+Date Tech · School Bond +2
 
-## 9. Kuroo — Black Cat's Gambit (front)
+**Supports:**
 
-Yamagata grants a barrier at low HP. Kanbayashi reduces offensive-crit damage and heals; Daichi cleanses on Ultimates. Aran adds Pow, Nozawa adds Rec and suppresses bonds, and Iizuna provides Rec-based reduction and Clean Receive. Kuroo's own universal counterattacks and draining Ultimate anchor this formation.
+- **Koganegawa — Towering Setter** (Date Tech, front line): C: Rising Iron Wall
+- **Kosuke — Behind the Iron Wall** (Date Tech, front line): B: Connected Wall; C: Turn the Block Around
+- **Suwa — Patience Weaver** (Kamomedai, front line): C: Bunch Formation
+- **Gao — Hulking Giant** (Kamomedai, front line): C: Tall Order
+- **Reon — Benkei** (Shiratorizawa, front line): B: Safety Net; C: Slow the Assault
+- **Nozawa — Carefree Fighter** (Kamomedai, front line): C: Coastal Discipline
 
-- **Yamagata — Last Line** (front): C: Emergency Formation
-- **Kanbayashi — Emergency Recovery** (front): B: Critical Care; C: Shock Absorption
-- **Daichi — Steadfast Captain** (front): C: Captain's Rallying Cry
-- **Aran — Thunderous Cannon** (front): C: Heating Up!
-- **Nozawa — Carefree Fighter** (front): C: Coastal Discipline
-- **Iizuna — Peerless Anchor** (front): B: In Spite of Heartbreak; C: Clean Floor
+## 7. Hinata — Wings of Dawn (front line)
 
-## 10. Kiryu — Last Hope (front)
+Karasuno · School Bond +4
 
-Usuri doubles featured Kiryu's Burden gain and converts enemy buffs. Same-row setters enable Kiryu A. Aran supplies Pow; Suwa supplies defensive charge; Reon and back-line Korai improve durability, with Iizuna receiving protection and mark damage.
+**Supports:**
 
-- **Usuri — Calculated Distraction** (front): C: Mental Break
-- **Iizuna — Peerless Anchor** (front): B: In Spite of Heartbreak; C: Clean Floor
-- **Reon — Benkei** (front): B: Safety Net; C: Slow the Assault
-- **Aran — Thunderous Cannon** (front): C: Heating Up!
-- **Suwa — Patience Weaver** (front): C: Bunch Formation
-- **Korai — Little Giant** (back): C: Universal Support
+- **Kageyama — Crown of Precision** (Karasuno, front line): B: Fast-Break Tempo
+- **Atsumu — Arrogant Genius** (Inarizaki, front line): C: Gear Shift
+- **Korai — Little Giant** (Kamomedai, back line): C: Universal Support
+- **Suga — Relentless Setter** (Karasuno, front line): C: Passing the Torch
+- **Kageyama — Prodigious Talent** (Karasuno, front line): C: The Golden Road — Open Play persists on the featured unit.
+- **Daichi — Steadfast Captain** (Karasuno, front line): C: Captain's Rallying Cry
 
-## 11. Kageyama — Prodigious Talent (front)
+## 8. Osamu — Twin Shadow (front line)
 
-Separate visible grants, Miracle Maker's combat aura and Suwa's named bonus support Kageyama's distinct-Bonus thresholds.
+Inarizaki · School Bond +2
 
-- **Suga — Relentless Setter** (front): C: Passing the Torch
-- **Tenma Udai — The Original** (front): C: Murder of Crows
-- **Konoha — Plug and Play** (front): C: Reaching Hands
-- **Hinata — Miracle Maker** (front): C: Decoy Duty
-- **Lev — Young Lion** (front): C: Intuitive Cover
-- **Suwa — Patience Weaver** (front): C: Bunch Formation
+**Supports:**
 
-## 12. Kanoka — Ace of the other Side (front)
+- **Atsumu — Arrogant Genius** (Inarizaki, front line): C: Gear Shift
+- **Suna — Coiled Serpent** (Inarizaki, front line): C: Dancing to a Tune
+- **Futakuchi — Smirking Thorn** (Date Tech, front line): C: Trash Talk
+- **Hinata — Miracle Maker** (Karasuno, front line): C: Decoy Duty — Uses the front-line Pow/Qik/Spd bonus.
+- **Watari — Flashing Jump** (Aoba Johsai, front line): C: Second Wind
+- **Suwa — Patience Weaver** (Kamomedai, front line): C: Bunch Formation
 
-Kanoka neutralizes crit multipliers while retaining crit reactions. Kiryu debuffs after enemy crits; Kanbayashi reduces offensive-crit damage and heals. Usuri converts buffs; Suna, Atsumu and back-line Korai supply Speed.
+## 9. Kuroo — Black Cat's Gambit (front line)
 
-- **Kiryu — Last Hope** (front): C: Compounding Pressure
-- **Kanbayashi — Emergency Recovery** (front): B: Critical Care; C: Shock Absorption
-- **Usuri — Calculated Distraction** (front): C: Mental Break
-- **Atsumu — Arrogant Genius** (front): C: Gear Shift
-- **Suna — Coiled Serpent** (front): C: Dancing to a Tune
-- **Korai — Little Giant** (back): C: Universal Support
+Nekoma · School Bond +0
 
-## 13. Tenma Udai — The Original (front)
+**Supports:**
 
-Oikawa/Ushijima/Iwaizumi supply crit support. Suga/Atsumu support Tenma's Speed check. Prodigious Talent grants Open Play on alternate eligible turns, adding stats and damage synergy.
+- **Yamagata — Last Line** (Shiratorizawa, front line): C: Emergency Formation
+- **Kanbayashi — Emergency Recovery** (Kamomedai, front line): B: Critical Care; C: Shock Absorption
+- **Daichi — Steadfast Captain** (Karasuno, front line): C: Captain's Rallying Cry
+- **Reon — Benkei** (Shiratorizawa, front line): B: Safety Net; C: Slow the Assault
+- **Nozawa — Carefree Fighter** (Kamomedai, front line): C: Coastal Discipline
+- **Iizuna — Peerless Anchor** (Itachiyama, front line): B: In Spite of Heartbreak; C: Clean Floor
 
-- **Oikawa — Grand Conductor** (front): B: Critical Cadence; C: Skyward Command
-- **Ushijima — Absolute Monarch** (front): C: Ace's Pulse
-- **Iwaizumi — Fitness Fanatic** (front): C: No Half Measures
-- **Atsumu — Arrogant Genius** (front): C: Gear Shift
-- **Suga — Relentless Setter** (front): C: Passing the Torch
-- **Kageyama — Prodigious Talent** (front): C: The Golden Road
+## 10. Kiryu — Last Hope (front line)
 
-## 14. Iwaizumi — Fitness Fanatic (front)
+Mujinazaka · School Bond +1
 
-Kyotani supplies combat Pow and Watari visible Pow+7. Kanbayashi adds offensive-crit reduction and healing. Nishinoya boosts Rec for Iizuna; Maruyama provides cooldown reduction.
+**Supports:**
 
-- **Iizuna — Peerless Anchor** (front): B: In Spite of Heartbreak; C: Clean Floor
-- **Kyotani — Mad Dog** (front): C: Rabid Energy
-- **Kanbayashi — Emergency Recovery** (front): B: Critical Care; C: Shock Absorption
-- **Nishinoya — Guardian Deity** (front): C: Anchor's Presence
-- **Watari — Flashing Jump** (front): C: Second Wind
-- **Maruyama — Steady Wing** (front): C: Wing Relay
+- **Usuri — Calculated Distraction** (Mujinazaka, front line): C: Mental Break
+- **Kanbayashi — Emergency Recovery** (Kamomedai, front line): B: Critical Care; C: Shock Absorption
+- **Iizuna — Peerless Anchor** (Itachiyama, front line): B: In Spite of Heartbreak; C: Clean Floor
+- **Kageyama — Crown of Precision** (Karasuno, front line): B: Fast-Break Tempo
+- **Daichi — Steadfast Captain** (Karasuno, front line): C: Captain's Rallying Cry
+- **Yamagata — Last Line** (Shiratorizawa, front line): C: Emergency Formation
 
-Supports never act or trigger Ultimates. Atsumu support is C-only, so he does not grant Excellence. Kiryu support ignores Burden; Usuri support is C-only. Yamagata support grants only his C-slot barrier, not his personal cooldown or Ultimate effects. Saved attempts retain their previous formation revision.
+## 11. Kageyama — Prodigious Talent (front line)
+
+Karasuno · School Bond +3
+
+**Supports:**
+
+- **Suga — Relentless Setter** (Karasuno, front line): C: Passing the Torch
+- **Daichi — Steadfast Captain** (Karasuno, front line): C: Captain's Rallying Cry
+- **Oikawa — Grand Conductor** (Aoba Johsai, front line): B: Critical Cadence; C: Skyward Command
+- **Hinata — Miracle Maker** (Karasuno, front line): C: Decoy Duty
+- **Akaashi — Architect of Calm** (Fukurodani, front line): B: Weakness Whisperer; C: Saving the Show
+- **Suwa — Patience Weaver** (Kamomedai, front line): C: Bunch Formation
+
+## 12. Kanoka — Ace of the other Side (front line)
+
+Niiyama Girls' High · School Bond +0
+
+**Supports:**
+
+- **Kiryu — Last Hope** (Mujinazaka, front line): C: Compounding Pressure
+- **Kanbayashi — Emergency Recovery** (Kamomedai, front line): B: Critical Care; C: Shock Absorption
+- **Atsumu — Arrogant Genius** (Inarizaki, front line): C: Gear Shift
+- **Korai — Little Giant** (Kamomedai, back line): C: Universal Support
+- **Hinata — Miracle Maker** (Karasuno, back line): C: Decoy Duty — Uses the back-line Def/Rec bonus.
+- **Kageyama — Prodigious Talent** (Karasuno, front line): C: The Golden Road — Open Play persists on the featured unit.
+
+## 13. Tenma Udai — The Original (front line)
+
+Karasuno · School Bond +2
+
+**Supports:**
+
+- **Oikawa — Grand Conductor** (Aoba Johsai, front line): B: Critical Cadence; C: Skyward Command
+- **Ushijima — Absolute Monarch** (Shiratorizawa, front line): C: Ace's Pulse
+- **Akaashi — Architect of Calm** (Fukurodani, front line): B: Weakness Whisperer; C: Saving the Show
+- **Atsumu — Arrogant Genius** (Inarizaki, front line): C: Gear Shift
+- **Suga — Relentless Setter** (Karasuno, front line): C: Passing the Torch
+- **Kageyama — Prodigious Talent** (Karasuno, front line): C: The Golden Road — Open Play persists on the featured unit.
+
+## 14. Iwaizumi — Fitness Fanatic (front line)
+
+Aoba Johsai · School Bond +0
+
+**Supports:**
+
+- **Iizuna — Peerless Anchor** (Itachiyama, front line): B: In Spite of Heartbreak; C: Clean Floor
+- **Atsumu — Arrogant Genius** (Inarizaki, front line): C: Gear Shift
+- **Kanbayashi — Emergency Recovery** (Kamomedai, front line): B: Critical Care; C: Shock Absorption
+- **Akaashi — Architect of Calm** (Fukurodani, front line): B: Weakness Whisperer; C: Saving the Show
+- **Daichi — Steadfast Captain** (Karasuno, front line): C: Captain's Rallying Cry
+- **Kai — Serene Sage** (Nekoma, back line): B: Cover the Seam; C: Stable Backcourt — Back-line C aura; B applies to Iwaizumi when his Qik-targeting skill applies.

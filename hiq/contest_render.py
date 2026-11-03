@@ -31,6 +31,7 @@ async def render_contest(specs):
     for i,(_,char,_) in enumerate(specs[1:]):
         x=35+i*175;canvas.paste(images[i+1].resize((110,110)),(x+25,320))
         draw.text((x+80,441),char.name,font=_font(16,True),fill='white',anchor='mt')
-        draw.text((x+80,466),char.school,font=_font(13),fill='#c3cbdd',anchor='mt')
+        draw.text((x+80,462),char.title,font=_font(11),fill='#c3cbdd',anchor='mt')
+        draw.text((x+80,482),char.school,font=_font(12),fill='#c3cbdd',anchor='mt')
     draw.text((540,503),'Supports cannot act or be targeted. Only their listed support slots apply.',font=_font(16),fill='#c3cbdd',anchor='mt')
     out=io.BytesIO();canvas.save(out,format='PNG');out.seek(0);return out

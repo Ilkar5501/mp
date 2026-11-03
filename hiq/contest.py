@@ -8,7 +8,7 @@ from .battle.engine import BattleEngine, has
 from .data import CHARACTERS
 from .models import CardInstance
 
-RULES_VERSION=3
+RULES_VERSION=4
 SUPPORT_SLOTS={'Oikawa':('B','C'),'Ushijima':('C',),'Aran':('C',),
     'Tenma Udai':('C',),'Suga':('C',),'Lev':('C',),'Suna':('C',),
     'Hirugami':('C',),'Suwa':('C',),'Kita':('C',),'Konoha':('C',),
@@ -17,7 +17,7 @@ SUPPORT_SLOTS={'Oikawa':('B','C'),'Ushijima':('C',),'Aran':('C',),
     'Kiryu':('C',),'Kanbayashi':('B','C'),'Iizuna':('B','C'),
     'Akaashi':('B','C'),'Reon':('B','C'),'Kenma':('B','C'),
     'Usuri':('C',),'Kageyama':('C',),'Hinata':('C',),
-    'Kuroo':('C',),'Nishinoya':('C',),'Nozawa':('C',),'Kai':('C',),
+    'Kuroo':('C',),'Nishinoya':('C',),'Nozawa':('C',),'Kai':('B','C'),
     'Yamamoto':('C',),'Washio':('C',),'Komi':('C',),'Kosuke':('B','C'),
     'Futakuchi':('C',),'Gao':('C',),'Maruyama':('C',),'Watari':('C',),
     'Shirabu':('C',),'Yamagata':('C',),'Echigo':('C',)}
@@ -29,6 +29,15 @@ def support_slots(char):
     if char.name=='Kiryu' and char.title!='Last Hope':return ()
     if char.name=='Hinata' and char.title!='Miracle Maker':return ()
     return SUPPORT_SLOTS.get(char.name,())
+
+
+def support_note(index,char):
+    if char.name=='Kageyama' and char.title=='Prodigious Talent':return 'Open Play persists on the featured unit.'
+    if index==2 and char.name=='Korai':return 'Front-line support; grants featured unit Def/Jmp+3.'
+    if index==7 and char.name=='Hinata':return 'Uses the front-line Pow/Qik/Spd bonus.'
+    if index==11 and char.name=='Hinata':return 'Uses the back-line Def/Rec bonus.'
+    if index==13 and char.name=='Kai':return 'Back-line C aura; B applies to Iwaizumi when his Qik-targeting skill applies.'
+    return ''
 
 def character(name,title=None):
     name=name.split('@',1)[0]
@@ -87,7 +96,7 @@ V2_PRESETS=[
  ('Anchor-Powered Ace','Iwaizumi',None,'front',
   ['Iizuna','Lev','Nishinoya','Nozawa','Kai@back','Maruyama'])]
 
-PRESETS=[
+V3_PRESETS=[
  ('Monarch Above the Net','Ushijima',None,'front',
   ['Oikawa','Iwaizumi','Tenma Udai','Konoha','Suga','Shirabu']),
  ('Little Giant — Jump','Korai',None,'front',
@@ -117,16 +126,50 @@ PRESETS=[
  ('Anchor-Powered Ace','Iwaizumi',None,'front',
   ['Iizuna','Kyotani','Kanbayashi','Nishinoya','Watari','Maruyama'])]
 
+PRESETS=[
+ ('Monarch Above the Net','Ushijima',None,'front',
+  ['Oikawa', 'Iwaizumi', 'Tenma Udai', 'Konoha', 'Suga', 'Shirabu']),
+ ('Little Giant — Jump','Korai',None,'front',
+  ['Oikawa', 'Ushijima', 'Usuri', 'Suwa', 'Konoha', 'Akaashi']),
+ ('Conductor — Jump','Oikawa',None,'front',
+  ['Ushijima', 'Iwaizumi', 'Korai@front', 'Konoha', 'Kyotani', 'Watari']),
+ ('Little Giant — Speed','Korai',None,'back',
+  ['Atsumu', 'Suna', 'Akaashi', 'Kageyama — Prodigious Talent', 'Kageyama — Crown of Precision', 'Daichi']),
+ ('Fukurodani Encore','Bokuto',None,'front',
+  ['Akaashi', 'Konoha', 'Washio', 'Komi', 'Kenma', 'Kageyama — Prodigious Talent']),
+ ('Date Tech Iron Wall','Aone',None,'front',
+  ['Koganegawa', 'Kosuke', 'Suwa', 'Gao', 'Reon', 'Nozawa']),
+ ('Wings at Full Speed','Hinata','Wings of Dawn','front',
+  ['Kageyama — Crown of Precision', 'Atsumu', 'Korai@back', 'Suga', 'Kageyama — Prodigious Talent', 'Daichi']),
+ ('Twin Shadow — Speed','Osamu',None,'front',
+  ['Atsumu', 'Suna', 'Futakuchi', 'Hinata — Miracle Maker@front', 'Watari', 'Suwa']),
+ ('Nekoma Counterplay','Kuroo',None,'front',
+  ['Yamagata', 'Kanbayashi', 'Daichi', 'Reon', 'Nozawa', 'Iizuna']),
+ ('Last Hope — Burden and Break','Kiryu','Last Hope','front',
+  ['Usuri', 'Kanbayashi', 'Iizuna', 'Kageyama — Crown of Precision', 'Daichi', 'Yamagata']),
+ ('Prodigious Stat Ball','Kageyama','Prodigious Talent','front',
+  ['Suga', 'Daichi', 'Oikawa', 'Hinata — Miracle Maker', 'Akaashi', 'Suwa']),
+ ('Unshaken at Full Speed','Kanoka',None,'front',
+  ['Kiryu — Last Hope', 'Kanbayashi', 'Atsumu', 'Korai@back', 'Hinata — Miracle Maker@back', 'Kageyama — Prodigious Talent']),
+ ('Original Giant — Crit and Speed','Tenma Udai',None,'front',
+  ['Oikawa', 'Ushijima', 'Akaashi', 'Atsumu', 'Suga', 'Kageyama — Prodigious Talent']),
+ ('Anchor-Powered Ace','Iwaizumi',None,'front',
+  ['Iizuna', 'Atsumu', 'Kanbayashi', 'Akaashi', 'Daichi', 'Kai@back'])]
+
 
 def presets_for(rules_version=RULES_VERSION):
-    return LEGACY_PRESETS if rules_version==1 else V2_PRESETS if rules_version==2 else PRESETS
+    return LEGACY_PRESETS if rules_version==1 else V2_PRESETS if rules_version==2 else V3_PRESETS if rules_version==3 else PRESETS
 
 
 def preset_specs(index,rules_version=RULES_VERSION):
     label,name,title,lane,supports=presets_for(rules_version)[index]
     chars=[character(name,title)]+[character(n) for n in supports]
     if any(c.name==chars[0].name for c in chars[1:]):raise ValueError('A featured unit cannot support itself.')
-    if len({c.name for c in chars})!=7:raise ValueError('Contest characters must have distinct player names.')
+    if len({c.id for c in chars})!=7:raise ValueError('Contest variants must be distinct.')
+    for name in {c.name for c in chars}:
+        count=sum(c.name==name for c in chars)
+        if count>1 and not (rules_version>=4 and name=='Kageyama' and count==2):
+            raise ValueError('Only the two distinct Kageyama supports may share a player name.')
     lanes=[lane]
     for token,char in zip(supports,chars[1:]):
         lanes.append(token.split('@',1)[1] if '@' in token else lane if char.name in ('Kanbayashi','Tenma Udai') else 'front')
@@ -139,6 +182,7 @@ class ContestEngine(BattleEngine):
     def __init__(self,players,index,*,rules_version=RULES_VERSION,**kwargs):
         if len(players)!=6:raise ValueError('Clan Contest uses a complete 6v6 team.')
         self.rules_version=rules_version
+        self.preset_index=index
         super().__init__(players,preset_specs(index,rules_version),mode='clancontest',**kwargs)
         self.feature=self.team_b.units[0]
         self.supports=self.team_b.units[1:]
@@ -160,7 +204,15 @@ class ContestEngine(BattleEngine):
         return [u for u in super()._action_order(*args,**kwargs) if u.uid not in self.support_ids]
 
     def skill_enabled(self,unit,slot):
+        if unit.uid in self.support_ids and unit.name=='Kai' and slot=='B':return self.rules_version>=4
         return self.rules_version==1 or unit.uid not in self.support_ids or slot in support_slots(unit.character)
+
+    def support_target_lane(self,source,target):
+        if self.rules_version>=4 and target is self.feature and source.uid in self.support_ids:
+            if self.preset_index==2 and source.name=='Korai':return 'back'
+            if self.preset_index==7 and has(source,'Hinata','Miracle Maker'):return 'front'
+            if self.preset_index==11 and has(source,'Hinata','Miracle Maker'):return 'back'
+        return super().support_target_lane(source,target)
 
     def _turn_start_owner(self,unit,**kwargs):
         if self.rules_version!=1 and unit.uid in self.support_ids:
@@ -267,6 +319,10 @@ class ContestEngine(BattleEngine):
             f.barrier+=f.base['hp']//10;f.barrier_sources.add((source.uid,'C'))
         elif name=='Gao' and f.noncombat_stat('def')>f.noncombat_stat('rec'):f.cd=max(0,f.cd-1)
         elif name=='Maruyama' and f.character.position=='WS' and f.noncombat_stat('rec')>f.noncombat_stat('def'):f.cd=max(0,f.cd-1)
+        elif has(source,'Kageyama','Prodigious Talent') and self.rules_version>=4:
+            # Contest-only exception: this support has one eligible active ally.
+            if f.character.position in ('MB','WS','OP'):
+                f.add_status('Open Play',True,source=(source.uid,'C'))
         elif has(source,'Kageyama','Prodigious Talent'):
             memory=self.expansion_memory[source.uid]
             if f.character.position in ('MB','WS','OP') and memory.get('contest_open_play_turn')!=self.turn-1:
