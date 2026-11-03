@@ -17,28 +17,87 @@ from ..ui import SafeView,EmbedPager,PURPLE
 log=logging.getLogger(__name__)
 
 class EquipmentView(SafeView):
-    def __init__(self,bot,uid,card,items,page=0):
-        super().__init__(timeout=600);self.bot=bot;self.uid=uid;self.card=card;self.items=sorted(items,key=lambda it:(ITEM_BY_KEY[it['detail']]['name'].casefold(),it['id']));self.page=page
+    PAGE_SIZE=10
+    def __init__(self,bot,uid,card,items,page=0,key=None,type_page=0):
+        super().__init__(timeout=600)
+        self.bot=bot;self.uid=uid;self.card=card;self.items=sorted(items,key=lambda it:(ITEM_BY_KEY[it['detail']]['name'].casefold(),it['id']))
+        self.page=page;self.key=key;self.type_page=type_page
         self.build()
+
     @classmethod
-    async def create(cls,bot,uid,card):return cls(bot,uid,card,await RaidStore(bot.db).equipment_options(uid,card))
+    async def create(cls,bot,uid,card):
+        return cls(bot,uid,card,await RaidStore(bot.db).equipment_options(uid,card))
+
     async def interaction_check(self,i):
         if i.data.get('custom_id')=='card:learnmore':return True
-        if i.user.id!=self.uid:await i.response.send_message('Only this card’s owner can change equipment.',ephemeral=True);return False
+        if i.user.id!=self.uid:
+            await i.response.send_message('Only this card’s owner can change equipment.',ephemeral=True);return False
         return True
+
+    def holder(self,item):
+        from ..data import CHAR_BY_ID
+        cid=item.get('equipped_card_id')
+        if not cid:return 'Unequipped'
+        char=CHAR_BY_ID.get(item.get('equipped_character_id'))
+        name=f'{char.name} — {char.title}' if char else 'Character'
+        return f'Equipped to {name} · {cid}'
+
+    def instance_embed(self):
+        from ..data import CHAR_BY_ID
+        item=ITEM_BY_KEY[self.key]
+        rows=self.copies[self.page*self.PAGE_SIZE:(self.page+1)*self.PAGE_SIZE]
+        description=f"Choose a copy for **{display_title(CHAR_BY_ID[self.card.character_id])}** · `{self.card.instance_id}`.\nSelecting an equipped copy moves it from its current character.\n\n{item['effect']}\n\n"
+        # Each holder is shown directly beneath the item's name/ID pair.
+        description+='\n\n'.join(f"**{item['name']}** · `{row['id']}`\n-# {discord.utils.escape_markdown(self.holder(row))}" for row in rows)
+        embed=discord.Embed(title=f"{item['name']} — Your copies",description=description,color=PURPLE)
+        embed.set_footer(text=f'Page {self.page+1}/{self.pages} • {len(self.copies)} copies')
+        return embed
+
+    async def refresh(self,i):
+        card=await self.bot.db.get_card(self.card.instance_id)
+        if not card or card.owner_id!=self.uid:raise ValueError('You no longer own this card.')
+        self.card=card
+        self.items=await RaidStore(self.bot.db).equipment_options(self.uid,self.card)
+        self.items.sort(key=lambda it:(ITEM_BY_KEY[it['detail']]['name'].casefold(),it['id']))
+        if self.key and not any(it['detail']==self.key for it in self.items):self.key=None;self.page=self.type_page
+        self.build()
+        await i.response.edit_message(embed=self.instance_embed() if self.key else card_embed(self.bot,self.card),view=self)
+
+    async def apply(self,i,item_id):
+        card=await RaidStore(self.bot.db).equip(self.uid,self.card.instance_id,item_id)
+        await i.response.edit_message(embed=card_embed(self.bot,card),view=await self.create(self.bot,self.uid,card))
+
     def build(self):
-        self.clear_items();pages=max(1,(len(self.items)+23)//24);self.page=min(self.page,pages-1)
-        options=[discord.SelectOption(label='Unequip / Empty slot',value='__empty__')]
-        options += [discord.SelectOption(label=ITEM_BY_KEY[it['detail']]['name'],description=it['id'],value=it['id']) for it in self.items[self.page*24:(self.page+1)*24]]
-        select=discord.ui.Select(placeholder='Equip an owned item or clear this slot',options=options,row=0)
-        async def choose(i):
-            card=await RaidStore(self.bot.db).equip(self.uid,self.card.instance_id,None if select.values[0]=='__empty__' else select.values[0])
-            await i.response.edit_message(embed=card_embed(self.bot,card),view=await self.create(self.bot,self.uid,card))
+        self.clear_items()
+        if self.key:
+            self.copies=[it for it in self.items if it['detail']==self.key]
+            self.pages=max(1,(len(self.copies)+self.PAGE_SIZE-1)//self.PAGE_SIZE)
+            self.page=max(0,min(self.page,self.pages-1))
+            rows=self.copies[self.page*self.PAGE_SIZE:(self.page+1)*self.PAGE_SIZE]
+            select=discord.ui.Select(placeholder='Choose an item copy to equip',options=[discord.SelectOption(label=f"{ITEM_BY_KEY[self.key]['name']} · {it['id']}"[:100],description=self.holder(it)[:100],value=it['id']) for it in rows],row=0)
+            async def choose(i):await self.apply(i,select.values[0])
+        else:
+            keys=list(dict.fromkeys(it['detail'] for it in self.items))
+            self.pages=max(1,(len(keys)+23)//24);self.page=max(0,min(self.page,self.pages-1))
+            options=[discord.SelectOption(label='Unequip / Empty slot',value='__empty__')]
+            for key in keys[self.page*24:(self.page+1)*24]:
+                copies=[it for it in self.items if it['detail']==key]
+                free=sum(not it.get('equipped_card_id') for it in copies)
+                options.append(discord.SelectOption(label=f"{ITEM_BY_KEY[key]['name']} — {len(copies)}x"[:100],description=f'{free} unequipped · {len(copies)-free} equipped',value=key))
+            select=discord.ui.Select(placeholder='Browse item types, then choose a copy',options=options,row=0)
+            async def choose(i):
+                if select.values[0]=='__empty__':await self.apply(i,None);return
+                self.type_page=self.page;self.page=0;self.key=select.values[0]
+                await self.refresh(i)
         select.callback=choose;self.add_item(select)
         for delta,emoji in ((-1,'◀️'),(1,'▶️')):
-            button=discord.ui.Button(emoji=emoji,disabled=self.page==0 if delta==-1 else self.page==pages-1,row=1)
-            async def nav(i,d=delta):self.page+=d;self.build();await i.response.edit_message(view=self)
+            button=discord.ui.Button(emoji=emoji,disabled=self.page==0 if delta==-1 else self.page==self.pages-1,row=1)
+            async def nav(i,d=delta):self.page+=d;await self.refresh(i)
             button.callback=nav;self.add_item(button)
+        if self.key:
+            back=discord.ui.Button(label='All item types',row=1)
+            async def go_back(i):self.key=None;self.page=self.type_page;await self.refresh(i)
+            back.callback=go_back;self.add_item(back)
         from ..character_notes import add_learn_more
         from ..data import CHAR_BY_ID
         add_learn_more(self,CHAR_BY_ID[self.card.character_id])

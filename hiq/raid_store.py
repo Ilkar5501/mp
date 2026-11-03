@@ -93,15 +93,17 @@ class RaidStore(CommunityStore):
                 item=await self.one(c,"SELECT * FROM inventory_items WHERE id=? AND owner_id=? AND kind='equipment'",(item_id,uid))
                 if not item or item['detail'] not in ITEM_BY_KEY:raise ValueError('Choose an equipment item you own.')
                 if not can_equip(ITEM_BY_KEY[item['detail']],CHAR_BY_ID[card['character_id']]):raise ValueError('That unit cannot equip this item.')
-                used=await self.one(c,'SELECT instance_id FROM cards WHERE equipped_item_id=?',(item_id,))
-                if used and used['instance_id']!=card['instance_id']:raise ValueError('Unequip that item from its current card first.')
+                used=await self.one(c,'SELECT instance_id,owner_id FROM cards WHERE equipped_item_id=?',(item_id,))
+                if used and used['owner_id']!=uid:raise ValueError('That item is attached to a card you do not own.')
                 key=item['detail']
+                # Validate everything before moving the copy, in the same transaction.
+                await c.execute('UPDATE cards SET equipped_item_id=NULL,equipment_key=NULL WHERE equipped_item_id=? AND instance_id<>? AND owner_id=?',(item_id,card['instance_id'],uid))
             await c.execute('UPDATE cards SET equipped_item_id=?,equipment_key=? WHERE instance_id=?',(item_id,key,card['instance_id']))
             return self.db._card(await self.one(c,'SELECT * FROM cards WHERE instance_id=?',(card['instance_id'],)))
 
     async def equipment_options(self,uid,card):
         async with self.db.connect() as c:
-            rows=await self.rows(c,"SELECT i.* FROM inventory_items i LEFT JOIN cards c ON c.equipped_item_id=i.id WHERE i.owner_id=? AND i.kind='equipment' AND (c.instance_id IS NULL OR c.instance_id=?) ORDER BY i.detail,i.id",(uid,card.instance_id))
+            rows=await self.rows(c,"SELECT i.*,c.instance_id AS equipped_card_id,c.character_id AS equipped_character_id FROM inventory_items i LEFT JOIN cards c ON c.equipped_item_id=i.id WHERE i.owner_id=? AND i.kind='equipment' ORDER BY i.detail,i.id",(uid,))
         return [i for i in rows if i['detail'] in ITEM_BY_KEY and can_equip(ITEM_BY_KEY[i['detail']],CHAR_BY_ID[card.character_id])]
 
     async def craft_sources(self,uid,char):
