@@ -5,7 +5,6 @@ Supports remain teammates for bonds, but never take actions or enter combat.
 """
 from datetime import datetime,timezone
 from .battle.engine import BattleEngine, has
-from .battle.types import fatigue_stacks
 from .data import CHARACTERS
 from .models import CardInstance
 
@@ -326,7 +325,7 @@ class ContestEngine(BattleEngine):
         elif name=='Kenma':
             max(self.team_a.units,key=lambda foe:foe.noncombat_stat('jmp')).add_debuff('jmp',-7)
             if f.lane=='front':buffs={'pow':4,'qik':4}
-            if any(foe.statuses.get('Fatigue') and fatigue_stacks(foe)>=3 for foe in self.team_a.units):buffs['spd']=3
+            if any(foe.statuses.get('Fatigue') and int(foe.statuses['Fatigue'].payload or 0)>=3 for foe in self.team_a.units):buffs['spd']=3
         elif name=='Yamagata' and self.team_hp_pct(f)<=50:
             f.barrier+=f.base['hp']//10;f.barrier_sources.add((source.uid,'C'))
         elif name=='Gao' and f.noncombat_stat('def')>f.noncombat_stat('rec'):f.cd=max(0,f.cd-1)
