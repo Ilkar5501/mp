@@ -32,9 +32,9 @@ class EquipmentEffects:
         ia,ib=units.index(a),units.index(b)
         return abs(ia//3-ib//3)+abs(ia%3-ib%3)
 
-    def postcombat_damage(self,ctx,team,amount):
+    def postcombat_damage(self,ctx,team,amount,*,source=None):
         protected=any(u.side==team.side and 'Safe Landing' in u.statuses for u in (ctx.attacker,ctx.defender))
-        if not protected:self.damage_team(team,amount)
+        if not protected:self.damage_team(team,amount,source=source)
         else:self._log(f'Safe Landing prevents {amount} after-combat team damage.')
         return not protected
 
@@ -144,7 +144,7 @@ class EquipmentEffects:
             if self.gear(u,'manager_s_good_luck_charm'):self.heal_team(u,10)
             if self.gear(u,'worthless_pride') and not(ctx.temp_flags.get('relay_teradomari') and u is ctx.attacker):
                 team=self.team(u)
-                if self.postcombat_damage(ctx,team,15):self._log(f'{self._unit_label(u)}: Worthless Pride deals 15 team damage.')
+                if self.postcombat_damage(ctx,team,15,source=u):self._log(f'{self._unit_label(u)}: Worthless Pride deals 15 team damage.')
 
     def equipment_winner(self,winner):
         if winner!='draw':return winner

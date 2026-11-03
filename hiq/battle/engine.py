@@ -332,7 +332,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                     for s in ('def','rec','jmp'): a.add_buff(s,4,source=(u.uid,'C'))
         # Futakuchi: chip then convert visible bonuses to penalties.
         if has(u,'Futakuchi'):
-            self.damage_team(enemy,20)
+            self.damage_team(enemy,20,source=u)
             for f in enemy.units:
                 for stat,mod in list(f.visible_buffs.items()):
                     if mod.value>0:
@@ -1192,7 +1192,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         # earned from this combat, and applies after every Kiryu initiation.
         if has(ctx.attacker,'Kiryu','Last Hope'):
             amount=ctx.attacker.burden_stacks
-            team=self.team(ctx.attacker); damaged=self.postcombat_damage(ctx,team,amount)
+            team=self.team(ctx.attacker); damaged=self.postcombat_damage(ctx,team,amount,source=ctx.attacker)
             if amount and damaged:
                 self._log(f'{self._unit_label(ctx.attacker)} takes {amount} Burden damage after combat.')
 
@@ -1210,14 +1210,14 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                         self.heal_team(source,8)
                         foe_team=self.enemy_team(source)
                         if not(ctx.temp_flags.get('relay_teradomari') and foe_team.side==ctx.attacker.side):
-                            self.postcombat_damage(ctx,foe_team,5)
+                            self.postcombat_damage(ctx,foe_team,5,source=source)
                             self._log(f'{self._unit_label(source)} C: 5 after-combat damage to {foe_team.owner_name}.')
         for unit in (ctx.attacker,ctx.defender):
             if has(unit,'Kanoka'):
                 for foe in self.enemy_team(unit).units: foe.cd=min(foe.max_cd,foe.cd+1)
                 self._log(f'{self._unit_label(unit)} C: all foes remaining Ultimate CD +1 (up to maximum).')
 
-    def damage_team(self,team,amount):
+    def damage_team(self,team,amount,*,source=None):
         team.hp=max(0,team.hp-max(0,amount))
 
     def heal_team(self,u,amount):
@@ -1363,7 +1363,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         if has(d,'Tendo') and d.attacks_tanked > ctx.temp_flags.get('tendo_attacks_before',d.attacks_tanked):
             target,amount=(d,5) if self.skill_spd(d)>self.skill_spd(a) else (a,10)
             if not(ctx.temp_flags.get('relay_teradomari') and target.side==a.side):
-                damaged=self.postcombat_damage(ctx,self.team(target),amount)
+                damaged=self.postcombat_damage(ctx,self.team(target),amount,source=d)
                 if damaged:self._log(f'{self._unit_label(d)} A: {amount} after-combat damage to {self.team(target).owner_name}.')
         if has(d,'Unnan') and not d.ult_triggered_this_combat: self.heal_team(d,6)
         # Reon heal
@@ -1372,7 +1372,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         # Teradomari speed + self team damage
         if has(a,'Teradomari'):
             a.add_buff('spd',3)
-            self.postcombat_damage(ctx,self.team(a),6)
+            self.postcombat_damage(ctx,self.team(a),6,source=a)
         # Unnan team-wide Jmp debuff
         if has(a,'Unnan') or has(d,'Unnan'):
             un=a if has(a,'Unnan') else d
