@@ -11,6 +11,41 @@ from .battle import BattleLogLauncher
 log=logging.getLogger(__name__)
 
 
+def damage_report_embed(stats,username,opponent):
+    from ..data import CHAR_BY_ID
+    embed=discord.Embed(title='Clan Contest — Damage Report',color=PURPLE)
+    for side,label in (('A',username),('B',opponent)):
+        rows=[];total=dict(damage_dealt=0,damage_taken=0,damage_mitigated=0)
+        for uid,value in stats.items():
+            if not uid.startswith(side) or 'character_id' not in value:continue
+            if side=='B' and not uid.startswith('B0:'):continue
+            char=CHAR_BY_ID.get(value['character_id'])
+            name=f'{char.name} — {char.title}' if char else value['character_id']
+            rows.append('**'+discord.utils.escape_markdown(name)+'**\n'+f"Dealt **{value.get('damage_dealt',0):,}** • Tanked **{value.get('damage_taken',0):,}** • Mitigated **{value.get('damage_mitigated',0):,}**")
+            for key in total:total[key]+=value.get(key,0)
+        misc=stats.get(side+':misc',{})
+        for key in total:total[key]+=misc.get(key,0)
+        rows.append('**Misc. sources**\n'+f"Dealt **{misc.get('damage_dealt',0):,}** • Tanked **{misc.get('damage_taken',0):,}** • Mitigated **0**")
+        if misc.get('self_damage_taken'):rows.append(f"Includes {misc['self_damage_taken']:,} self-inflicted damage tanked.")
+        rows.append(f"**Totals:** {total['damage_dealt']:,} dealt • {total['damage_taken']:,} tanked • {total['damage_mitigated']:,} mitigated")
+        embed.add_field(name=discord.utils.escape_markdown(label)[:256],value='\n\n'.join(rows),inline=False)
+    embed.set_footer(text='Misc. sources include support effects and damage outside combat. Self-damage is not credited to the opponent.')
+    return embed
+
+
+class ContestResultView(BattleLogLauncher):
+    def __init__(self,owner_id,lines,stats,username,opponent):
+        super().__init__({owner_id},'Clan Contest Battle Log',lines)
+        self.stats=stats;self.username=username;self.opponent=opponent
+
+    @discord.ui.button(label='Damage Report',emoji='📊',style=discord.ButtonStyle.secondary)
+    async def damage_report(self,interaction,button):
+        if interaction.user.id not in self.owner_ids:
+            await interaction.response.send_message('This damage report belongs to the player who ran this contest.',ephemeral=True)
+            return
+        await interaction.response.send_message(embed=damage_report_embed(self.stats,self.username,self.opponent),ephemeral=True)
+
+
 class ContestCog(commands.Cog):
     def __init__(self,bot):
         self.bot=bot;self.store=ContestStore(bot.db);self.jobs={};self.weekly.start()
@@ -44,7 +79,7 @@ class ContestCog(commands.Cog):
             channel=self.bot.get_channel(state['channel']) or await self.bot.fetch_channel(state['channel'])
             note='This week already closed, so this late result did not change the rankings.' if row['state']['week_closed'] else 'Your best score today counts toward the weekly rankings. Retry any time.'
             embed=discord.Embed(title='Clan Contest — Result',description=f'<@{row["owner_id"]}> dealt **{engine.score:,} damage** over **{result.turns}/20 turns** and broke **{engine.bars} HP bars**.\n\n**+{row["state"]["participation"]} Clan Dollars** for participation.\n{note}\n\n`;contestboard` opens the standings.',color=PURPLE)
-            await channel.send(embed=embed,view=BattleLogLauncher({row['owner_id']},'Clan Contest Battle Log',result.log),allowed_mentions=discord.AllowedMentions.none())
+            await channel.send(embed=embed,view=ContestResultView(row['owner_id'],result.log,result.stats,state['username'],presets_for(rules)[state['index']][0]),allowed_mentions=discord.AllowedMentions.none())
         except asyncio.CancelledError:raise
         except Exception:log.exception('Contest %s paused; use ;contestresume.',sid)
 
@@ -73,7 +108,7 @@ class ContestCog(commands.Cog):
         if not row:await ctx.send('You don’t have an interrupted contest attempt.');return
         self.launch(row['id']);await ctx.send('Your saved contest attempt is resuming in its original channel.')
 
-    @commands.hybrid_command(name='contestboard',aliases=['ccboard'],description='See the weekly clan and player damage rankings.')
+    @commands.hybrid_command(name='contestboard',aliases=['ccboard','cb'],description='See the weekly clan and player damage rankings.')
     async def contestboard(self,ctx):
         await self.store.settle();clans,players=await self.store.leaderboard()
         lines=[]

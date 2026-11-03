@@ -189,6 +189,7 @@ class ContestEngine(BattleEngine):
         self.support_ids={u.uid for u in self.supports}
         self.team_b.max_hp=self.team_b.hp=self.feature.base['hp']
         self.score=0;self.bars=0;self.max_turns=20
+        self.misc={side:dict(damage_dealt=0,damage_taken=0,damage_mitigated=0,self_damage_taken=0) for side in ('A','B')}
         for source in self.supports:
             source.cd=source.max_cd=999999
 
@@ -265,8 +266,18 @@ class ContestEngine(BattleEngine):
         if actor.side=='B':return actor,False
         return super().maybe_replace_attacker(actor,target)
 
-    def damage_team(self,team,amount):
+    def run(self):
+        result=super().run()
+        for side,values in self.misc.items():result.stats[side+':misc']=dict(values)
+        return result
+
+    def damage_team(self,team,amount,*,source=None):
         amount=max(0,int(amount))
+        if source is not None:
+            actual=amount if team.side=='B' else min(team.hp,amount)
+            self.misc[team.side]['damage_taken']+=actual
+            if source.side!=team.side:self.misc[source.side]['damage_dealt']+=actual
+            else:self.misc[team.side]['self_damage_taken']+=actual
         if team.side!='B':return super().damage_team(team,amount)
         self.score+=amount
         remaining=team.hp-amount
@@ -306,7 +317,7 @@ class ContestEngine(BattleEngine):
             if f.character.school=='Shiratorizawa':f.clear_debuffs()
         elif name in ('Usuri','Futakuchi'):
             enemy=self.team_a
-            if name=='Futakuchi':self.damage_team(enemy,20)
+            if name=='Futakuchi':self.damage_team(enemy,20,source=source)
             for foe in enemy.units:
                 for stat,mod in list(foe.visible_buffs.items()):
                     if mod.value>0:
