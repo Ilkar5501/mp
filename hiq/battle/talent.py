@@ -1,5 +1,6 @@
 """Prodigious Talent's timed support and distinct active-bonus rules."""
 from collections import defaultdict
+from .types import fatigue_stacks
 
 
 def talent(unit):
@@ -82,7 +83,7 @@ class ProdigiousTalentEffects:
         sources = {a.uid: a for a in self.team(unit).units}
         active = self._base_combat_stats(unit, foe, ctx)
         fatigue = unit.statuses.get('Fatigue')
-        n = int(fatigue.payload or 0) if fatigue else 0
+        n = fatigue_stacks(unit)
         penalties = {'spd': n, 'jmp': n, 'pow': max(n-1, 0), 'qik': max(n-1, 0), 'def': max(n-2, 0), 'rec': max(n-2, 0)}
         for stat, mod in unit.visible_buffs.items():
             if mod.value <= 0 or active[stat] != unit.noncombat_stat(stat)-penalties.get(stat, 0)-self.expansion_bond_penalty(ctx,unit):

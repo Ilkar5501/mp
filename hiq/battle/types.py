@@ -6,6 +6,15 @@ from typing import Any
 from ..models import CardInstance, CharacterDef
 
 STAT_KEYS = ('hp','pow','qik','def','rec','spd','jmp')
+FATIGUE_MAX_STACKS = 7
+
+
+def fatigue_stacks(unit) -> int:
+    status=unit.statuses.get('Fatigue')
+    if status is None:return 0
+    count=max(0,min(FATIGUE_MAX_STACKS,int(status.payload or 0)))
+    status.payload=count
+    return count
 
 @dataclass(slots=True)
 class TimedMod:
@@ -115,6 +124,7 @@ class BattleUnit:
             self.statuses.pop(key, None)
 
     def add_status(self, name: str, positive: bool, payload: Any = None, *, through_next_action: bool = False, end_turn: int | None = None, source: tuple[str,str] | None = None) -> None:
+        if name=='Fatigue':payload=max(0,min(FATIGUE_MAX_STACKS,int(payload or 0)))
         self.statuses[name] = Status(
             name=name, positive=positive, payload=payload,
             expires_after_action=(self.actions_taken + 1 + int(self.action_in_progress) if through_next_action else None),

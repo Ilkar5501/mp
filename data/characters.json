@@ -742,7 +742,7 @@
       },
       "A": {
         "name": "Final Boss Tactics",
-        "text": "After any foe's combat, inflicts 1 stack of [Fatigue] on that foe; stacks have no maximum. [Fatigue] persists across turns. During combat, foes suffer the stat penalties defined by [Fatigue] based on their current number of stacks.",
+        "text": "After any foe's combat, inflicts 1 stack of [Fatigue] on that foe, up to a maximum of 7 stacks. [Fatigue] persists across turns. During combat, foes suffer the stat penalties defined by [Fatigue] based on their current number of stacks.",
         "timing": "COMBAT_LIVE > COMBAT_END"
       },
       "B": {
@@ -758,7 +758,7 @@
     },
     "extended": {
       "U": "",
-      "A": "[Fatigue] (uncapped): During combat, if foe has N stacks, inflicts Spd/Jmp−N, Pow/Qik−max(N−1,0), and Def/Rec−max(N−2,0). [Fatigue] persists across turns.",
+      "A": "[Fatigue] (max 7): During combat, if foe has N stacks, inflicts Spd/Jmp−N, Pow/Qik−max(N−1,0), and Def/Rec−max(N−2,0). [Fatigue] persists across turns.",
       "B": "",
       "C": ""
     },
