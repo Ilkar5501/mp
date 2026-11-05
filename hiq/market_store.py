@@ -7,7 +7,7 @@ import uuid
 from fractions import Fraction
 
 from .community_store import CommunityStore
-from .data import CHAR_BY_ID
+from .data import CHAR_BY_ID,CHARACTERS
 from .items import inventory_label
 from .shard_balances import credit as credit_shards, consume as consume_shards
 
@@ -88,10 +88,9 @@ class MarketStore(CommunityStore):
             return dict(kind=kind,reference=reference,quantity=1,label=label)
         if kind=='school':
             from .abbreviations import school_name
-            from .progression import TRAINING_SCHOOLS
             reference=school_name(reference)
-            reference=next((s for s in TRAINING_SCHOOLS if s.casefold()==reference.casefold()),None)
-            if not reference:raise ValueError('Choose a school from ;training.')
+            reference=next((s for s in {char.school for char in CHARACTERS} if s.casefold()==reference.casefold()),None)
+            if not reference:raise ValueError('Choose an existing character’s school.')
             row=await self.one(conn,'SELECT quantity FROM shards WHERE owner_id=? AND school=?',(uid,reference))
             if not row or row['quantity']<quantity:raise ValueError('You do not have enough matching school shards.')
             return dict(kind=kind,reference=reference,quantity=quantity,label=f'{reference} School Shards ×{quantity}')

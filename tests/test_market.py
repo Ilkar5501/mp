@@ -70,11 +70,15 @@ class MarketTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(any(it['id']==self.item for it in await self.store.items(1)))
         with self.assertRaises(ValueError):await self.store.create(1,'item_shard',ITEMS[0]['key'],1,self.prices)
     async def test_shard_sales_transfer_exact_quantities_without_touching_daily_caps(self):
+        async with self.store.tx() as c:
+            await c.execute('INSERT INTO shards VALUES (1,?,9)',('Itachiyama',))
+        special=await self.store.create(1,'school','Itachiyama',3,self.prices)
+        await self.store.cancel(1,special['id'])
         for kind,ref,qty in [('school','kar',3),('character',CHARACTERS[0].id,12)]:
             row=await self.store.create(1,kind,ref,qty,{'coins':{'min':1,'buyout':10}})
             await self.store.bid(2,row['id'],'coins',10,buyout=True)
         async with self.db.connect() as c:
-            rows=await self.store.rows(c,'SELECT * FROM shards ORDER BY owner_id')
+            rows=await self.store.rows(c,"SELECT * FROM shards WHERE school='Karasuno' ORDER BY owner_id")
             self.assertEqual([(r['owner_id'],r['quantity']) for r in rows],[(1,6),(2,3)])
             self.assertEqual(await balance(c,1,'character_shard',CHARACTERS[0].id),38)
             self.assertEqual(await balance(c,2,'character_shard',CHARACTERS[0].id),12)
