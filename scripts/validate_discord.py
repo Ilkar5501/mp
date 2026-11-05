@@ -18,7 +18,7 @@ async def main():
         async with app.bot:
             for extension in app.EXTENSIONS:
                 await app.bot.load_extension(extension);print('Loaded',extension,flush=True)
-            for name in ('sealed','sealedview','clanwar','inv','recycle','allcraft','clancontest','contestboard','contestresume'):
+            for name in ('sealed','sealedview','clanwar','inv','recycle','allcraft','clancontest','contestboard','contestresume','market','auction','myauctions'):
                 assert app.bot.get_command(name),name
             store=SealedStore(app.bot.db)
             row=await store.create([dict(id=i,name=str(i)) for i in (1,2)],100)

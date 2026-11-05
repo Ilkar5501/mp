@@ -189,7 +189,7 @@ class TournamentCog(commands.Cog):
         names=lambda owner:discord.utils.escape_markdown(entries[owner]['display_name'][:32])
         e.description=(f'**{len(entries)}/8 entrants** • Double elimination • Two losses knock you out.\n'
             'Champion: **300 coins, plus 150 with at least four human players**.\nOne base reward and one qualifying human bonus unlock per day, shared across both modes. Repeat CPU wins cannot fill the bonus portion. Unused allowance banks until Monday weekly reset. Losses: 0 coins.\n'
-            'Matches run automatically; human players receive results by DM. CPUs use Neutral +0 cards and earn no coins.\n')
+            'Matches run automatically; human players receive results by DM. CPU builds vary, and CPUs earn no coins.\n')
         if t['status']=='open':e.description+='The host can use **Auto-fill** to fill empty places with CPU teams and start.\n'
         if t['status'] in ('open','cancelled'):e.add_field(name='Entrants',value='\n'.join(names(owner) for owner in entries) or 'No entrants yet.',inline=False)
         else:

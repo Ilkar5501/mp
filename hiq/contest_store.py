@@ -1,5 +1,6 @@
 """Persisted rotation, best daily scores, and exactly-once contest rewards."""
 import json,random,uuid
+from fractions import Fraction
 from datetime import date,timedelta,datetime
 from .community_store import CommunityStore,now
 from .economy import local_date_key,week_key_for
@@ -73,9 +74,24 @@ class ContestStore(CommunityStore):
             async with self.db.connect() as c:return await self.leaderboard(week,c)
         from .economy import week_key
         week=week or week_key()
-        clans=await self.rows(conn,'SELECT clan_id,SUM(score) AS score FROM contest_scores WHERE week=? GROUP BY clan_id ORDER BY score DESC,clan_id',(week,))
-        players=await self.rows(conn,'SELECT owner_id,SUM(score) AS score FROM contest_scores WHERE week=? GROUP BY owner_id ORDER BY score DESC,owner_id',(week,))
-        return clans,players
+        rows=await self.rows(conn,'SELECT owner_id,clan_id,day,score FROM contest_scores WHERE week=?',(week,))
+        # Normalize clans and players separately. A high-damage opponent must not
+        # give its day more weight than any other day in the weekly competition.
+        def standings(key):
+            totals={};leaders={}
+            for row in rows:
+                pair=(row[key],row['day'])
+                totals[pair]=totals.get(pair,0)+row['score']
+            for (_,day),damage in totals.items():leaders[day]=max(leaders.get(day,0),damage)
+            scores={};days={};damage_totals={}
+            for (identity,day),damage in totals.items():
+                percent=Fraction(100*damage,leaders[day]) if leaders[day] else Fraction(100)
+                scores[identity]=scores.get(identity,Fraction(0))+percent
+                days.setdefault(identity,{})[day]=dict(damage=damage,percent=float(percent))
+                damage_totals[identity]=damage_totals.get(identity,0)+damage
+            return [dict(**{key:identity},score=float(scores[identity]),days=days[identity],damage=damage_totals[identity])
+                    for identity in sorted(scores,key=lambda identity:(-scores[identity],identity))]
+        return standings('clan_id'),standings('owner_id')
 
     async def settle(self):
         from .economy import week_key

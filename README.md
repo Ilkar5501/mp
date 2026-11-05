@@ -11,6 +11,12 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
+## Latest release: v11.4.0
+
+See [WISPBYTE-11.4.0.md](WISPBYTE-11.4.0.md) for current deployment instructions and rules. Clan Contest weekly prizes now use the sum of daily percentages, with the daily leader at 100% for both players and clans. `;cb` shows the daily breakdown. `;market`, `;auction` and `;myauctions` provide cross-server auctions with Coin/Clan Dollar bids, optional buyouts and restart-safe escrow. School/character shards can be listed; item shards cannot.
+
+Merges replace consumed cards in saved teams. A confirmed +10 donor transfer keeps the survivor's nature. `;teamedit <slot> <new name>` renames a team; omitting the name opens the existing editor. The tournament CPU pool includes the equipped Echigo/Hinata/Akifumi/Atsumu/Kageyama/Teradomari formation. Only Teradomari is +10. The v11 sections below describe historical changes; the latest release guide takes precedence where rules changed.
+
 ## v11 changes
 
 ### Weekly rollover for activity rewards

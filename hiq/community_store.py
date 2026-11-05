@@ -332,14 +332,14 @@ class CommunityStore(WarActivity):
             if not cur.rowcount:raise ValueError(f'You need {cost} clan coins.')
             return await self._issue_item(c,uid,kind,stars),cost
 
-    async def merge_many(self,uid,survivor_id,consumed_ids):
+    async def merge_many(self,uid,survivor_id,consumed_ids,*,confirm_max_transfer=False):
         if not consumed_ids or len(consumed_ids)!=len(set(consumed_ids)):raise ValueError('Select at least one distinct material.')
         async with self.tx() as c:
             row=await self.one(c,'SELECT * FROM cards WHERE owner_id=? AND (instance_id=? OR full_instance_id=?)',(uid,survivor_id,survivor_id))
             if not row:raise ValueError('Card 1 must be a card you own; items cannot be survivors.')
             base=self.db._card(row)
             if base.locked:raise ValueError('Unlock Card 1 before merging.')
-            level=base.merge_level;cards=[];items=[];seen={base.instance_id}
+            level=base.merge_level;cards=[];items=[];seen={base.instance_id};max_donor=False
             for iid in consumed_ids:
                 row=await self.one(c,'SELECT * FROM cards WHERE owner_id=? AND (instance_id=? OR full_instance_id=?)',(uid,iid,iid))
                 if row:
@@ -348,14 +348,18 @@ class CommunityStore(WarActivity):
                     seen.add(card.instance_id)
                     if card.locked or card.character_id!=base.character_id:raise ValueError('All card materials must be unlocked copies of the exact same character variant.')
                     level+=card.merge_level+1;cards.append(card.instance_id)
+                    max_donor=max_donor or card.merge_level==10
                 else:
                     item=await self.one(c,'SELECT * FROM inventory_items WHERE id=? AND owner_id=?',(iid,uid))
                     if not item or item['kind']!='mergecopy' or item['stars']!=CHAR_BY_ID[base.character_id].rarity:
                         raise ValueError('Item materials must be owned Merge Copies matching Card 1’s star rating.')
                     level+=1;items.append(iid)
+            if max_donor and base.merge_level<10 and len(cards)==1 and not items:
+                if not confirm_max_transfer:raise ValueError('Merging a +10 donor requires the extra nature-transfer confirmation.')
+                level=10
             if level>10:raise ValueError(f'That merge would create +{level}, above the +10 cap. Remove some materials.')
             for iid in cards:
-                await self.db._clear_card_from_teams_tx(c,iid)
+                await self.db._replace_merged_card_tx(c,iid,base.instance_id)
                 await c.execute('DELETE FROM cards WHERE instance_id=?',(iid,))
             for iid in items:await c.execute('DELETE FROM inventory_items WHERE id=?',(iid,))
             await c.execute('UPDATE cards SET merge_level=? WHERE instance_id=?',(level,base.instance_id))
