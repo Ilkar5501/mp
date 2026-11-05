@@ -413,7 +413,7 @@ class MergeBuilderView(OwnerOnlyView):
                 f'**Consumed ID:** `{c2.instance_id}`'
             )
             if consumed_on_team:
-                e.add_field(name='Saved team updated', value='The consumed instance was assigned to a team. That exact slot is now empty; incomplete teams remain saved but cannot battle.', inline=False)
+                e.add_field(name='Saved team updated', value='Saved teams now use the surviving card in place of the consumed copy.', inline=False)
             await interaction.response.edit_message(embed=e, view=None)
 
         add1.callback = add1_cb; add2.callback = add2_cb; search.callback = search_cb

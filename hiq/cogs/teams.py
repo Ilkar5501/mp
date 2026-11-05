@@ -458,13 +458,19 @@ class TeamsCog(commands.Cog):
         msg = await ctx.send(embed=await view.build_embed(), view=view)
         view.message = msg
 
-    @commands.hybrid_command(name='teamedit', description='Edit or swap a saved lineup; Confirm saves your changes.')
-    async def teamedit(self,ctx,slot:int):
+    @commands.hybrid_command(name='teamedit', description='Edit a saved lineup, or supply a new team name to rename it.')
+    async def teamedit(self,ctx,slot:int,*,name:str=None):
         if not 1<=slot<=15:
             await ctx.send('Team slot must be from **1 to 15**.'); return
         team=await self.bot.db.get_saved_team(ctx.author.id,slot)
         if not team:
             await ctx.send('That team slot does not exist. Use `;teamcreate <slot>` first.');return
+        if name is not None:
+            name=name.strip()
+            if not 1<=len(name)<=40 or any(ord(c)<32 for c in name):
+                await ctx.send('Team names must be 1–40 characters, without line breaks or control characters.');return
+            team=await self.bot.db.ensure_saved_team(ctx.author.id,slot,name)
+            await ctx.send(f'Team **{slot}** is now **{discord.utils.escape_markdown(team.name)}**.',allowed_mentions=discord.AllowedMentions.none());return
         cards=await self.bot.db.get_cards(ctx.author.id)
         if not cards:
             await ctx.send('You need cards to edit a team.');return

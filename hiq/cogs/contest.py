@@ -5,7 +5,7 @@ from discord.ext import commands,tasks
 from ..contest import ContestEngine,PRESETS,preset_specs,presets_for,support_slots,support_note
 from ..contest_store import ContestStore
 from ..tournament import restore_specs
-from ..ui import EmbedPager,PURPLE
+from ..ui import EmbedPager,PURPLE,text_pages
 from .battle import BattleLogLauncher
 
 log=logging.getLogger(__name__)
@@ -77,7 +77,7 @@ class ContestCog(commands.Cog):
             result=await asyncio.wait_for(asyncio.to_thread(engine.run),60)
             row=await self.store.finish(sid,engine.score,asdict(result))
             channel=self.bot.get_channel(state['channel']) or await self.bot.fetch_channel(state['channel'])
-            note='This week already closed, so this late result did not change the rankings.' if row['state']['week_closed'] else 'Your best score today counts toward the weekly rankings. Retry any time.'
+            note='This week already closed, so this late result did not change the rankings.' if row['state']['week_closed'] else 'Your best damage today determines your daily percentage. The top player earns 100%, and daily percentages add up across the week. Retry any time.'
             embed=discord.Embed(title='Clan Contest — Result',description=f'<@{row["owner_id"]}> dealt **{engine.score:,} damage** over **{result.turns}/20 turns** and broke **{engine.bars} HP bars**.\n\n**+{row["state"]["participation"]} Clan Dollars** for participation.\n{note}\n\n`;contestboard` opens the standings.',color=PURPLE)
             await channel.send(embed=embed,view=ContestResultView(row['owner_id'],result.log,result.stats,state['username'],presets_for(rules)[state['index']][0]),allowed_mentions=discord.AllowedMentions.none())
         except asyncio.CancelledError:raise
@@ -108,17 +108,25 @@ class ContestCog(commands.Cog):
         if not row:await ctx.send('You don’t have an interrupted contest attempt.');return
         self.launch(row['id']);await ctx.send('Your saved contest attempt is resuming in its original channel.')
 
-    @commands.hybrid_command(name='contestboard',aliases=['ccboard','cb'],description='See the weekly clan and player damage rankings.')
+    @commands.hybrid_command(name='contestboard',aliases=['ccboard','cb'],description='See daily percentages and weekly clan and player standings.')
     async def contestboard(self,ctx):
+        await ctx.defer()
         await self.store.settle();clans,players=await self.store.leaderboard()
+        from datetime import date,timedelta
+        from ..economy import week_key
+        days=[(date.fromisoformat(week_key())+timedelta(days=n)).isoformat() for n in range(7)]
+        def breakdown(row):
+            return ' · '.join(f'{date.fromisoformat(day):%a} {row["days"].get(day,{}).get("percent",0):.2f}%' for day in days)
         lines=[]
-        for i,row in enumerate(clans[:20],1):
+        for i,row in enumerate(clans,1):
             clan=await self.store.clan(clan_id=row['clan_id'])
-            lines.append(f'**{i}. {discord.utils.escape_markdown(clan["name"] if clan else "Former clan")}** — {row["score"]:,}')
-        clan_embed=discord.Embed(title='Clan Contest — Clan Rankings',description='\n'.join(lines) or 'No scores this week yet.',color=PURPLE)
-        player_embed=discord.Embed(title='Clan Contest — Player Rankings',description='\n'.join(f'**{i}.** <@{r["owner_id"]}> — {r["score"]:,}' for i,r in enumerate(players[:20],1)) or 'No scores this week yet.',color=PURPLE)
-        for embed in (clan_embed,player_embed):embed.add_field(name='Weekly prizes',value='1st: 1,000 • 2nd: 750 • 3rd: 500. Clans earn Clan Dollars for all members; individual players earn Coins. Equal scores sort by clan/player ID. Rankings reset Monday.',inline=False)
-        pager=EmbedPager([clan_embed,player_embed],ctx.author.id);await ctx.send(embed=pager.embed(),view=pager)
+            lines.append(f'**{i}. {discord.utils.escape_markdown(clan["name"] if clan else "Former clan")}** — **{row["score"]:.2f}%**\n{breakdown(row)}')
+        pages=text_pages('Clan Contest — Weekly Clan Rankings',lines,limit=2800)
+        pages+=text_pages('Clan Contest — Weekly Player Rankings',[f'**{i}.** <@{r["owner_id"]}> — **{r["score"]:.2f}%**\n{breakdown(r)}' for i,r in enumerate(players,1)],limit=2800)
+        for embed in pages:
+            embed.add_field(name='How scoring works',value='Each day: your best damage ÷ the top player’s best damage × 100. Clans compare their combined daily damage with the top clan’s total. The daily leader earns 100%; seven daily percentages add up to a maximum of 700%. Missing days earn 0%. Percentages update when a better score arrives; prizes lock at the weekly reset.',inline=False)
+            embed.add_field(name='Weekly prizes',value='1st: 1,000 • 2nd: 750 • 3rd: 500. Clans earn Clan Dollars for all members; individual players earn Coins. Equal scores sort by clan/player ID. Rankings reset Monday.',inline=False)
+        pager=EmbedPager(pages,ctx.author.id);await ctx.send(embed=pager.embed(),view=pager)
 
 
 async def setup(bot):await bot.add_cog(ContestCog(bot))

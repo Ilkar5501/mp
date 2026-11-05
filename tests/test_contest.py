@@ -221,8 +221,71 @@ class ContestStoreTests(unittest.IsolatedAsyncioTestCase):
         await self.run_row(140)
         self.assertEqual(await self.store.wallet(1),200)
         clans,users=await self.store.leaderboard()
-        self.assertEqual(users[0]['score'],140)
-        self.assertEqual(clans[0]['score'],140)
+        self.assertEqual(users[0]['score'],100)
+        self.assertEqual(clans[0]['score'],100)
+        self.assertEqual(users[0]['damage'],140)
+
+    async def test_each_day_has_equal_weight_and_clans_normalize_separately(self):
+        from hiq.community_store import now
+        other=await self.store.create_clan(2,'Two','Other Clan','🏐')
+        week=week_key();first=datetime.fromisoformat(week).date();second=first+timedelta(days=1)
+        async with self.store.tx() as c:
+            for uid,day,cid,score in [(1,first,self.clan['id'],70000),(2,first,other['id'],35000),
+                                       (3,first,other['id'],35000),(1,second,self.clan['id'],100),
+                                       (2,second,other['id'],1000)]:
+                await c.execute('INSERT INTO contest_scores VALUES (?,?,?,?,?)',(uid,day.isoformat(),week,cid,score))
+        clans,users=await self.store.leaderboard()
+        self.assertEqual([r['owner_id'] for r in users],[2,1,3])
+        self.assertEqual([r['score'] for r in users],[150,110,50])
+        self.assertEqual([r['clan_id'] for r in clans],[other['id'],self.clan['id']])
+        self.assertEqual([r['score'] for r in clans],[200,110])
+        for standings in (clans,users):
+            for day in (first,second):
+                self.assertEqual(max(r['days'].get(day.isoformat(),{}).get('percent',0) for r in standings),100)
+        # A better retry changes the reference, not the day's maximum weight.
+        async with self.store.tx() as c:
+            await c.execute('UPDATE contest_scores SET score=140000 WHERE owner_id=1 AND day=?',(first.isoformat(),))
+        _,users=await self.store.leaderboard()
+        self.assertEqual([r['owner_id'] for r in users],[2,1,3])
+        self.assertEqual(users[0]['score'],125)
+
+    async def test_zero_damage_day_has_no_division_error(self):
+        await self.run_row(0)
+        clans,users=await self.store.leaderboard()
+        self.assertEqual(users[0]['score'],100)
+        self.assertEqual(clans[0]['score'],100)
+
+    async def test_prizes_use_daily_percentages_instead_of_raw_weekly_damage(self):
+        other=await self.store.create_clan(2,'Two','Other Clan','🏐')
+        current=datetime.fromisoformat(week_key()).date();first=current-timedelta(days=7)
+        week=week_key_for(datetime.combine(first,datetime.min.time()))
+        async with self.store.tx() as c:
+            for uid,offset,cid,score in [(1,0,self.clan['id'],70000),(2,0,other['id'],35000),
+                                         (1,1,self.clan['id'],100),(2,1,other['id'],1000)]:
+                await c.execute('INSERT INTO contest_scores VALUES (?,?,?,?,?)',(uid,(first+timedelta(days=offset)).isoformat(),week,cid,score))
+        await self.store.settle()
+        self.assertEqual(await self.store.wallet(2),1000)
+        self.assertEqual(await self.store.wallet(1),750)
+        self.assertEqual((await self.db.get_user(2)).coins,1000)
+        self.assertEqual((await self.db.get_user(1)).coins,750)
+
+    async def test_board_pages_show_daily_percentages_without_exceeding_embed_limits(self):
+        from types import SimpleNamespace
+        from unittest.mock import AsyncMock
+        from hiq.cogs.contest import ContestCog
+        days={(datetime.fromisoformat(week_key()).date()+timedelta(days=i)).isoformat():dict(percent=100,damage=70000) for i in range(7)}
+        clans=[dict(clan_id=str(i),score=700,days=days) for i in range(40)]
+        players=[dict(owner_id=i,score=700,days=days) for i in range(40)]
+        store=SimpleNamespace(settle=AsyncMock(),leaderboard=AsyncMock(return_value=(clans,players)),clan=AsyncMock(return_value={'name':'*'*40}))
+        ctx=SimpleNamespace(defer=AsyncMock(),send=AsyncMock(),author=SimpleNamespace(id=1))
+        await ContestCog.contestboard.callback(SimpleNamespace(store=store),ctx)
+        pager=ctx.send.call_args.kwargs['view']
+        self.assertGreater(len(pager.pages),2)
+        for page in pager.pages:
+            self.assertLessEqual(len(page.description),4096)
+            self.assertLessEqual(len(page),6000)
+            self.assertIn('Mon 100.00%',page.description)
+            self.assertIn('Sun 100.00%',page.description)
 
     async def test_rotation_is_persistent_and_each_period_contains_all_teams(self):
         indices=[(await self.store.rotation(f'2026-11-{day:02}'))[0] for day in range(1,15)]

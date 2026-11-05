@@ -180,6 +180,8 @@ class Database:
             from .rewards import SCHEMA as REWARD_SCHEMA, migrate as migrate_rewards
             await db.executescript(REWARD_SCHEMA)
             await migrate_rewards(db)
+            from .market_store import SCHEMA as MARKET_SCHEMA
+            await db.executescript(MARKET_SCHEMA)
 
     async def _migrate_saved_teams(self,db):
         # SQLite CHECK constraints need a transactional table rebuild. Copy every
@@ -500,12 +502,14 @@ class Database:
                 original.merge_level = 0
                 return original, copies
 
-    async def merge_cards(self, owner_id: int, survivor_id: str, consumed_id: str, max_level: int = 10) -> CardInstance:
+    async def merge_cards(self, owner_id: int, survivor_id: str, consumed_id: str, max_level: int = 10, *, confirm_max_transfer: bool = False) -> CardInstance:
         '''Merge exactly two explicitly selected card instances.
 
         Card 1 survives and keeps its ID, boon/bane, ownership metadata, and obtained
         timestamp. Card 2 is consumed. The new merge value is m1 + m2 + 1, because
         each physical card represents one copy. Locked cards are never eligible.
+        A single +10 donor can instead transfer its merge level to a lower-level
+        survivor after explicit confirmation, retaining the survivor's nature.
         '''
         if survivor_id == consumed_id:
             raise ValueError('Choose two different card instances.')
@@ -531,13 +535,17 @@ class Database:
                 if survivor.character_id != consumed.character_id:
                     raise ValueError('Both cards must have the same character name and title.')
                 new_level = int(survivor.merge_level) + int(consumed.merge_level) + 1
+                if consumed.merge_level == 10 and survivor.merge_level < 10:
+                    if not confirm_max_transfer:
+                        raise ValueError('Merging a +10 donor requires the extra nature-transfer confirmation.')
+                    new_level = 10
                 if new_level > int(max_level):
                     raise ValueError(
                         f'That merge would create +{new_level}, above the +{max_level} cap. '
                         f'Card 1 is +{survivor.merge_level}; Card 2 is +{consumed.merge_level}.'
                     )
                 survivor_id, consumed_id = survivor.instance_id, consumed.instance_id
-                await self._clear_card_from_teams_tx(db,consumed_id)
+                await self._replace_merged_card_tx(db,consumed_id,survivor_id)
                 await db.execute('DELETE FROM cards WHERE instance_id=? AND owner_id=?', (consumed_id, owner_id))
                 await db.execute(
                     'UPDATE cards SET merge_level=? WHERE instance_id=? AND owner_id=?',
@@ -729,6 +737,22 @@ class Database:
             cur = await db.execute('SELECT owner_id FROM teams WHERE kind="defense" AND owner_id<>? ORDER BY RANDOM() LIMIT 1', (exclude_owner,))
             row = await cur.fetchone()
         return int(row['owner_id']) if row else None
+
+    async def _replace_merged_card_tx(self,db,consumed_id,survivor_id):
+        # Team validation already disallows duplicate variants within a team.
+        # Keep the survivor's existing position if repairing an older invalid team.
+        keys=('front_id','front2_id','front3_id','back1_id','back2_id','back3_id')
+        for table,columns in (('saved_teams',keys),('teams',('front_id','back1_id','back2_id'))):
+            occupied=' OR '.join(f'{key}=?' for key in columns)
+            replacement='NULL' if table=='saved_teams' else '?'
+            assignments=','.join(f'{key}=CASE WHEN {key}=? THEN CASE WHEN ({occupied}) THEN {replacement} ELSE ? END ELSE {key} END' for key in columns)
+            args=[]
+            for _ in columns:
+                args.extend([consumed_id]+[survivor_id]*len(columns))
+                if table=='teams':args.append(survivor_id)
+                args.append(survivor_id)
+            await db.execute(f'UPDATE {table} SET {assignments},updated_at=? WHERE '+ ' OR '.join(f'{key}=?' for key in columns),
+                tuple(args)+ (datetime.now(timezone.utc).isoformat(),)+ (consumed_id,)*len(columns))
 
     async def _clear_card_from_teams_tx(self,db,instance_id):
         keys=('front_id','front2_id','front3_id','back1_id','back2_id','back3_id')

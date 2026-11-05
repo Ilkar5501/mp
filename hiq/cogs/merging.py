@@ -21,7 +21,7 @@ class MultiMergeView(SafeView):
         super().__init__(timeout=300);self.bot=bot;self.uid=uid
         self.cards={c.instance_id:c for c in cards if not c.locked}
         self.items={i['id']:i for i in items if i['kind']=='mergecopy'}
-        self.query=query;self.base=base;self.materials=list(materials or []);self.pending=None;self.page=0;self.finished=False;self.rebuild()
+        self.query=query;self.base=base;self.materials=list(materials or []);self.pending=None;self.page=0;self.finished=False;self.max_confirm=False;self.rebuild()
     async def interaction_check(self,i):
         if i.user.id!=self.uid:await i.response.send_message('This merge builder belongs to another player.',ephemeral=True);return False
         if self.finished:await i.response.send_message('This merge is already complete.',ephemeral=True);return False
@@ -42,7 +42,11 @@ class MultiMergeView(SafeView):
         return sorted(out,key=lambda row:(row[1].casefold(),row[0]))
     def level(self):
         if not self.base:return None
+        if self.max_transfer():return 10
         return self.cards[self.base].merge_level+sum(self.cards[iid].merge_level+1 if iid in self.cards else 1 for iid in self.materials)
+    def max_transfer(self):
+        return bool(self.base and self.cards[self.base].merge_level<10 and len(self.materials)==1
+                    and self.materials[0] in self.cards and self.cards[self.materials[0]].merge_level==10)
     def embed(self):
         e=discord.Embed(title='Merge Cards & Materials',color=PURPLE)
         e.description='Choose the surviving **Card 1**, then select any applicable card copies or Merge Copy items. Each selection adds materials immediately. Confirm consumes all selected materials; Card 1 keeps its nature, ID and history.'
@@ -54,6 +58,8 @@ class MultiMergeView(SafeView):
             if len(lines)>10:shown.append(f'… and {len(lines)-10} more materials. Remove materials to stay within +10.')
             e.add_field(name='Consumed materials',value='\n'.join(shown) or 'Choose from the dropdown.',inline=False)
             e.add_field(name='Preview',value=f'**+{self.level()}** • '+('Within +10 cap' if self.level()<=10 else 'Above +10: remove materials'),inline=False)
+            if self.max_transfer():
+                e.add_field(name='Transfer a +10 card',value='The +10 donor will be consumed. Card 1 becomes +10 and keeps **its own boon/bane**, ID and equipment. This replaces the donor’s nature; it does not add extra merges.\n'+('**Are you sure? Click Confirm +10 Transfer to continue.**' if self.max_confirm else 'An extra confirmation is required.'),inline=False)
         elif self.pending:e.add_field(name='Candidate',value=f'`{self.pending}` • click **Set Card 1**.',inline=False)
         count=len(self.choices());e.set_footer(text=f'Page {self.page+1}/{max(1,math.ceil(count/20))} • {count} options'+(f' • Name search: {self.query}' if self.query else ''))
         return e
@@ -63,6 +69,7 @@ class MultiMergeView(SafeView):
         choices=self.choices();pages=max(1,math.ceil(len(choices)/20));self.page=min(self.page,pages-1);chunk=choices[self.page*20:(self.page+1)*20]
         select=discord.ui.Select(placeholder='Select materials to add' if self.base else 'Choose the surviving card',options=[discord.SelectOption(label=label[:100],value=iid,description=desc[:100]) for iid,label,desc,_ in chunk] or [discord.SelectOption(label='No matching materials',value='__none__')],max_values=min(10,len(chunk)) if self.base and chunk else 1,disabled=not bool(chunk),row=0)
         async def select_cb(i):
+            self.max_confirm=False
             if self.base:
                 for iid in select.values:
                     if iid not in self.materials:self.materials.append(iid)
@@ -73,6 +80,7 @@ class MultiMergeView(SafeView):
         for label,style,disabled in controls:
             button=discord.ui.Button(label=label,style=style,disabled=disabled,row=1)
             async def cb(i,l=label):
+                self.max_confirm=False
                 if l=='Set Card 1':self.base=self.pending;self.pending=None;self.page=0;self.query=''
                 elif l=='Search':await i.response.send_modal(MergeQueryModal(self));return
                 elif l=='Remove Last':
@@ -84,11 +92,13 @@ class MultiMergeView(SafeView):
             button=discord.ui.Button(emoji=emoji,style=discord.ButtonStyle.secondary,row=2,disabled=(self.page==0 if delta==-1 else self.page==pages-1))
             async def nav(i,d=delta):self.page+=d;self.rebuild();await i.response.edit_message(embed=self.embed(),view=self)
             button.callback=nav;self.add_item(button)
-        merge=discord.ui.Button(label='Merge',style=discord.ButtonStyle.success,row=2,disabled=not(self.base and self.materials and self.level()<=10))
+        merge=discord.ui.Button(label='Confirm +10 Transfer' if self.max_confirm else 'Merge',style=discord.ButtonStyle.danger if self.max_confirm else discord.ButtonStyle.success,row=2,disabled=not(self.base and self.materials and self.level()<=10))
         async def commit(i):
             if self.finished:raise ValueError('This merge is already complete.')
-            merged=await CommunityStore(self.bot.db).merge_many(self.uid,self.base,self.materials)
+            if self.max_transfer() and not self.max_confirm:
+                self.max_confirm=True;self.rebuild();await i.response.edit_message(embed=self.embed(),view=self);return
+            merged=await CommunityStore(self.bot.db).merge_many(self.uid,self.base,self.materials,confirm_max_transfer=self.max_confirm)
             self.finished=True;self.rebuild()
-            e=discord.Embed(title='✨ Merge Complete',description=f'**{display_title(CHAR_BY_ID[merged.character_id])}** is now **+{merged.merge_level}**.\nSurviving ID: `{merged.instance_id}`\nNature retained: {nature_text(merged)}\nConsumed: '+', '.join(f'`{iid}`' for iid in self.materials)+'\nAny saved slots using consumed cards are now empty.',color=discord.Color.green())
+            e=discord.Embed(title='✨ Merge Complete',description=f'**{display_title(CHAR_BY_ID[merged.character_id])}** is now **+{merged.merge_level}**.\nSurviving ID: `{merged.instance_id}`\nNature retained: {nature_text(merged)}\nConsumed: '+', '.join(f'`{iid}`' for iid in self.materials)+'\nSaved teams now use the surviving card in place of consumed copies.',color=discord.Color.green())
             await i.response.edit_message(embed=e,view=None)
         merge.callback=commit;self.add_item(merge)

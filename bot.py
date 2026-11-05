@@ -31,6 +31,7 @@ EXTENSIONS = (
     'hiq.cogs.raids',
     'hiq.cogs.sealed',
     'hiq.cogs.contest',
+    'hiq.cogs.market',
 )
 PURPLE = discord.Color.from_rgb(72, 42, 115)
 
@@ -185,7 +186,7 @@ async def help_cmd(ctx: commands.Context):
             'Prefix: **`;`**. Public commands also have `/slash` forms. Run `;start` once before gameplay. `;ab` lists abbreviations.',
             '**Cards:** `;co [filters]`, `;cv ID`, `;cardsearch [filters]`, `;gallery [filters]`, `;lock ID`.',
             '**Merge:** `;merge [name]` or `;merge survivorID [materialIDs…]`. Set Card 1 once, then select any matching copies or Merge Copy items.',
-            '**Teams:** `;teamcreate slot [name]`, `;teamedit slot`, `;teamview [slot]`, `;teamuse slot`. Fifteen slots; 3v3 and 6v6.',
+            '**Teams:** `;teamcreate slot [name]`, `;teamedit slot [new name]`, `;teamview [slot]`, `;teamuse slot`. Fifteen slots; 3v3 and 6v6.',
             '**Packs:** `;daily` / `;d`, `;shop`, `;p b`, `;p p WS`, `;p s kar`. School abbreviations work.',
             '**Pack details:** `;info p b`, `;info p p WS`, `;info p s kar` — units and individual pull rates.',
             '**Inventory:** `;inv`, `;open packID`, `;bless [itemID] [cardID]`. Shards and tradeable inventory items.',
@@ -223,6 +224,7 @@ async def help_cmd(ctx: commands.Context):
             'War: private opening sends; then previous winning clan sends publicly first. Fresh teams each series. First to two simulations wins; one player is knocked out. Three knockouts end Quick Wars; five end Long Wars.',
             '`;donate cardID` — confirm-delete a card; every clan member earns stars × 10 × (merge+1) clan coins. Six daily donations.',
             '`;clancontest [team slot]` — see today’s featured unit or enter with a 6v6 team; `;contestboard` shows weekly rankings.',
+            '`;market [search]` — browse auctions across all servers. `;auction` creates a listing; `;auction <ID>` opens one. `;myauctions` shows your sales. Cards, inventory items, school shards and character shards can be sold for Coins or Clan Dollars; item shards cannot.',
             '`;checkin` — 150 daily Clan Dollars; all five checking in gives everyone another 50.',
             '`;clanshop`, `;clanbuy mergecopy|blessing|starpack stars` — inventory items. Use `;inv` for IDs.',
         ]),
