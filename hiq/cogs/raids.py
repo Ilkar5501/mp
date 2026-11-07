@@ -3,7 +3,7 @@ import asyncio,hashlib,logging,shlex
 from dataclasses import asdict
 import discord
 from discord.ext import commands
-from ..items import ITEMS,ITEM_BY_KEY,THEMES,find_items,normalize
+from ..items import ITEMS,SIGNATURE_ITEMS,ITEM_BY_KEY,THEMES,find_items,normalize
 from ..query_text import split_query
 from ..raid_store import RaidStore
 from ..raids import RAID_TEAMS,RAID_POOLS,DIFFICULTIES,team_index,raid_team
@@ -123,14 +123,15 @@ async def craft_command(bot,ctx,query=''):
         from .crafting import CraftMenu
         view=await CraftMenu.create(bot,ctx.author.id,str(ctx.author))
         await ctx.send(embed=view.embed(),view=view);return
-    store=RaidStore(bot.db);items=find_items(query)
+    store=RaidStore(bot.db);items=find_items(query,include_signatures=True)
     exact=[it for it in items if query.casefold() in (it['name'].casefold(),it['key'])]
     if exact:items=exact
     if len(items)==1:
         item=items[0]
         try:iid=await store.craft(ctx.author.id,str(ctx.author),item['key'])
         except ValueError as exc:await ctx.send(str(exc));return
-        await ctx.send(f'Crafted **{item["name"]}**. Inventory ID: `{iid}` • spent {item["shard_cost"]} item shards. Equip through ;cv cardID.');return
+        cost=(f'{item["shard_cost"]} signature shards + {item["character_shards"]} character shards + {item["coin_cost"]} coins' if item.get('signature') else f'{item["shard_cost"]} item shards')
+        await ctx.send(f'Crafted **{item["name"]}**. Inventory ID: `{iid}` • {cost}. Use ;equip.');return
     matches=find_character(query)
     if len(matches)!=1:
         choices=[it['name'] for it in items]+[c.id for c in matches]
@@ -307,8 +308,8 @@ class RaidCog(commands.Cog):
             if token in aliases:current=aliases[token];continue
             if sep and prefix in aliases:current=aliases[prefix];token=value
             queries[current]=(queries.get(current,'')+' '+token).strip()
-        name_matches={it['key'] for it in find_items(queries.get('name',''))}
-        matches=sorted([it for it in ITEMS if it['key'] in name_matches and (not queries.get('text') or queries['text'].casefold() in it['effect'].casefold())],key=lambda it:it['name'].casefold())
+        name_matches={it['key'] for it in find_items(queries.get('name',''),include_signatures=True)}
+        matches=sorted([it for it in ITEMS+SIGNATURE_ITEMS if it['key'] in name_matches and (not queries.get('text') or queries['text'].casefold() in it['effect'].casefold())],key=lambda it:it['name'].casefold())
         from .item_browser import ItemBrowser
         view=ItemBrowser(self.bot,ctx.author.id,matches,await self.store.shard_progress(ctx.author.id))
         await ctx.send(embed=view.embed(),view=view)

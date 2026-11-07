@@ -25,3 +25,5 @@ POW_EMOJI_NAME = os.getenv('POW_EMOJI_NAME', 'pow')
 QIK_EMOJI_NAME = os.getenv('QIK_EMOJI_NAME', 'qik')
 
 MECHANICS_GUIDE_URL = os.getenv('MECHANICS_GUIDE_URL', '').strip()
+COMMUNITY_SERVER_URL = os.getenv('COMMUNITY_SERVER_URL', 'https://discord.gg/pnAhQaKUNN').strip()
+BOT_WEBSITE_URL = os.getenv('BOT_WEBSITE_URL', 'https://ilkar5501.github.io/mpgallery/').strip().rstrip('/')

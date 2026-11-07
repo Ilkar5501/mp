@@ -260,35 +260,21 @@ class CommunityCog(commands.Cog):
         try:iid,cost=await self.store.buy(ctx.author.id,item,stars)
         except ValueError as exc:await ctx.send(str(exc));return
         await ctx.send(f'Bought {stars}★ {item} for {cost} clan coins. Item ID: `{iid}`.')
-    @commands.hybrid_command(name='inventory',aliases=['inv'],description='Browse your school shards and inventory items.')
-    async def inventory(self,ctx,view:str=''):
+    @commands.hybrid_command(name='inventory',aliases=['inv'],description='Browse or search your inventory, 25 entries per page.')
+    async def inventory(self,ctx,*,query:str=''):
+        from ..inventory import parse_query
+        from .inventory_view import InventoryView
+        mode,query=parse_query(query)
         async with self.store.tx() as c:
             preference=await self.store.one(c,'SELECT stacked FROM inventory_preferences WHERE user_id=?',(ctx.author.id,))
             stacked=bool(preference and preference['stacked'])
-            if view:
-                mode=view.casefold()
-                if mode not in ('view','toggle','stacked','compact','regular','ids'):raise ValueError('Use ;inv [toggle|stacked|regular].')
+            if mode:
                 stacked=not stacked if mode in ('view','toggle') else mode in ('stacked','compact')
                 await c.execute('INSERT INTO inventory_preferences VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET stacked=excluded.stacked',(ctx.author.id,int(stacked)))
         shards=await self.bot.db.get_shards(ctx.author.id);items=await self.store.items(ctx.author.id)
         balances=await self.store.shard_balances(ctx.author.id)
-        from ..shard_balances import label
-        lines=['**School shards**']+[f'{school} Shard — **{qty}x**' for school,qty in sorted(shards.items()) if qty]
-        for kind,title in (('item_shard','Item shards'),('character_shard','Character shards')):
-            groups=sorted([r for r in balances if r['kind']==kind],key=lambda r:label(kind,r['detail']).casefold())
-            if groups:
-                lines.append('\n**'+title+'**')
-                lines.extend(f'{label(kind,r["detail"])} — **{r["quantity"]}x**' for r in groups)
-        lines+=['\n**Items** — `;craft` • `;equip` • packs: `;open ID` • Blessings: `;bless itemID cardID` • Merge Copies: `;merge`']
-        if stacked:
-            from collections import Counter
-            from ..items import ITEM_BY_KEY
-            groups=Counter((item['kind'],item['stars'],item['detail']) for item in items)
-            lines += [f'**{ITEM_BY_KEY[detail]["name"] if kind=="equipment" and detail in ITEM_BY_KEY else item_label(dict(kind=kind,stars=stars,detail=detail))} — {count}x**' for (kind,stars,detail),count in sorted(groups.items())]
-        else:lines+=[f'**{item_label(item)}** • Item ID `{item["id"]}`' for item in items]
-        lines+=['\n`;inv toggle` switches stacked / regular view. Use `;inv regular` to see IDs for ;equip.']
-        pager=EmbedPager(text_pages(f'{ctx.author.display_name} — Inventory',lines),ctx.author.id)
-        await ctx.send(embed=pager.embed(),view=pager)
+        view=InventoryView(self.store,ctx.author.id,ctx.author.display_name,shards,balances,items,stacked=stacked,query=query)
+        await ctx.send(embed=view.embed(),view=view)
     @commands.hybrid_command(name='open',description='Open an owned pack item by its unique inventory ID.')
     async def open(self,ctx,pack_id:str):
         try:cards=await self.store.open_item(ctx.author.id,str(ctx.author),pack_id)

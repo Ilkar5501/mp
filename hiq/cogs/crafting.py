@@ -2,7 +2,7 @@
 from __future__ import annotations
 import discord
 from ..data import CHARACTERS,CHAR_BY_ID,match_roster_names
-from ..items import ITEMS,ITEM_BY_KEY,CHARACTER_SHARD_COST,find_items
+from ..items import ITEMS,SIGNATURE_ITEMS,ITEM_BY_KEY,CHARACTER_SHARD_COST,find_items
 from ..progression import TRAINING_SCHOOLS,craft_cost
 from ..raid_store import RaidStore
 from ..ui import SafeView,PURPLE
@@ -28,15 +28,22 @@ class CraftMenu(SafeView):
         view=cls(bot,uid,username);await view.reload();return view
     async def reload(self):
         self.balances={(r['kind'],r['detail']):r['quantity'] for r in await self.store.shard_balances(self.uid)}
-        self.schools=await self.bot.db.get_shards(self.uid);self.build()
+        self.schools=await self.bot.db.get_shards(self.uid)
+        self.coins=(await self.bot.db.get_user(self.uid)).coins
+        self.build()
     async def interaction_check(self,i):
         if i.user.id!=self.uid:await i.response.send_message('Open ;craft for your own recipes.',ephemeral=True);return False
         if self.busy:await i.response.send_message('Your craft is still processing.',ephemeral=True);return False
         return True
     def recipes(self):
         if self.category=='items':
-            matching={it['key'] for it in find_items(self.query)}
-            rows=[{'target':it['key'],'name':it['name'],'sources':{'item':(self.balances.get(('item_shard',it['key']),0),it['shard_cost'])}} for it in ITEMS if it['key'] in matching]
+            matching={it['key'] for it in find_items(self.query,include_signatures=True)}
+            rows=[]
+            for it in ITEMS+SIGNATURE_ITEMS:
+                if it['key'] not in matching:continue
+                row={'target':it['key'],'name':it['name'],'sources':{'item':(self.balances.get(('item_shard',it['key']),0),it['shard_cost'])}}
+                if it.get('signature'):row['requirements']={'Character':(self.balances.get(('character_shard',it['character_id']),0),it['character_shards']),'Coins':(getattr(self,'coins',0),it['coin_cost'])}
+                rows.append(row)
         else:
             matching={c.id for c in match_roster_names(self.query)}
             rows=[]
@@ -50,13 +57,16 @@ class CraftMenu(SafeView):
         return rows
     def selected(self):return next((r for r in self.recipes() if r['target']==self.target),None)
     @staticmethod
-    def counts(recipe):return ' • '.join(f'{source.title()} {n}/{cost}' for source,(n,cost) in recipe['sources'].items())
+    def counts(recipe):return ' • '.join(f'{source.title()} {n}/{cost}' for source,(n,cost) in {**recipe['sources'],**recipe.get('requirements',{})}.items())
     def embed(self):
         recipes=self.recipes();pages=max(1,(len(recipes)+24)//25)
         e=discord.Embed(title='Craft — '+self.category.title(),description='Choose a recipe, then craft. Shards are counted by type.\n'+('Showing recipes you have shards for.' if self.owned_only else 'Showing all recipes.'),color=PURPLE)
         selected=self.selected()
         if selected:
-            e.add_field(name=selected['name'],value=self.counts(selected)+' shards',inline=False)
+            e.add_field(name=selected['name'],value=self.counts(selected),inline=False)
+            item=ITEM_BY_KEY.get(selected['target']) if self.category=='items' else None
+            if item and item.get('signature'):
+                e.add_field(name=item['eligible'],value=item['effect'],inline=False)
             if self.category=='characters':
                 e.add_field(name='Crafted card',value='Neutral +0 • choose character or school shards below.',inline=False)
         elif not recipes:e.add_field(name='No matching recipes',value='Choose another category, clear the search or select All recipes.',inline=False)
@@ -85,7 +95,8 @@ class CraftMenu(SafeView):
                 source_picker=discord.ui.Select(placeholder='Choose shard source',options=[discord.SelectOption(label=f'{s.title()} shards — {n}/{cost}',value=s,default=self.source==s) for s,(n,cost) in sources.items()],row=2)
                 async def choose_source(i):self.source=source_picker.values[0];self.build();await i.response.edit_message(embed=self.embed(),view=self)
                 source_picker.callback=choose_source;self.add_item(source_picker)
-        can_craft=bool(selected and self.source in selected['sources'] and selected['sources'][self.source][0]>=selected['sources'][self.source][1])
+        can_craft=bool(selected and self.source in selected['sources'] and selected['sources'][self.source][0]>=selected['sources'][self.source][1]
+                       and all(n>=cost for n,cost in selected.get('requirements',{}).values()))
         craft=discord.ui.Button(label='Craft',style=discord.ButtonStyle.success,disabled=not can_craft,row=3)
         async def commit(i):
             if self.busy:raise ValueError('Your craft is still processing.')

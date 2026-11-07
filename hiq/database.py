@@ -182,6 +182,10 @@ class Database:
             await migrate_rewards(db)
             from .market_store import SCHEMA as MARKET_SCHEMA
             await db.executescript(MARKET_SCHEMA)
+            from .event_store import SCHEMA as EVENT_SCHEMA
+            await db.executescript(EVENT_SCHEMA)
+            from .event_store import migrate_legacy_signature_shards
+            await migrate_legacy_signature_shards(db)
 
     async def _migrate_saved_teams(self,db):
         # SQLite CHECK constraints need a transactional table rebuild. Copy every
@@ -739,6 +743,8 @@ class Database:
         return int(row['owner_id']) if row else None
 
     async def _replace_merged_card_tx(self,db,consumed_id,survivor_id):
+        from .event_store import replace_merged_refs
+        await replace_merged_refs(db,consumed_id,survivor_id)
         # Team validation already disallows duplicate variants within a team.
         # Keep the survivor's existing position if repairing an older invalid team.
         keys=('front_id','front2_id','front3_id','back1_id','back2_id','back3_id')
@@ -755,6 +761,8 @@ class Database:
                 tuple(args)+ (datetime.now(timezone.utc).isoformat(),)+ (consumed_id,)*len(columns))
 
     async def _clear_card_from_teams_tx(self,db,instance_id):
+        from .event_store import replace_merged_refs
+        await replace_merged_refs(db,instance_id,None)
         keys=('front_id','front2_id','front3_id','back1_id','back2_id','back3_id')
         assignments=','.join(f'{key}=CASE WHEN {key}=? THEN NULL ELSE {key} END' for key in keys)
         conditions=' OR '.join(f'{key}=?' for key in keys)

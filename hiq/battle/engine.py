@@ -15,8 +15,16 @@ from .equipment import EquipmentEffects,add_base_equipment,equipment_key
 from .talent import ProdigiousTalentEffects
 from .expansion import ExpansionEffects
 from .anchor import AnchorEffects
+from .sakusa import SakusaEffects
 
 STATS = ('pow','qik','def','rec','spd','jmp')
+
+class SpeedBonuses(defaultdict):
+    """Track positive in-combat Spd grants independently of penalties."""
+    def __init__(self):super().__init__(int);self.positive_spd=0
+    def __setitem__(self,key,value):
+        if key=='spd':self.positive_spd+=max(0,value-self.get(key,0))
+        super().__setitem__(key,value)
 
 
 def floori(v: float) -> int:
@@ -31,7 +39,7 @@ def has(u: BattleUnit, name: str, title: str | None = None) -> bool:
     return u.name == name and (title is None or u.title == title)
 
 
-class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
+class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
     """Deterministic-enough 3v3 / 6v6 simulator for the current HiQ Battler rules.
 
     The spreadsheet remains the display/source-of-truth. Character-specific mechanics that cannot
@@ -160,6 +168,9 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
     def skill_enabled(self, unit: BattleUnit, slot: str) -> bool:
         """Ordinary units have every slot; special modes can restrict supports."""
         return True
+
+    def effect_recipients(self, source, *, include_self=False):
+        return [u for u in self.team(source).units if include_self or u is not source]
 
     def support_target_lane(self, source: BattleUnit, target: BattleUnit) -> str:
         return target.lane
@@ -313,10 +324,12 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                 for a in team.units: a.add_buff('spd',3,source=(u.uid,'C'))
         # Suga's visible opening support.
         if has(u,'Suga'):
-            allies=[a for a in team.units if a is not u]
+            signature=self.suga_signature(u)
+            allies=self.effect_recipients(u,include_self=signature)
             if allies:
-                target=self.rng.choice(allies)
-                for stat in ('pow','qik','spd'): target.add_buff(stat,6,source=(u.uid,'C'))
+                targets=self.rng.sample(allies,min(2,len(allies))) if signature else [self.rng.choice(allies)]
+                for target in targets:
+                    for stat in ('pow','qik','spd'): target.add_buff(stat,6,source=(u.uid,'C'))
         # Aran
         if has(u,'Aran'):
             allies=[a for a in team.units if a is not u]
@@ -537,8 +550,10 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         return stats
 
     def _combat_mods(self,ctx,u,foe,us,fs,initiated):
-        m=defaultdict(int)
+        m=SpeedBonuses() if self.aran_signature(u) else defaultdict(int)
         team=self.team(u)
+        if has(u,'Sakusa'):
+            for stat in ('pow','rec','jmp'):m[stat]+=self.sakusa_stacks(u)
         if has(u,'Iizuna') and initiated:
             for stat in ('qik','def','rec'):m[stat]+=4
         # Own skills
@@ -702,6 +717,11 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         if ctx.kyotani_intercept and u is ctx.attacker and has(u,'Kyotani'): m['jmp']+=8
         self.expansion_mods(ctx,u,foe,us,fs,initiated,m)
         self.equipment_mods(ctx,u,foe,initiated,m)
+        if self.aran_signature(u):
+            fatigue=u.statuses.get('Fatigue');n=int(fatigue.payload or 0) if fatigue else 0
+            active=self._base_combat_stats(u,foe,ctx)
+            visible=u.visible_bonus('spd') if active['spd']==u.noncombat_stat('spd')-n-self.expansion_bond_penalty(ctx,u) else 0
+            m['jmp']+=floori((visible+m.positive_spd)*.7)
         return m
 
     def ally_skill_impacts(self,ctx,u,stats=None):
@@ -729,12 +749,15 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                 impacts.add((source.uid,'A'))
             if has(source,'Kageyama','Crown of Precision') and ctx.attacker is u and self.team_hp_pct(u)<=75 and self.skill_spd(u,stats[u.uid])>=self.skill_spd(foe,stats[foe.uid])+3 and self.followup(ctx,u,foe,True):
                 impacts.add((source.uid,'B'))
-            if has(source,'Atsumu') and self.skill_enabled(source,'B') and self.skill_spd(u,stats[u.uid])>self.skill_spd(foe,stats[foe.uid]): impacts.add((source.uid,'B'))
+            if has(source,'Atsumu') and self.skill_enabled(source,'B') and self.named_buff_active(ctx,u,'Excellence') and self.skill_spd(u,stats[u.uid])>self.skill_spd(foe,stats[foe.uid]): impacts.add((source.uid,'B'))
             if has(source,'Iwaizumi') and ctx.temp_flags.get('offensive_crit_uid')==u.uid and not self.crits_disabled(ctx) and not has(foe,'Kanoka'): impacts.add((source.uid,'C'))
         return {(uid,slot) for uid,slot in impacts if uid in allowed}
 
     # ---------- permissions / followups ----------
     def can_counter(self, ctx, defender, attacker, stats=None):
+        if ctx.attacker is attacker and self.lev_signature(attacker):
+            st=stats or self.combat_stats(ctx)
+            if self.skill_spd(attacker,st[attacker.uid])>self.skill_spd(defender,st[defender.uid]):return False
         if 'Cannot Counter' in defender.statuses: return False
         if ctx.attacker is attacker and self.expansion_memory[attacker.uid].get('initiations',{}).get(self.turn,0)>=2 and any(a.name=='Akifumi' and self.source_allowed(ctx,a) for a in self.team(attacker).units):return False
         if 'Intimidation' in attacker.statuses and ctx.attacker is attacker: return False
@@ -763,6 +786,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         return universal or defender.offense_key==attacker.offense_key
 
     def attacks_twice(self,ctx,u):
+        if has(u,'Sakusa'):return bool(ctx.temp_flags.get('sakusa_twice:'+u.uid))
         if has(u,'Suga'): return True
         if has(u,'Hinata','Wings of Dawn') and self.allied(u,'Kageyama'): return True
         return False
@@ -770,6 +794,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
     def followup(self,ctx,u,foe,initiated):
         st=self.combat_stats(ctx); us,fs=st[u.uid],st[foe.uid]
         guaranteed=has(u,'Kageyama','Prodigious Talent') and initiated and len(self.distinct_bonuses(ctx,u,st))>=4
+        guaranteed=guaranteed or bool(ctx.temp_flags.get('sakusa_followup:'+u.uid))
         prevented=False
         if has(u,'Hinata','Wings of Dawn') and not self.allied(u,'Kageyama') and self.skill_spd(u,us)>=self.skill_spd(foe,fs)+5: guaranteed=True
         if has(u,'Nishinoya') and not initiated and self.skill_spd(u,us)>=self.skill_spd(foe,fs)+5: guaranteed=True
@@ -797,6 +822,8 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         if has(foe,'Aone') and st[foe.uid]['def']>=us['def']+3: prevented=True
         if has(ctx.defender,'Nozawa'): prevented=True
         if self.echigo_followup_support(ctx,u): prevented=False
+        if self.lev_signature(u) and self.skill_spd(u,us)>self.skill_spd(foe,fs):prevented=False
+        if self.lev_signature(foe) and self.skill_spd(foe,fs)>self.skill_spd(u,us):guaranteed=False
         # Futakuchi neutralizes guaranteed followup on penalized foe (not hard prevention)
         if has(foe,'Futakuchi') and u.visible_debuffs: guaranteed=False
         if self.gear(u,'rigorous_film_study') or self.gear(foe,'rigorous_film_study'):guaranteed=False
@@ -899,6 +926,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         return self.equipment_charge(ctx,u,foe,is_attacking,acceleration,guard,st)
 
     def crit_multiplier(self,ctx,u):
+        if has(u,'Sakusa'):return 1.1
         if any(has(a,'Iwaizumi') and self.source_allowed(ctx,a) for a in self.team(u).units): return 1.5
         return 1.2
 
@@ -947,12 +975,14 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         offensive_crit=defensive_crit=False
         if not self.crits_disabled(ctx):
             diff=a['jmp']-d['jmp']
-            chance=min(100,abs(diff)*int(GAME_CONFIG['battle']['crit_per_jmp_difference_percent']))
-            if diff>0 and self.rng.random()<chance/100:
+            rate=int(GAME_CONFIG['battle']['crit_per_jmp_difference_percent'])
+            off_chance=min(100,max(0,diff)*rate+self.critical_bonus(attacker))
+            def_chance=min(100,max(0,-diff)*rate+self.critical_bonus(defender))
+            if off_chance>0 and self.rng.random()<off_chance/100:
                 offensive_crit=True
                 if not has(defender,'Kanoka'): attack_stat=floori(attack_stat*self.crit_multiplier(ctx,attacker))
                 attacker.crits+=1
-            elif diff<0 and self.rng.random()<chance/100:
+            elif def_chance>0 and self.rng.random()<def_chance/100:
                 defensive_crit=True
                 if not has(attacker,'Kanoka'): def_stat=floori(def_stat*1.2)
 
@@ -973,6 +1003,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
             if attacker.name in ('Nozawa','Maruyama'): penetration=max(penetration,0.50)
             if has(attacker,'Hinata','Wings of Dawn'): penetration=max(penetration,0.30)
             if has(attacker,'Kuroo'): penetration=max(penetration,0.50)
+            if has(attacker,'Sakusa'): penetration=max(penetration,0.50)
             if has(attacker,'Osamu'): penetration=max(penetration,0.70 if self.allied(attacker,'Atsumu') else 0.50)
             if has(attacker,'Aran'): penetration=max(penetration,0.30)
             if has(attacker,'Yamamoto'): penetration=max(penetration,0.20)
@@ -989,6 +1020,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         raw=max(0,attack_power_before_def-effective_def)
 
         bonus=self.expansion_damage_bonus(ctx,attacker,stats)+self.anchor_damage_bonus(ctx,attacker,stats)
+        if self.lev_signature(attacker):bonus+=max(0,floori(a['qik']*.15))
         if off_trigger and has(attacker,'Iizuna'):bonus+=max(0,floori(a['rec']*.8))
         if self.gear(attacker,'firm_contact') and hit_index==0:bonus+=3
         if off_trigger and self.gear(attacker,'ultimate_impact'):bonus+=attacker.max_cd*4
@@ -1001,7 +1033,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
                         ally.noncombat_stat('def')>ally.noncombat_stat('rec')))
         # Always-on / live bonus damage.
         for ally in self.team(attacker).units:
-            if has(ally,'Atsumu') and self.skill_enabled(ally,'B') and self.source_allowed(ctx,ally) and self.skill_spd(attacker,a)>self.skill_spd(defender,d):
+            if has(ally,'Atsumu') and self.skill_enabled(ally,'B') and self.named_buff_active(ctx,attacker,'Excellence') and self.source_allowed(ctx,ally) and self.skill_spd(attacker,a)>self.skill_spd(defender,d):
                 bonus+=floori((self.skill_spd(attacker,a)-self.skill_spd(defender,d))*0.70)
         if has(attacker,'Yamamoto'):
             fatigue=defender.statuses.get('Fatigue'); n=int(fatigue.payload or 0) if fatigue else 0
@@ -1118,6 +1150,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         if off_trigger:
             if has(attacker,'Shirabu') or has(attacker,'Tsuki'): self.heal_team(attacker,floori(damage*0.50))
             if has(attacker,'Kuroo'): self.heal_team(attacker,floori(damage*0.50))
+            if has(attacker,'Sakusa'): self.heal_team(attacker,floori(damage*0.50))
             if has(attacker,'Akaashi'): self.heal_team(attacker,floori(damage*0.30))
             if has(attacker,'Kai'): self.heal_team(attacker,floori(damage*0.30))
             if has(attacker,'Daichi'): self.heal_team(attacker,floori(damage*0.50))
@@ -1129,6 +1162,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
 
         self.expansion_hit_result(ctx,attacker,defender,damage,offensive_crit,off_trigger,def_trigger)
         self.anchor_ultimate_result(ctx,attacker,defender,off_trigger)
+        self.sakusa_hit_result(ctx,attacker,defender,offensive_crit,followup=followup)
 
         # Oikawa crit reward happens only if an offensive crit dealt damage.
         if offensive_crit and damage>0:
@@ -1254,6 +1288,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         for u in (a,d): u.ult_triggered_this_combat=False; u.attacks_this_combat=0
         self.expansion_combat_start(ctx)
         self.anchor_combat_start(ctx)
+        self.sakusa_precheck(ctx)
         # Siphon applies to each ally's first initiation this turn, once after combat.
         if a.uid not in self.siphon_used and any(has(source,'Usuri') and self.skill_enabled(source,'A') and source is not a and self.source_allowed(ctx,source) for source in self.team(a).units):
             self.siphon_used.add(a.uid)
@@ -1291,6 +1326,7 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
     def after_combat(self,ctx):
         self.effect_context=ctx;self.in_post_combat=True
         self.begin_bonus_event()
+        self.sakusa_after_combat(ctx)
         a,d=ctx.attacker,ctx.defender
         self.resolve_siphon(ctx)
         ctx.next_attack_bonus.clear()
@@ -1322,6 +1358,8 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
             for k in enemy_team.units:
                 if has(k,'Kenma') and self.skill_enabled(k,'A'):
                     st=foe.statuses.get('Fatigue'); n=(int(st.payload or 0)+1) if st else 1
+                    # The PvP command caps stacks; other battle modes remain uncapped.
+                    if self.mode == 'pvp':n=min(n,8)
                     foe.add_status('Fatigue',False,payload=n)
         # Aran cooldown refund
         for x in (a,d):
@@ -1347,8 +1385,8 @@ class BattleEngine(AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, Equ
         for x in (a,d):
             if has(x,'Tanaka'):
                 for ally in self.team(x).units:
-                    if ally is not x:
-                        for s in ('pow','qik','spd','def','rec'): ally.add_buff(s,2,source=(x.uid,'B'))
+                    if ally is not x or self.tanaka_signature(x):
+                        for s in (STATS if self.tanaka_signature(x) else ('pow','qik','spd','def','rec')): ally.add_buff(s,4 if self.tanaka_signature(x) else 2,source=(x.uid,'B'))
         # Iwaizumi Charged
         if has(d,'Iwaizumi') and a.offense_key=='qik': d.add_status('Charged',True,through_next_action=True)
         # Koganegawa Ultimate support

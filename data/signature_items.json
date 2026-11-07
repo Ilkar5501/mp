@@ -1,0 +1,75 @@
+[
+  {
+    "key": "suga_mapo_tofu_bowls",
+    "name": "Tactics Playbook 3rd-Year Edition",
+    "eligible": "Suga — Relentless Setter",
+    "eligible_character_ids": [
+      "Suga — Relentless Setter"
+    ],
+    "character_id": "Suga — Relentless Setter",
+    "effect": "Passing the Torch targets up to 2 team members, including Suga. If initiating, grants Spd+5 and Pow/Def/Rec+3.",
+    "aliases": [
+      "Mapo Tofu Bowls",
+      "mapo",
+      "tactics playbook"
+    ],
+    "signature": true,
+    "character_shards": 25,
+    "shard_cost": 25,
+    "coin_cost": 500
+  },
+  {
+    "key": "lev_rookie_gains",
+    "name": "Rookie Pains & Rookie Gains",
+    "eligible": "Lev — Young Lion",
+    "eligible_character_ids": [
+      "Lev — Young Lion"
+    ],
+    "character_id": "Lev — Young Lion",
+    "effect": "Deals bonus damage equal to 15% of Qik. If initiating, grants Qik/Spd+5. If faster, neutralizes guaranteed foe follow-ups and effects preventing unit follow-ups; when initiating, foe cannot counterattack.",
+    "aliases": [
+      "rookie gains",
+      "lev signature"
+    ],
+    "signature": true,
+    "character_shards": 25,
+    "shard_cost": 25,
+    "coin_cost": 500
+  },
+  {
+    "key": "aran_out_of_nowhere",
+    "name": "The Pursuit of the \"Out of Nowhere\"",
+    "eligible": "Aran — Thunderous Cannon",
+    "eligible_character_ids": [
+      "Aran — Thunderous Cannon"
+    ],
+    "character_id": "Aran — Thunderous Cannon",
+    "effect": "At start of turn 1, grants cooldown count−2. Gains Jmp equal to 70% of Spd bonuses, with no cap. If initiating, grants Pow/Def+5.",
+    "aliases": [
+      "out of nowhere",
+      "aran signature"
+    ],
+    "signature": true,
+    "character_shards": 25,
+    "shard_cost": 25,
+    "coin_cost": 500
+  },
+  {
+    "key": "tanaka_mountain_chalk",
+    "name": "A Mediocre Mountain Climber's Chalk",
+    "eligible": "Tanaka — Unbreakable Wing",
+    "eligible_character_ids": [
+      "Tanaka — Unbreakable Wing"
+    ],
+    "character_id": "Tanaka — Unbreakable Wing",
+    "effect": "Grants all base stats+2. If initiating, grants Pow/Spd+5. After combat, grants all combat stats+4 to unit and allies. If Ultimate triggered, cleanses unit and same-row allies.",
+    "aliases": [
+      "mountain chalk",
+      "tanaka signature"
+    ],
+    "signature": true,
+    "character_shards": 25,
+    "shard_cost": 25,
+    "coin_cost": 500
+  }
+]

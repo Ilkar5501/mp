@@ -32,6 +32,7 @@ EXTENSIONS = (
     'hiq.cogs.sealed',
     'hiq.cogs.contest',
     'hiq.cogs.market',
+    'hiq.cogs.events',
 )
 PURPLE = discord.Color.from_rgb(72, 42, 115)
 
@@ -44,7 +45,7 @@ class HiQTree(app_commands.CommandTree):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         command = interaction.command
         root = command.qualified_name.split()[0].casefold() if command else ''
-        if root in {'start','help'}:
+        if root in {'start','help','links'}:
             return True
         user = await interaction.client.db.get_user(interaction.user.id)
         if user.tutorial_started:
@@ -99,7 +100,7 @@ async def tutorial_gate(ctx: commands.Context) -> bool:
     if not ctx.command:
         return True
     root = ctx.command.qualified_name.split()[0].casefold()
-    if root in {'start', 'help'}:
+    if root in {'start', 'help', 'links'}:
         return True
     user = await bot.db.get_user(ctx.author.id)
     if not user.tutorial_started:
@@ -189,13 +190,15 @@ async def help_cmd(ctx: commands.Context):
             '**Teams:** `;teamcreate slot [name]`, `;teamedit slot [new name]`, `;teamview [slot]`, `;teamuse slot`. Fifteen slots; 3v3 and 6v6.',
             '**Packs:** `;daily` / `;d`, `;shop`, `;p b`, `;p p WS`, `;p s kar`. School abbreviations work.',
             '**Pack details:** `;info p b`, `;info p p WS`, `;info p s kar` — units and individual pull rates.',
-            '**Inventory:** `;inv`, `;open packID`, `;bless [itemID] [cardID]`. Shards and tradeable inventory items.',
+            '**Inventory:** `;inv [name]` searches items and shards; arrows show 25 entries per page. `;inv toggle` switches counts/IDs. `;open packID`, `;bless [itemID] [cardID]`.',
+            '**Links:** `;links` — server invite, characters, items and tier list.',
             '**Trade:** `;trade @user` — cards, items, coins and counted school/item/character shards. Both players confirm.',
             '**Progression:** `;training school`, `;craft player`, `;recycle ID`, `;pity [player]`, `;redeem code`.',
             '**Filters:** `;co -n oikawa -spd > 30 -pos S -tm aob`; colon filters still work.',
             '**Gallery filters:** `;gallery -class support -star 5`, `;gallery -cl sup -st 5`, or `;gallery -eff critical hit`.',
         ]),
         ('HiQ Battler — Battles & Quests', [
+            '**Events:** `;tt` — Tiny Titans unique-shard challenges. `;af1team` / `;af1use slot` — build/select an AF1 team. `;af1` — AF1 PvE. Use `;craft` for unique items; `;eventreset` clears a pending event.',
             '`;battle [slot]` — matching-format random CPU. `;pvp @user` — active-team PvP; 50 coins per unique opponent defeated, up to 400 daily.',
             '`;gn r` / `;gn n` — Regional / National Gauntlet. Results use regular 3v3 images/logs with school/game navigation.',
             '`;to` / `;tournament` — 8-player 6v6 double elimination; host Auto-fill supports CPUs.',

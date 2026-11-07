@@ -109,7 +109,7 @@
     "school": "Shiratorizawa",
     "rarity": 5,
     "role_class": "DPS",
-    "card_art": "https://i.pinimg.com/736x/34/e7/22/34e722b911fe25142ca904b4ca3e702f.jpg",
+    "card_art": "https://i.pinimg.com/736x/c9/cc/52/c9cc52b3faa9aa846da8d5d0160e6590.jpg",
     "character_icon": "https://i.pinimg.com/736x/41/30/4c/41304c983621b8ab2c7add4399ab9144.jpg",
     "stats": {
       "hp": 160,
@@ -313,7 +313,7 @@
     "school": "Aoba Johsai",
     "rarity": 5,
     "role_class": "Support/DPS",
-    "card_art": "https://i.pinimg.com/736x/45/69/24/45692457dd5c5195621021bfd5a3322f.jpg",
+    "card_art": "https://i.pinimg.com/736x/36/c0/6a/36c06a13ef4416dfaece78cff0aeac80.jpg",
     "character_icon": "https://i.pinimg.com/736x/11/f7/39/11f739ef45886f45e0aff808c4e765e1.jpg",
     "stats": {
       "hp": 160,
@@ -619,8 +619,8 @@
     "school": "Fukurodani",
     "rarity": 4,
     "role_class": "Support",
-    "card_art": "https://i.pinimg.com/736x/59/e6/18/59e61843c543ecd967374c26261d6c1a.jpg",
-    "character_icon": "https://i.pinimg.com/736x/5d/72/c5/5d72c5ace2b76d676e7838f9109b6c56.jpg",
+    "card_art": "https://i.pinimg.com/736x/88/c3/73/88c373185d2749fc49abaee409615662.jpg",
+    "character_icon": "https://i.pinimg.com/736x/98/67/70/9867704d89e8e6b7a445cc256ea6a272.jpg",
     "stats": {
       "hp": 152,
       "pow": 46,
@@ -742,7 +742,7 @@
       },
       "A": {
         "name": "Final Boss Tactics",
-        "text": "After any foe's combat, inflicts 1 stack of [Fatigue] on that foe; stacks have no maximum. [Fatigue] persists across turns. During combat, foes suffer the stat penalties defined by [Fatigue] based on their current number of stacks.",
+        "text": "After any foe's combat, inflicts 1 stack of [Fatigue] on that foe; stacks have a maximum of 8 in PvP. In other modes, stacks have no maximum. [Fatigue] persists across turns. During combat, foes suffer the stat penalties defined by [Fatigue] based on their current number of stacks.",
         "timing": "COMBAT_LIVE > COMBAT_END"
       },
       "B": {
@@ -758,7 +758,7 @@
     },
     "extended": {
       "U": "",
-      "A": "[Fatigue] (uncapped): During combat, if foe has N stacks, inflicts Spd/Jmp−N, Pow/Qik−max(N−1,0), and Def/Rec−max(N−2,0). [Fatigue] persists across turns.",
+      "A": "[Fatigue] (maximum 8 stacks in PvP; other modes uncapped): During combat, if foe has N stacks, inflicts Spd/Jmp−N, Pow/Qik−max(N−1,0), and Def/Rec−max(N−2,0). [Fatigue] persists across turns.",
       "B": "",
       "C": ""
     },
@@ -823,7 +823,7 @@
     "school": "Nekoma",
     "rarity": 4,
     "role_class": "Tank",
-    "card_art": "https://i.pinimg.com/1200x/a4/ae/ce/a4aecece7b5db85a20bf6949ae0fb378.jpg",
+    "card_art": "https://i.pinimg.com/1200x/89/25/cf/8925cf9b5f0e58db2cb647eddaa4f0a3.jpg",
     "character_icon": "https://i.pinimg.com/1200x/38/7c/03/387c03cef2c9978698fd53025443e202.jpg",
     "stats": {
       "hp": 172,
@@ -3357,5 +3357,56 @@
       "Clean Receive": "Positive [Bonus] status. The opposing team cannot restore HP during or immediately after combat involving this unit. The status lasts through the complete after-combat window of the unit's next action and expires afterward."
     },
     "clarification_count": 2
+  },
+  {
+    "id": "Sakusa — Coiled Precision",
+    "name": "Sakusa",
+    "title": "Coiled Precision",
+    "position": "WS",
+    "school": "Itachiyama",
+    "rarity": 5,
+    "role_class": "DPS",
+    "card_art": "https://i.pinimg.com/736x/9f/0c/87/9f0c8755fc8c037fea2fa6ca1ef19c89.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/96/40/dd/9640dd3eb618fd81d0d6f99b67473ab4.jpg",
+    "stats": {
+      "hp": 164,
+      "pow": 50,
+      "qik": 0,
+      "def": 28,
+      "rec": 34,
+      "spd": 36,
+      "jmp": 37,
+      "bst": 349
+    },
+    "ult_cd": 5,
+    "abilities": {
+      "U": {
+        "name": "Wrist Snap",
+        "text": "When Ultimate triggers, treats foe's Def/Rec as reduced by 50% for that hit. Restores HP equal to 50% of damage dealt.",
+        "timing": "COMBAT_LIVE"
+      },
+      "A": {
+        "name": "Perfectionism",
+        "text": "After combat, gains 1 [Perfectionism] stack (max. 5). Each stack grants Pow/Rec/Jmp+1 and critical chance+2%.",
+        "timing": "COMBAT_END"
+      },
+      "B": {
+        "name": "Relentless Pressure",
+        "text": "At combat start, if unit wins a Jmp-based critical roll, attacks twice. Each initial critical hit has a 45% chance to grant a follow-up (once per combat). Hits roll crit independently; critical attacks use 1.1×.",
+        "timing": "COMBAT_START > COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Unravel",
+        "text": "Each attack has a 50% chance to [Dispel] 1 [Named Buff] from the foe.",
+        "timing": "AFTER_HIT"
+      }
+    },
+    "extended": {
+      "Perfectionism": "A stacking Named Buff gained after combat and lasting for the match. The first combat starts at zero stacks. Each stack grants Pow/Rec/Jmp+1 during combat and adds 2 percentage points to critical chance. Dispel removes one stack.",
+      "B": "The preliminary check uses start-of-combat live Jmp and consumes no hit. Sakusa must have higher Jmp. On success, both his initial attack and any follow-up hit twice; otherwise each hits once. Every actual hit rolls crit independently. Each initial critical hit makes a 45% follow-up roll until one succeeds. Follow-up hits cannot grant another follow-up. Usual follow-up denial applies. Sakusa’s offensive critical multiplier is fixed at 1.1×.",
+      "Dispel": "Removes one positive Named Buff after the hit. Visible stat buffs and intrinsic Burden/Learning/Terror resources are excluded. A live aura such as Excellence is suppressed for the rest of that combat.",
+      "Named Buff": "A positive named status or active Excellence. Multiple stacks of one named status count as one effect."
+    },
+    "clarification_count": 4
   }
 ]

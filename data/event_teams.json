@@ -1,0 +1,972 @@
+{
+  "tiny_titans": [
+    {
+      "name": "Suga's Challenge",
+      "signature_key": "suga_mapo_tofu_bowls",
+      "units": [
+        {
+          "character_id": "Tsuki — Tireless Taunter",
+          "lane": "front",
+          "merge": 10,
+          "boon": "def",
+          "bane": "hp",
+          "equipment_key": "manager_s_good_luck_charm"
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "manager_s_good_luck_charm"
+        },
+        {
+          "character_id": "Asahi — True Ace",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "spd",
+          "equipment_key": "rally_elevation"
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "loaded_approach"
+        },
+        {
+          "character_id": "Suga — Relentless Setter",
+          "lane": "back",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "last_rally"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "loaded_approach"
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Lev's Challenge",
+      "signature_key": "lev_rookie_gains",
+      "units": [
+        {
+          "character_id": "Lev — Young Lion",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Hinata — Wings of Dawn",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "smelling_salts"
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "loaded_approach"
+        },
+        {
+          "character_id": "Kenma — Max Level Gamer",
+          "lane": "back",
+          "merge": 10,
+          "boon": "rec",
+          "bane": "hp",
+          "equipment_key": "tiring_game_plan"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "captain_s_armband"
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Aran's Challenge",
+      "signature_key": "aran_out_of_nowhere",
+      "units": [
+        {
+          "character_id": "Suna — Coiled Serpent",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Osamu — Twin Shadow",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Aran — Thunderous Cannon",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "last_rally"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "smelling_salts"
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "captain_s_armband"
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "smelling_salts"
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Tanaka's Challenge",
+      "signature_key": "tanaka_mountain_chalk",
+      "units": [
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "captain_s_armband"
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "last_rally"
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "bonus_scrutiny"
+        },
+        {
+          "character_id": "Ushijima — Absolute Monarch",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "last_rally"
+        },
+        {
+          "character_id": "Tanaka — Unbreakable Wing",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "alternating_drills"
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "loaded_approach"
+        }
+      ],
+      "tier": "Challenge"
+    }
+  ],
+  "all_for_one": [
+    {
+      "name": "Last Defense",
+      "units": [
+        {
+          "character_id": "Yaku — Hands of Ruin",
+          "lane": "front",
+          "merge": 10,
+          "boon": "qik",
+          "bane": "hp",
+          "equipment_key": "rigorous_film_study"
+        },
+        {
+          "character_id": "Shibayama — Tenacious Student",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Iizuna — Peerless Anchor",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kenma — Max Level Gamer",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Reon — Benkei",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Towering Setter",
+      "units": [
+        {
+          "character_id": "Koganegawa — Towering Setter",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "bonus_scrutiny"
+        },
+        {
+          "character_id": "Kosuke — Behind the Iron Wall",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Aone — Wall of Steel",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Suwa — Patience Weaver",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Reon — Benkei",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Perfect Form",
+      "units": [
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "loaded_approach"
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Suwa — Patience Weaver",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Watari — Flashing Jump",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Heaven’s Left",
+      "units": [
+        {
+          "character_id": "Ushijima — Absolute Monarch",
+          "lane": "front",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "last_rally"
+        },
+        {
+          "character_id": "Shirabu — Emperor's Devotee",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Reon — Benkei",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Oikawa — Grand Conductor",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Konoha — Plug and Play",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Last Hope",
+      "units": [
+        {
+          "character_id": "Kiryu — Last Hope",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "jmp",
+          "equipment_key": "manager_s_good_luck_charm"
+        },
+        {
+          "character_id": "Suwa — Patience Weaver",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Usuri — Calculated Distraction",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Unshaken Ace",
+      "units": [
+        {
+          "character_id": "Kanoka — Ace of the other Side",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "jmp",
+          "equipment_key": "ultimate_impact"
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Suwa — Patience Weaver",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Backline Giant",
+      "units": [
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "smelling_salts"
+        },
+        {
+          "character_id": "Suwa — Patience Weaver",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Suga — Relentless Setter",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Iizuna — Peerless Anchor",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Black Cat",
+      "units": [
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "captain_s_armband"
+        },
+        {
+          "character_id": "Kenma — Max Level Gamer",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Iizuna — Peerless Anchor",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Shibayama — Tenacious Student",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Towering Terror",
+      "units": [
+        {
+          "character_id": "Matsukawa — Towering Terror",
+          "lane": "front",
+          "merge": 10,
+          "boon": "qik",
+          "bane": "hp",
+          "equipment_key": "manager_s_good_luck_charm"
+        },
+        {
+          "character_id": "Kiryu — Last Hope",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Suwa — Patience Weaver",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Carefree Fighter",
+      "units": [
+        {
+          "character_id": "Nozawa — Carefree Fighter",
+          "lane": "back",
+          "merge": 10,
+          "boon": "rec",
+          "bane": "hp",
+          "equipment_key": "seam_finder"
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Lev — Young Lion",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Akaashi — Architect of Calm",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Suwa — Patience Weaver",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Open Play",
+      "units": [
+        {
+          "character_id": "Hinata — Wings of Dawn",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Kageyama — Crown of Precision",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Suga — Relentless Setter",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Korai — Little Giant",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    },
+    {
+      "name": "Iron Resolve",
+      "units": [
+        {
+          "character_id": "Aone — Wall of Steel",
+          "lane": "front",
+          "merge": 10,
+          "boon": null,
+          "bane": null,
+          "equipment_key": "weighted_wristbands"
+        },
+        {
+          "character_id": "Koganegawa — Towering Setter",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Kosuke — Behind the Iron Wall",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Futakuchi — Smirking Thorn",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Gao — Hulking Giant",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "back",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        },
+        {
+          "character_id": "Nozawa — Carefree Fighter",
+          "lane": "front",
+          "merge": 0,
+          "boon": null,
+          "bane": null,
+          "equipment_key": null
+        }
+      ],
+      "tier": "Challenge"
+    }
+  ],
+  "cooldown_seconds": 20,
+  "signature_drop_chance": 0.5
+}

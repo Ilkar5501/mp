@@ -67,10 +67,10 @@ def main():
     if not combined or any('tank' not in c.role_class.casefold() or c.rarity!=4 or 'counterattack' not in ' '.join(a.text for a in c.abilities.values()).casefold() for c in combined):
         raise ValueError('Combined gallery filters failed.')
 
-    from hiq.items import ITEMS,ITEM_BY_KEY,THEMES
+    from hiq.items import ITEMS,ITEM_BY_KEY,SIGNATURE_ITEMS,THEMES
     from hiq.raids import RAID_TEAMS,RAID_POOLS,cpu_specs as raid_specs
     from hiq.raid_store import RaidStore
-    if len(ITEMS)!=60 or len(ITEM_BY_KEY)!=60:raise ValueError('Expected 60 unique equipment items.')
+    if len(ITEMS)!=60 or len(ITEM_BY_KEY)!=60+len(SIGNATURE_ITEMS):raise ValueError('Invalid equipment catalogue.')
     for theme in THEMES:
         for stage in ('easy','hard','extreme'):
             pool=RaidStore(None).reward_pool(theme,{},stage)
@@ -85,7 +85,24 @@ def main():
     for theme in THEMES:
         specs=raid_specs(6,team_index(6,theme,0,'extreme'),'extreme')
         if len(specs)!=6 or any(card.merge_level!=10 or not card.equipment_key for card,_,_ in specs):raise ValueError('Invalid Extreme formation.')
-    print(f'Runtime data valid: {len(CHAR_BY_ID)} characters, 60 raid items, 30 Easy/Hard formations and 5 Extreme formations, packs and gallery filters.')
+    from hiq.event_modes import EVENT_TEAMS,cpu_specs as event_cpu_specs,TinyTitansEngine,AllForOneEngine,validate_af1
+    from hiq.items import can_equip
+    for mode,engine in (('tiny_titans',TinyTitansEngine),('all_for_one',AllForOneEngine)):
+        if not EVENT_TEAMS[mode]:raise ValueError('An event needs at least one CPU team.')
+        for i in range(len(EVENT_TEAMS[mode])):
+            specs=event_cpu_specs(mode,i)
+            if mode=='tiny_titans' and EVENT_TEAMS[mode][i].get('signature_key') not in {it['key'] for it in SIGNATURE_ITEMS}:raise ValueError('Tiny Titans challenge needs a signature shard reward.')
+            if mode=='all_for_one':validate_af1(specs,complete=True)
+            for card,char,lane in specs:
+                if not 0<=card.merge_level<=10:raise ValueError('Invalid event CPU merge level.')
+                if card.equipment_key and (card.equipment_key not in ITEM_BY_KEY or not can_equip(ITEM_BY_KEY[card.equipment_key],char)):
+                    raise ValueError('Invalid event CPU equipment: '+char.id)
+            engine(specs,specs,seed=1)
+    for item in SIGNATURE_ITEMS:
+        if not item.get('eligible_character_ids') or any(cid not in CHAR_BY_ID for cid in item['eligible_character_ids']):raise ValueError('Signature item needs exact character IDs.')
+        if item['character_id'] not in CHAR_BY_ID:raise ValueError('Unknown signature recipe character.')
+        if any(type(item[k]) is not int or item[k]<=0 for k in ('shard_cost','character_shards','coin_cost')):raise ValueError('Invalid signature recipe cost.')
+    print(f'Runtime data valid: {len(CHAR_BY_ID)} characters, 60 raid items, 35 raid formations, '+str(len(EVENT_TEAMS['tiny_titans']))+' Tiny Titans teams, '+str(len(EVENT_TEAMS['all_for_one']))+' AF1 teams, signature recipes, packs and gallery filters.')
 
 
 if __name__=='__main__':main()

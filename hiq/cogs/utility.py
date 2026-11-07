@@ -4,13 +4,21 @@ from discord.ext import commands
 
 from ..abbreviations import SCHOOLS, school_name
 from ..community_store import CommunityStore
-from ..config import GAME_CONFIG
+from ..config import GAME_CONFIG,COMMUNITY_SERVER_URL,BOT_WEBSITE_URL
 from ..data import CHARACTERS
-from ..ui import EmbedPager, text_pages
+from ..ui import EmbedPager, text_pages,PURPLE
 
 
 class UtilityCog(commands.Cog):
     def __init__(self,bot):self.bot=bot;self.store=CommunityStore(bot.db)
+
+    @commands.hybrid_command(name='links',description='Server invite, characters, items and tier-list website.')
+    async def links(self,ctx):
+        lines=[]
+        if COMMUNITY_SERVER_URL:lines.append(f'[Server invite]({COMMUNITY_SERVER_URL})')
+        if BOT_WEBSITE_URL:
+            lines.extend([f'[Characters]({BOT_WEBSITE_URL}/)',f'[Items]({BOT_WEBSITE_URL}/items.html)',f'[Tier List]({BOT_WEBSITE_URL}/tierlist.html)'])
+        await ctx.send(embed=discord.Embed(title='Links',description='\n'.join(lines) or 'Links have not been configured.',color=PURPLE))
 
     @commands.hybrid_command(name='abbreviations',aliases=['ab'],description='Show command, school and filter abbreviations.')
     async def abbreviations(self,ctx):

@@ -11,9 +11,17 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v11.4.0
+## Latest release: v11.6.3
 
-See [WISPBYTE-11.4.0.md](WISPBYTE-11.4.0.md) for current deployment instructions and rules. Clan Contest weekly prizes now use the sum of daily percentages, with the daily leader at 100% for both players and clans. `;cb` shows the daily breakdown. `;market`, `;auction` and `;myauctions` provide cross-server auctions with Coin/Clan Dollar bids, optional buyouts and restart-safe escrow. School/character shards can be listed; item shards cannot.
+See [WISPBYTE-11.6.3.md](WISPBYTE-11.6.3.md) for `;links`, inventory search and 25-entry pages. Sakusa’s 45% per-critical-hit follow-up checks and the website tier maker from v11.6.2 remain included. His 50 Pow, supplied artwork and position-based equipment restrictions from v11.6.1 are retained. The event modes and signatures from [v11.6.0](WISPBYTE-11.6.0.md) remain included. `;tt` opens four Tiny Titans 6v6 CPU challenges. Each clear has a 50% chance to drop one matching signature shard. There is no event shop. `;craft` makes each signature for 25 item shards, 25 matching character shards and 500 coins. `;items` shows all four signatures and their effects.
+
+`;af1team` edits five saved AF1 teams, `;af1use <slot>` selects one, and `;af1` opens twelve CPU opponents. AF1 uses main HP ×6, inactive supports in unrestricted rows, PT self-targeting and two effectless Guiding Break stacks. Fukunaga is banned from AF1 and legal in Tiny Titans. `;eventreset` abandons a pending event without rewards. AF1 currently awards no currency.
+
+Sakusa — Coiled Precision and the Suga, Lev, Aran and Tanaka signatures are implemented. Sakusa gains Perfectionism after combat and uses independent preliminary and actual-hit crit rolls. His portrait and icon are included. PvP Elo and matchmaking remain unchanged.
+
+See [WISPBYTE-11.4.1.md](WISPBYTE-11.4.1.md) for the retained PvP-only eight-stack Fatigue cap and the requested Akaashi, Oikawa, Ushijima and Yaku art updates. All other battle modes retain uncapped Fatigue.
+
+See [WISPBYTE-11.4.0.md](WISPBYTE-11.4.0.md) for the preceding release's deployment instructions and rules. Clan Contest weekly prizes now use the sum of daily percentages, with the daily leader at 100% for both players and clans. `;cb` shows the daily breakdown. `;market`, `;auction` and `;myauctions` provide cross-server auctions with Coin/Clan Dollar bids, optional buyouts and restart-safe escrow. School/character shards can be listed; item shards cannot.
 
 Merges replace consumed cards in saved teams. A confirmed +10 donor transfer keeps the survivor's nature. `;teamedit <slot> <new name>` renames a team; omitting the name opens the existing editor. The tournament CPU pool includes the equipped Echigo/Hinata/Akifumi/Atsumu/Kageyama/Teradomari formation. Only Teradomari is +10. The v11 sections below describe historical changes; the latest release guide takes precedence where rules changed.
 

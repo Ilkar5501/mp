@@ -1,7 +1,7 @@
 """Searchable three-item catalogue with per-player daily shard progress."""
 import math
 import discord
-from ..items import ITEMS,find_items
+from ..items import ITEMS,SIGNATURE_ITEMS,find_items
 from ..raid_store import RaidStore
 from ..ui import SafeView,PURPLE
 
@@ -10,7 +10,7 @@ class ItemSearch(discord.ui.Modal,title='Search equipment'):
     query=discord.ui.TextInput(label='Item name',placeholder='Enter a name or part of a name',required=False,max_length=100)
     def __init__(self,view):super().__init__();self.view=view
     async def on_submit(self,i):
-        self.view.matches=sorted(find_items(str(self.query)),key=lambda x:x['name'])
+        self.view.matches=sorted(find_items(str(self.query),include_signatures=True),key=lambda x:x['name'])
         self.view.page=0;self.view.menu_page=0
         await self.view.refresh(i)
 
@@ -19,7 +19,7 @@ class ItemBrowser(SafeView):
     def __init__(self,bot,uid,matches,progress):
         super().__init__(timeout=600)
         self.bot=bot;self.uid=uid;self.matches=matches;self.progress=progress;self.page=0;self.menu_page=0
-        self.catalogue=sorted(ITEMS,key=lambda x:x['name'])
+        self.catalogue=sorted(ITEMS+SIGNATURE_ITEMS,key=lambda x:x['name'])
         self.build()
 
     async def interaction_check(self,i):
@@ -34,6 +34,9 @@ class ItemBrowser(SafeView):
     def embed(self):
         blocks=[]
         for it in self.matches[self.page*3:self.page*3+3]:
+            if it.get('signature'):
+                blocks.append(f'**{it["name"]}**\n{it["effect"]}\nEquip: {it["eligible"]}\nCraft: {it["shard_cost"]} item shards + {it["character_shards"]} character shards + {it["coin_cost"]} coins\nSource: matching Tiny Titans challenge · 50% per clear')
+                continue
             cost=it['shard_cost'];cap=cost*2*self.progress.get('_days',1);earned=self.progress.get(it['key'],0)
             blocks.append(f'> **{it["name"]} — {it.get("emoji","🏐")}**\n> **`{it["effect"]}`**\n> -# Shard Cost: {cost}\n> -# Raid Type: *{it["theme"].title()}*\n> -# Who can equip: *{it["eligible"]}*\n> -# Accrued Shard Allowance: {cap} | {earned/cap:.0%} ({earned}/{cap}) • +{cost*2}/day; expires weekly')
         e=discord.Embed(title='Equipment Items',description='\n\n'.join(blocks) or 'No matching items. Try another search or browse all items.',color=PURPLE)

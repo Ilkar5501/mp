@@ -102,7 +102,7 @@ class ProdigiousTalentEffects:
         for source in self.team(unit).units:
             if source is unit or not self.source_allowed(ctx, source):
                 continue
-            if source.name == 'Atsumu' and self.skill_enabled(source,'B'):
+            if source.name == 'Atsumu' and self.skill_enabled(source,'B') and self.named_buff_active(ctx,unit,'Excellence'):
                 bonuses.add(('named', 'Excellence'))
             if source.name == 'Reon' and not initiated and not self.gear(foe, 'own_tempo'):
                 bonuses.add((source.uid, 'C', 'combat'))

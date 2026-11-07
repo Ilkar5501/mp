@@ -8,7 +8,8 @@ BASE_MODS={
  'electrolyte_rich_meal':{'rec':2},'light_lean_meal':{'spd':1},'high_energy_meal':{'jmp':1},
  'pre_game_meditation':{'def':6,'rec':6,'pow':-3,'qik':-3},
  'burden_of_expectation':{'pow':5,'qik':5,'spd':5,'def':-5,'rec':-5},
- 'worthless_pride':dict(pow=3,qik=3,**{'def':3},rec=3,spd=3,jmp=3)}
+ 'worthless_pride':dict(pow=3,qik=3,**{'def':3},rec=3,spd=3,jmp=3),
+ 'tanaka_mountain_chalk':dict(hp=2,pow=2,qik=2,**{'def':2},rec=2,spd=2,jmp=2)}
 
 def equipment_key(card):return getattr(card,'equipment_key',None)
 
@@ -19,6 +20,13 @@ def add_base_equipment(stats,key):
     return out
 
 class EquipmentEffects:
+    def suga_signature(self,u):
+        return u.character.id=='Suga — Relentless Setter' and self.gear(u,'suga_mapo_tofu_bowls')
+
+    def lev_signature(self,u):return u.character.id=='Lev — Young Lion' and self.gear(u,'lev_rookie_gains')
+    def aran_signature(self,u):return u.character.id=='Aran — Thunderous Cannon' and self.gear(u,'aran_out_of_nowhere')
+    def tanaka_signature(self,u):return u.character.id=='Tanaka — Unbreakable Wing' and self.gear(u,'tanaka_mountain_chalk')
+
     def cardinal_foes(self,u):
         own=self.formation_units(self.team(u));foes=self.formation_units(self.enemy_team(u));index=own.index(u)
         if len(own)!=6:return foes[index:index+1]
@@ -46,6 +54,8 @@ class EquipmentEffects:
     def equipment_turn_start(self,u):
         key=equipment_key(u.card)
         if not key:return
+        if self.aran_signature(u) and self.turn==1 and not self.expansion_memory[u.uid].get('aran_opening'):
+            u.cd=max(0,u.cd-2);self.expansion_memory[u.uid]['aran_opening']=True
         foes=self.enemy_team(u).units
         if key=='alternating_drills':
             stat='rec' if self.turn%2 else 'def'
@@ -81,6 +91,12 @@ class EquipmentEffects:
 
     def equipment_mods(self,ctx,u,foe,initiated,mods):
         key=equipment_key(u.card) or ''
+        if initiated and self.suga_signature(u):
+            mods['spd']+=5
+            for stat in ('pow','def','rec'):mods[stat]+=3
+        if initiated and self.lev_signature(u):mods['qik']+=5;mods['spd']+=5
+        if initiated and self.aran_signature(u):mods['pow']+=5;mods['def']+=5
+        if initiated and self.tanaka_signature(u):mods['pow']+=5;mods['spd']+=5
         if key in ('loaded_approach','loaded_reception') and initiated==(key=='loaded_approach'):
             for stat in (('pow','qik') if key=='loaded_approach' else ('def','rec')):mods[stat]+=u.max_cd+2
         if key=='specialist_badge' and not any(a is not u and a.character.position==u.character.position for a in self.team(u).units):
@@ -134,6 +150,9 @@ class EquipmentEffects:
 
     def equipment_after_combat(self,ctx):
         for u in (ctx.attacker,ctx.defender):
+            if self.tanaka_signature(u) and u.ult_triggered_this_combat:
+                for ally in self.team(u).units:
+                    if ally.lane==u.lane:ally.clear_debuffs()
             if self.gear(u,'second_wind') and u.cd==u.max_cd:u.cd=max(0,u.cd-1)
             if self.gear(u,'recovery_snack') and u is ctx.attacker:self.heal_team(u,12)
             if self.gear(u,'disruptive_whistle'):

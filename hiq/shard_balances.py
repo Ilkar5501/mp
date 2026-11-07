@@ -67,7 +67,7 @@ def resolve(raw):
     """Resolve user-facing item/character names for quantity-based trading."""
     from .items import find_items, normalize
     from .data import find_character
-    items = find_items(raw)
+    items = find_items(raw,include_signatures=True)
     chars = find_character(raw)
     exact = [('item_shard', i['key']) for i in items if normalize(raw) in (normalize(i['name']), normalize(i['key']))]
     exact += [('character_shard', c.id) for c in chars if normalize(raw) in (normalize(c.id), normalize(c.card_id), normalize(c.name))]

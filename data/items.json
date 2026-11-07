@@ -42,66 +42,81 @@
     "key": "rock_solid_game_plan",
     "name": "Rock Solid Game Plan",
     "effect": "At start of turn, inflicts Pow/Qik-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
-    "eligible": "Akaashi, Atsumu, Kageyama, Kenma, Koganegawa, Oikawa, Shirabu, Suga, Usuri",
+    "eligible": "Setters (S)",
     "shard_cost": 3,
     "drop_rate": 0.04,
     "weekly_cap": 42,
     "theme": "tactics",
     "daily_cap": 6,
     "emoji": "📋",
-    "recycle_value": 5
+    "recycle_value": 5,
+    "eligible_positions": [
+      "S"
+    ]
   },
   {
     "key": "all_out_game_plan",
     "name": "All Out Game Plan",
     "effect": "At start of turn, inflicts Def-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
-    "eligible": "Akaashi, Atsumu, Kageyama, Kenma, Koganegawa, Oikawa, Shirabu, Suga, Usuri",
+    "eligible": "Setters (S)",
     "shard_cost": 3,
     "drop_rate": 0.04,
     "weekly_cap": 42,
     "theme": "tactics",
     "daily_cap": 6,
     "emoji": "📋",
-    "recycle_value": 5
+    "recycle_value": 5,
+    "eligible_positions": [
+      "S"
+    ]
   },
   {
     "key": "tricky_game_plan",
     "name": "Tricky Game Plan",
     "effect": "At start of turn, inflicts Rec-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
-    "eligible": "Akaashi, Atsumu, Kageyama, Kenma, Koganegawa, Oikawa, Shirabu, Suga, Usuri",
+    "eligible": "Setters (S)",
     "shard_cost": 3,
     "drop_rate": 0.04,
     "weekly_cap": 42,
     "theme": "tactics",
     "daily_cap": 6,
     "emoji": "📋",
-    "recycle_value": 5
+    "recycle_value": 5,
+    "eligible_positions": [
+      "S"
+    ]
   },
   {
     "key": "tiring_game_plan",
     "name": "Tiring Game Plan",
     "effect": "At start of turn, inflicts Spd-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
-    "eligible": "Akaashi, Atsumu, Kageyama, Kenma, Koganegawa, Oikawa, Shirabu, Suga, Usuri",
+    "eligible": "Setters (S)",
     "shard_cost": 3,
     "drop_rate": 0.04,
     "weekly_cap": 42,
     "theme": "tactics",
     "daily_cap": 6,
     "emoji": "📋",
-    "recycle_value": 5
+    "recycle_value": 5,
+    "eligible_positions": [
+      "S"
+    ]
   },
   {
     "key": "wicked_game_plan",
     "name": "Wicked Game Plan",
     "effect": "At start of turn, inflicts Jmp-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
-    "eligible": "Akaashi, Atsumu, Kageyama, Kenma, Koganegawa, Oikawa, Shirabu, Suga, Usuri",
+    "eligible": "Setters (S)",
     "shard_cost": 3,
     "drop_rate": 0.04,
     "weekly_cap": 42,
     "theme": "tactics",
     "daily_cap": 6,
     "emoji": "📋",
-    "recycle_value": 5
+    "recycle_value": 5,
+    "eligible_positions": [
+      "S"
+    ]
   },
   {
     "key": "recruit_s_compression_sleeve",
@@ -250,27 +265,33 @@
     "key": "athletic_tape",
     "name": "Athletic Tape",
     "effect": "If foe initiates combat and unit and foe are in the front-line, grants Def/Rec+4 during combat.",
-    "eligible": "Aone, Hinata - Miracle Maker, Hinata - Wings of Dawn, Hirugami, Kuroo, Lev, Suna, Tendo, Tsuki, Unnan, Washio",
+    "eligible": "Middle Blockers (MB)",
     "shard_cost": 6,
     "drop_rate": 0.02,
     "weekly_cap": 84,
     "theme": "defense",
     "daily_cap": 12,
     "emoji": "🛡️",
-    "recycle_value": 10
+    "recycle_value": 10,
+    "eligible_positions": [
+      "MB"
+    ]
   },
   {
     "key": "padded_arm_sleeves",
     "name": "Padded Arm Sleeves",
     "effect": "If foe initiates combat and unit and foe are in the back-line, grants Def/Rec+4 during combat.",
-    "eligible": "Akagi, Kanbayashi, Komi, Kosuke, Nishinoya, Yaku, Yamagata",
+    "eligible": "Liberos (Li)",
     "shard_cost": 6,
     "drop_rate": 0.02,
     "weekly_cap": 84,
     "theme": "defense",
     "daily_cap": 12,
     "emoji": "🛡️",
-    "recycle_value": 10
+    "recycle_value": 10,
+    "eligible_positions": [
+      "Li"
+    ]
   },
   {
     "key": "onset_of_desperation",
@@ -393,14 +414,17 @@
     "key": "synchronized_attack",
     "name": "Synchronized Attack",
     "effect": "If unit is allied with an ally from the same School as unit, calculates damage using the lower of foe's Def or Rec",
-    "eligible": "Aone, Hinata - Miracle Maker, Hinata - Wings of Dawn, Hirugami, Kuroo, Lev, Suna, Tendo, Tsuki, Unnan, Washio",
+    "eligible": "Middle Blockers (MB)",
     "shard_cost": 12,
     "drop_rate": 0.005,
     "weekly_cap": 168,
     "theme": "tactics",
     "daily_cap": 24,
     "emoji": "🏐",
-    "recycle_value": 25
+    "recycle_value": 25,
+    "eligible_positions": [
+      "MB"
+    ]
   },
   {
     "key": "smelling_salts",

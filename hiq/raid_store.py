@@ -118,6 +118,12 @@ class RaidStore(CommunityStore):
             if source=='item':
                 item=ITEM_BY_KEY.get(target)
                 if not item:raise ValueError('No matching item.')
+                if item.get('signature'):
+                    await consume_shards(c,uid,'item_shard',target,item['shard_cost'])
+                    await consume_shards(c,uid,'character_shard',item['character_id'],item['character_shards'])
+                    cur=await c.execute('UPDATE users SET coins=coins-? WHERE discord_id=? AND coins>=?',(item['coin_cost'],uid,item['coin_cost']))
+                    if not cur.rowcount:raise ValueError(f'Requires {item["coin_cost"]} coins.')
+                    return await self._issue_item(c,uid,'equipment',detail=target)
                 kind,detail,cost='item_shard',target,item['shard_cost']
             else:
                 char=CHAR_BY_ID.get(target)
