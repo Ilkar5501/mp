@@ -11,13 +11,15 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v11.6.3
+## Latest release: v11.7.0
+
+See [WISPBYTE-11.7.0.md](WISPBYTE-11.7.0.md) for the shared monthly PvP Elo ladder. `;pvp` matches the closest eligible player in the selected format; `;pvp @user` is rated only if neither participant has used their targeted rating allowance that day. Further targeted matches are practice. `;pvpset` / `;pvps` selects and locks separate 3v3 and 6v6 teams; `;pvpboard` / `;pvpb` shows the monthly standings. The top three each receive one pack of every rarity, and Elo starts fresh at 1000 each month.
 
 See [WISPBYTE-11.6.3.md](WISPBYTE-11.6.3.md) for `;links`, inventory search and 25-entry pages. Sakusa’s 45% per-critical-hit follow-up checks and the website tier maker from v11.6.2 remain included. His 50 Pow, supplied artwork and position-based equipment restrictions from v11.6.1 are retained. The event modes and signatures from [v11.6.0](WISPBYTE-11.6.0.md) remain included. `;tt` opens four Tiny Titans 6v6 CPU challenges. Each clear has a 50% chance to drop one matching signature shard. There is no event shop. `;craft` makes each signature for 25 item shards, 25 matching character shards and 500 coins. `;items` shows all four signatures and their effects.
 
 `;af1team` edits five saved AF1 teams, `;af1use <slot>` selects one, and `;af1` opens twelve CPU opponents. AF1 uses main HP ×6, inactive supports in unrestricted rows, PT self-targeting and two effectless Guiding Break stacks. Fukunaga is banned from AF1 and legal in Tiny Titans. `;eventreset` abandons a pending event without rewards. AF1 currently awards no currency.
 
-Sakusa — Coiled Precision and the Suga, Lev, Aran and Tanaka signatures are implemented. Sakusa gains Perfectionism after combat and uses independent preliminary and actual-hit crit rolls. His portrait and icon are included. PvP Elo and matchmaking remain unchanged.
+Sakusa — Coiled Precision and the Suga, Lev, Aran and Tanaka signatures are implemented. Sakusa gains Perfectionism after combat and uses independent preliminary and actual-hit crit rolls. His portrait and icon are included. Ranked PvP now uses the shared monthly ladder described above.
 
 See [WISPBYTE-11.4.1.md](WISPBYTE-11.4.1.md) for the retained PvP-only eight-stack Fatigue cap and the requested Akaashi, Oikawa, Ushijima and Yaku art updates. All other battle modes retain uncapped Fatigue.
 

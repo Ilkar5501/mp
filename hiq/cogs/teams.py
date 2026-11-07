@@ -535,7 +535,11 @@ class TeamsCog(commands.Cog):
         except ValueError as e:
             await ctx.send(str(e))
             return
-        await ctx.send(f'✅ **{team.name}** (slot {slot}) is now your active team for `;battle`, `;pvp`, and `;gauntlet`.')
+        from ..pvp_store import PvPStore
+        prefs=await PvPStore(self.bot.db).preferences(ctx.author.id,ctx.author.display_name)
+        locked=prefs['teams'][team.team_format]['locked']
+        note=f'Your locked {team.team_format}v{team.team_format} PvP lineup was kept.' if locked else f'Your {team.team_format}v{team.team_format} PvP lineup was updated.'
+        await ctx.send(f'✅ **{team.name}** (slot {slot}) is active for `;battle` and `;gauntlet`. {note}')
 
 
 async def setup(bot):

@@ -33,6 +33,7 @@ EXTENSIONS = (
     'hiq.cogs.contest',
     'hiq.cogs.market',
     'hiq.cogs.events',
+    'hiq.cogs.pvp',
 )
 PURPLE = discord.Color.from_rgb(72, 42, 115)
 
@@ -199,7 +200,8 @@ async def help_cmd(ctx: commands.Context):
         ]),
         ('HiQ Battler — Battles & Quests', [
             '**Events:** `;tt` — Tiny Titans unique-shard challenges. `;af1team` / `;af1use slot` — build/select an AF1 team. `;af1` — AF1 PvE. Use `;craft` for unique items; `;eventreset` clears a pending event.',
-            '`;battle [slot]` — matching-format random CPU. `;pvp @user` — active-team PvP; 50 coins per unique opponent defeated, up to 400 daily.',
+            '`;battle [slot]` — matching-format random CPU. `;pvp [@user] [3v3|6v6]` — shared monthly Elo PvP. Automatic matches avoid both players’ last five rated opponents; only the first targeted match per player/day affects Elo.',
+            '`;pvpset` / `;pvps` — separate 3v3 and 6v6 teams with locks. `;pvpboard` / `;pvpb` — monthly Elo standings. Top 3 each receive 5★/4★/3★/2★/1★ packs.',
             '`;gn r` / `;gn n` — Regional / National Gauntlet. Results use regular 3v3 images/logs with school/game navigation.',
             '`;to` / `;tournament` — 8-player 6v6 double elimination; host Auto-fill supports CPUs.',
             '`;pref` / `;prefecture` — join three distinct 3v3 pods into a shared 9v9 team. Host starts. 100 coins per win, up to 300 per daily allowance.',

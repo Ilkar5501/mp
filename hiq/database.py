@@ -186,6 +186,8 @@ class Database:
             await db.executescript(EVENT_SCHEMA)
             from .event_store import migrate_legacy_signature_shards
             await migrate_legacy_signature_shards(db)
+            from .pvp_store import SCHEMA as PVP_SCHEMA
+            await db.executescript(PVP_SCHEMA)
 
     async def _migrate_saved_teams(self,db):
         # SQLite CHECK constraints need a transactional table rebuild. Copy every
@@ -710,10 +712,15 @@ class Database:
         return await self.get_saved_team(owner_id, user.active_team_slot)
 
     async def set_active_team(self, owner_id: int, slot: int) -> SavedTeam:
-        team = await self.get_saved_team(owner_id, slot)
-        if not team or not team.complete:
-            raise ValueError('That team slot is not complete.')
-        await self.set_user_fields(owner_id, active_team_slot=slot)
+        async with self._lock,self.connect() as conn:
+            await conn.execute('BEGIN IMMEDIATE')
+            row=await (await conn.execute('SELECT * FROM saved_teams WHERE owner_id=? AND slot=?',(owner_id,slot))).fetchone()
+            team=self._saved_team(row) if row else None
+            if not team or not team.complete:raise ValueError('That team slot is not complete.')
+            await conn.execute('UPDATE users SET active_team_slot=? WHERE discord_id=?',(slot,owner_id))
+            from .pvp_store import auto_team_tx
+            await auto_team_tx(conn,owner_id,team)
+            await conn.commit()
         return team
 
     # Legacy helpers retained for old commands/data.
@@ -745,6 +752,8 @@ class Database:
     async def _replace_merged_card_tx(self,db,consumed_id,survivor_id):
         from .event_store import replace_merged_refs
         await replace_merged_refs(db,consumed_id,survivor_id)
+        from .pvp_store import replace_pvp_refs
+        await replace_pvp_refs(db,consumed_id,survivor_id)
         # Team validation already disallows duplicate variants within a team.
         # Keep the survivor's existing position if repairing an older invalid team.
         keys=('front_id','front2_id','front3_id','back1_id','back2_id','back3_id')
@@ -763,6 +772,8 @@ class Database:
     async def _clear_card_from_teams_tx(self,db,instance_id):
         from .event_store import replace_merged_refs
         await replace_merged_refs(db,instance_id,None)
+        from .pvp_store import replace_pvp_refs
+        await replace_pvp_refs(db,instance_id,None)
         keys=('front_id','front2_id','front3_id','back1_id','back2_id','back3_id')
         assignments=','.join(f'{key}=CASE WHEN {key}=? THEN NULL ELSE {key} END' for key in keys)
         conditions=' OR '.join(f'{key}=?' for key in keys)

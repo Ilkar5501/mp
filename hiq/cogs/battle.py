@@ -344,49 +344,6 @@ class BattleCog(commands.Cog):
         )
         await ctx.send(embed=e, view=view, file=file)
 
-    @commands.hybrid_command(name='pvp', description='Fight another player using both active teams.')
-    @commands.cooldown(1, 5.0, commands.BucketType.user)
-    async def pvp(self, ctx, opponent: discord.Member):
-        if opponent.id == ctx.author.id or opponent.bot:
-            await ctx.send('Choose another player.')
-            return
-        a_specs, _ = await self._saved_team_specs(ctx.author.id, None)
-        b_specs, _ = await self._saved_team_specs(opponent.id, None)
-        if not a_specs:
-            await ctx.send('You need a complete team first. Use `;teamcreate`.')
-            return
-        if not b_specs:
-            await ctx.send(f'**{opponent.display_name}** does not have a complete active team.')
-            return
-        if len(a_specs)!=len(b_specs):
-            notice=f'Team formats conflict: your team is {len(a_specs)}v{len(a_specs)}, while {opponent.display_name} uses {len(b_specs)}v{len(b_specs)}. Both teams must use the same format.'
-            if getattr(ctx,'interaction',None):
-                await ctx.send(notice,ephemeral=True)
-            else:
-                try: await ctx.author.send(notice)
-                except discord.HTTPException:
-                    await ctx.send('I could not send you a DM. Use `/pvp` for a private format check.',delete_after=10)
-            return
-        engine = BattleEngine(
-            a_specs,
-            b_specs,
-            owner_a=ctx.author.id,
-            owner_b=opponent.id,
-            name_a=ctx.author.display_name,
-            name_b=opponent.display_name,
-            mode='pvp',
-        )
-        result, e, view, file = await self._finish_battle(
-            ctx, engine, a_specs, b_specs, opponent.id, ctx.author.display_name, opponent.display_name, reward_regular_win=False
-        )
-        from ..rewards import RewardStore
-        if result.winner_side in ('A','B'):
-            winner,loser=(ctx.author.id,opponent.id) if result.winner_side=='A' else (opponent.id,ctx.author.id)
-            reward=await RewardStore(self.bot.db).award(winner,'pvp',opponent=loser)
-            e.add_field(name='PvP Reward',value=f'<@{winner}>: **+{reward["coins"]} coins**'+(' • already defeated this player today.' if reward['duplicate'] else ' • daily cap: 400 coins.'),inline=False)
-        e.set_footer(text='50 coins per unique opponent defeated today; maximum 400. Repeated opponents give no reward.')
-        await ctx.send(embed=e, view=view, file=file)
-
     @commands.hybrid_command(name='questview', aliases=['quests', 'quest','qv'], description='View accrued activity allowances, daily rewards and weekly shards.')
     async def questview(self, ctx):
         from ..quest_pages import quest_pages
