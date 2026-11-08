@@ -11,7 +11,9 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v11.7.1
+## Latest release: v11.7.2
+
+See [WISPBYTE-11.7.2.md](WISPBYTE-11.7.2.md). Tiny Titans now has a three-second interval between battle starts, independent of AF1. Simulation and rendering count toward those three seconds.
 
 See [WISPBYTE-11.7.1.md](WISPBYTE-11.7.1.md) for Sakusa’s initiation-only B, the standard illustrated Tiny Titans 6v6 result, and the inventory category selector. Signature equipment and event shards have separate categories; search, arrows and stacking/ID controls remain available.
 

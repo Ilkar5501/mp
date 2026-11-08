@@ -968,5 +968,6 @@
     }
   ],
   "cooldown_seconds": 20,
-  "signature_drop_chance": 0.5
+  "signature_drop_chance": 0.5,
+  "tiny_titans_cooldown_seconds": 3
 }

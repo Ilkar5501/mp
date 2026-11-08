@@ -199,6 +199,24 @@ class EventStoreTests(unittest.IsolatedAsyncioTestCase):
         results=await asyncio.gather(*[self.store.finish(1,row['id'],{'winner_side':'A'}) for _ in range(2)])
         self.assertEqual(sum(results),1);self.assertEqual((await self.store.wallet(1))['shards'][KEY],1)
         with self.assertRaisesRegex(ValueError,'Next event'):await self.store.start(1,'tiny_titans',0)
+
+    async def test_titans_three_second_interval_is_independent_of_af1(self):
+        from datetime import datetime,timedelta,timezone
+        await self.titans_context();await self.team()
+        af1=await self.store.start(1,'all_for_one',0)
+        await self.store.finish(1,af1['id'],{'winner_side':'draw'})
+        # A just-completed AF1 match must not impose its 20-second wait on TT.
+        tt=await self.store.start(1,'tiny_titans',0)
+        await self.store.finish(1,tt['id'],{'winner_side':'draw'})
+        with self.assertRaisesRegex(ValueError,'Next event battle in [123]s'):
+            await self.store.start(1,'tiny_titans',0)
+        async with self.store.tx() as c:
+            await c.execute('UPDATE event_runs SET created_at=? WHERE id=?',((datetime.now(timezone.utc)-timedelta(seconds=4)).isoformat(),tt['id']))
+        again=await self.store.start(1,'tiny_titans',0)
+        self.assertNotEqual(again['id'],tt['id'])
+        await self.store.finish(1,again['id'],{'winner_side':'draw'})
+        with self.assertRaisesRegex(ValueError,'Next event battle'):
+            await self.store.start(1,'all_for_one',0)
     async def test_unique_recipe_is_atomic_and_uses_normal_craft(self):
         await self.store.wallet(1)
         async with self.store.tx() as c:

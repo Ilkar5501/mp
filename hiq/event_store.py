@@ -91,10 +91,11 @@ class EventStore(CommunityStore):
             if old:
                 if old['mode']!=mode:raise ValueError('Resume your other event with ;tt or ;af1, or use ;eventreset.')
                 return old
-            recent=await self.one(c,'SELECT created_at FROM event_runs WHERE owner_id=? ORDER BY created_at DESC LIMIT 1',(uid,))
+            recent=await self.one(c,'SELECT created_at FROM event_runs WHERE owner_id=? AND mode=? ORDER BY created_at DESC LIMIT 1',(uid,mode))
             if recent:
                 elapsed=(datetime.now(timezone.utc)-datetime.fromisoformat(recent['created_at'])).total_seconds()
-                remaining=int(EVENT_TEAMS.get('cooldown_seconds',20)-elapsed+0.999)
+                interval=EVENT_TEAMS.get('tiny_titans_cooldown_seconds',3) if mode=='tiny_titans' else EVENT_TEAMS.get('cooldown_seconds',20)
+                remaining=int(interval-elapsed+0.999)
                 if remaining>0:raise ValueError(f'Next event battle in {remaining}s.')
             await c.execute('INSERT OR IGNORE INTO event_wallets(owner_id) VALUES (?)',(uid,))
             if mode=='all_for_one':
