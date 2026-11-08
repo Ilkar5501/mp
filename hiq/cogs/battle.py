@@ -353,7 +353,7 @@ class BattleCog(commands.Cog):
 
     @commands.hybrid_command(name='gauntlet', aliases=['gn'], description='Run the Regional or National school gauntlet.')
     @app_commands.choices(mode=[app_commands.Choice(name='Regional',value='regional'),app_commands.Choice(name='National',value='national')])
-    @commands.cooldown(1, 10.0, commands.BucketType.user)
+    @commands.cooldown(1, 5.0, commands.BucketType.user)
     async def gauntlet(self, ctx, mode: str):
         mode = mode_name(mode)
         if mode in ('regionals', 'region'):

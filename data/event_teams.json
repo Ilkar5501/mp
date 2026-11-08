@@ -967,7 +967,7 @@
       "tier": "Challenge"
     }
   ],
-  "cooldown_seconds": 20,
+  "cooldown_seconds": 5,
   "signature_drop_chance": 0.5,
-  "tiny_titans_cooldown_seconds": 3
+  "tiny_titans_cooldown_seconds": 5
 }
