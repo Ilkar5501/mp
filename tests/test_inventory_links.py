@@ -29,12 +29,12 @@ class InventorySearchTests(unittest.TestCase):
     def test_case_punctuation_typos_aliases_and_ids(self):
         for query in ('CAPTAIN’S ARMBAND','captainsarmband','captans armband'):
             matches=search_entries(self.rows,query)
-            self.assertEqual({r.category for r in matches},{'Items','Item shards'})
+            self.assertEqual({r.category for r in matches},{'Equip Items','Equip Shards'})
             self.assertTrue(all("Captain's Armband" in r.label for r in matches))
         self.assertEqual(search_entries(self.rows,'IT000001')[0].reference,'it-000001')
         self.assertEqual(len(search_entries(self.rows,'loaded approach')),2)
-        self.assertEqual(search_entries(self.rows,'SUGA shards')[0].category,'Character shards')
-        self.assertEqual(search_entries(self.rows,'KAR')[0].category,'School shards')
+        self.assertEqual(search_entries(self.rows,'SUGA shards')[0].category,'Character Shards')
+        self.assertEqual(search_entries(self.rows,'KAR')[0].category,'School Shards')
         self.assertEqual(search_entries(self.rows,'Mapo Tofu Bowls')[0].label,'Tactics Playbook 3rd-Year Edition')
         self.assertEqual(search_entries(self.rows,'zzzzzxxyy'),[])
         self.assertFalse(search_entries(self.rows,'Sakusa'))
@@ -48,6 +48,18 @@ class InventorySearchTests(unittest.TestCase):
         self.assertEqual(parse_query('REGULAR Captain’s Armband'),('regular','Captain’s Armband'))
         self.assertEqual(parse_query('suga relentless setter'),('','suga relentless setter'))
         self.assertEqual(parse_query('toggle'),('toggle',''))
+
+    def test_all_inventory_kinds_are_separated_including_unique_event_shards(self):
+        rows=inventory_entries({'Karasuno':7},[
+            dict(kind='character_shard',detail='Suga — Relentless Setter',quantity=9),
+            dict(kind='item_shard',detail='captain_s_armband',quantity=4),
+            dict(kind='item_shard',detail='suga_mapo_tofu_bowls',quantity=25),
+        ],[item(1),item(2,'suga_mapo_tofu_bowls'),dict(id='it-pack',kind='starpack',stars=5,detail=''),
+           dict(id='it-blessing',kind='blessing',stars=3,detail=''),dict(id='it-merge',kind='mergecopy',stars=3,detail='')])
+        from hiq.inventory import CATEGORIES
+        self.assertEqual({r.category for r in rows},set(CATEGORIES))
+        self.assertEqual([r.quantity for r in rows if r.category=='Unique Equip Shards'],[25])
+        self.assertEqual(len([r for r in rows if r.category=='Non-equip Items']),3)
 
 
 class InventoryMenuTests(unittest.IsolatedAsyncioTestCase):
@@ -65,9 +77,9 @@ class InventoryMenuTests(unittest.IsolatedAsyncioTestCase):
         other=SimpleNamespace(user=SimpleNamespace(id=2),response=SimpleNamespace(send_message=AsyncMock()))
         self.assertFalse(await view.interaction_check(other));other.response.send_message.assert_awaited_once()
         i=SimpleNamespace(user=SimpleNamespace(id=1),response=SimpleNamespace(edit_message=AsyncMock()))
-        await view.children[1].callback(i);self.assertEqual(view.page,1)
-        await view.children[1].callback(i);self.assertEqual(view.page,2)
-        self.assertTrue(view.children[1].disabled)
+        await next(c for c in view.children if str(getattr(c,'emoji',''))=='▶️').callback(i);self.assertEqual(view.page,1)
+        await next(c for c in view.children if str(getattr(c,'emoji',''))=='▶️').callback(i);self.assertEqual(view.page,2)
+        self.assertTrue(next(c for c in view.children if str(getattr(c,'emoji',''))=='▶️').disabled)
         view.query='IT000050';view.page=0;view.build()
         self.assertEqual(view.total,1);self.assertIn('it-000050',view.embed().description)
         clear=next(c for c in view.children if getattr(c,'label',None)=='Clear search')
@@ -108,3 +120,30 @@ class InventoryMenuTests(unittest.IsolatedAsyncioTestCase):
         text=ctx.send.call_args.kwargs['embed'].description
         for url in ('https://discord.gg/example','https://example.org/mpgallery/','https://example.org/mpgallery/items.html','https://example.org/mpgallery/tierlist.html'):
             self.assertIn(url,text)
+
+    async def test_category_selection_preserves_filter_with_search_and_stacking(self):
+        balances=[dict(kind='item_shard',detail='suga_mapo_tofu_bowls',quantity=25),dict(kind='item_shard',detail='captain_s_armband',quantity=8),dict(kind='character_shard',detail='Suga — Relentless Setter',quantity=6)]
+        items=[item(i,'suga_mapo_tofu_bowls') for i in range(51)]+[item(100)]
+        view=InventoryView(self.store,1,'Player',{'Karasuno':3},balances,items,category='Unique Equip Items')
+        self.assertEqual([len(p) for p in view.pages],[25,25,1])
+        self.assertTrue(all(row.category=='Unique Equip Items' for p in view.pages for row in p))
+        i=SimpleNamespace(user=SimpleNamespace(id=1),response=SimpleNamespace(edit_message=AsyncMock()))
+        await next(c for c in view.children if getattr(c,'label',None)=='Stack items').callback(i)
+        self.assertEqual(view.category,'Unique Equip Items');self.assertEqual(view.total,1)
+        self.assertIn('51×',view.embed().description)
+        menu=next(c for c in view.children if hasattr(c,'options'));menu._values=['Unique Equip Shards']
+        await menu.callback(i)
+        self.assertEqual(view.category,'Unique Equip Shards');self.assertEqual(view.total,1)
+        self.assertIn('25×',view.embed().description);self.assertNotIn("Captain",view.embed().description)
+        view.query='MAPO TOFU';view.build();self.assertEqual(view.total,1)
+        menu=next(c for c in view.children if hasattr(c,'options'));menu._values=['Equip Items']
+        await menu.callback(i);self.assertEqual(view.total,0)
+        self.assertEqual(view.query,'MAPO TOFU')
+
+    async def test_plain_inventory_defaults_to_one_category_and_name_search_spans_categories(self):
+        items=[item(1),dict(id='it-pack',kind='starpack',stars=5,detail='')]
+        view=InventoryView(self.store,1,'Player',{},[],items)
+        self.assertEqual(view.category,'Non-equip Items');self.assertEqual(view.total,1)
+        searched=InventoryView(self.store,1,'Player',{},[dict(kind='item_shard',detail='captain_s_armband',quantity=4)],items,query='captain')
+        self.assertEqual(searched.category,'All');self.assertEqual(searched.total,2)
+        self.assertLessEqual(len(next(c for c in searched.children if hasattr(c,'options')).options),25)

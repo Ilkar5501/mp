@@ -1,4 +1,4 @@
-import asyncio,json,tempfile,unittest
+import asyncio,io,json,tempfile,unittest
 from pathlib import Path
 from dataclasses import replace,asdict
 from unittest.mock import Mock,patch
@@ -136,6 +136,43 @@ class EventStoreTests(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDown(self):self.tmp.cleanup()
     async def issue(self,names):
         async with self.store.tx() as c:return [await self.store._issue_card(c,1,'Player',character(n)) for n in names]
+
+    async def titans_context(self):
+        from hiq.cogs.events import EventsCog
+        from hiq.cogs.battle import BattleCog
+        cards=await self.issue(['Suga','Lev','Kai','Kita','Daichi','Reon'])
+        await self.db.ensure_saved_team(1,1)
+        await self.db.replace_saved_team(1,1,cards[0].instance_id,cards[3].instance_id,cards[4].instance_id,
+            front2_id=cards[1].instance_id,front3_id=cards[2].instance_id,back3_id=cards[5].instance_id,team_format=6)
+        bot=SimpleNamespace(db=self.db);battle=BattleCog(bot);bot.get_cog=lambda name:battle
+        ctx=SimpleNamespace(author=SimpleNamespace(id=1,display_name='Player'),interaction=None,send=AsyncMock())
+        return EventsCog(bot),ctx
+
+    async def test_tiny_titans_uses_standard_six_vs_six_image_embed_and_log(self):
+        cog,ctx=await self.titans_context()
+        with patch('hiq.cogs.battle.render_battle_summary',AsyncMock(return_value=io.BytesIO(b'image'))) as render:
+            await cog.run_event(ctx,'tiny_titans',0)
+        sent=ctx.send.call_args.kwargs;embed=sent['embed']
+        self.assertEqual(sent['file'].filename,'battle_summary.png')
+        self.assertEqual(embed.image.url,'attachment://battle_summary.png')
+        self.assertTrue(any('OPOM' in f.name for f in embed.fields))
+        self.assertTrue(any('DPOM' in f.name for f in embed.fields))
+        self.assertTrue(any(f.name=='Challenge Drop' for f in embed.fields))
+        self.assertIn('6v6',embed.footer.text)
+        self.assertTrue(sent['view'].children)
+        args=render.call_args.args
+        self.assertEqual((len(args[1]),len(args[2])),(6,6))
+        self.assertEqual(args[1][0][1].stats['pow'],55)
+
+    async def test_titans_render_failure_keeps_battle_pending_without_settling_rewards(self):
+        cog,ctx=await self.titans_context()
+        with patch('hiq.cogs.battle.render_battle_summary',AsyncMock(side_effect=RuntimeError('Render failed'))):
+            with self.assertRaisesRegex(RuntimeError,'Render failed'):await cog.run_event(ctx,'tiny_titans',0)
+        ctx.send.assert_not_awaited()
+        async with self.db.connect() as c:
+            row=await self.store.one(c,'SELECT status,earned FROM event_runs WHERE owner_id=1')
+        self.assertEqual(row['status'],'running');self.assertEqual(row['earned'],0)
+        self.assertEqual(sum((await self.store.wallet(1))['shards'].values()),0)
     async def team(self):
         cards=await self.issue(['Suga','Lev','Kai','Kita','Daichi','Reon','Aran'])
         row=await self.store.team(1)

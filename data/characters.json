@@ -3392,7 +3392,7 @@
       },
       "B": {
         "name": "Relentless Pressure",
-        "text": "At combat start, if unit wins a Jmp-based critical roll, attacks twice. Each initial critical hit has a 45% chance to grant a follow-up (once per combat). Hits roll crit independently; critical attacks use 1.1×.",
+        "text": "If unit initiates combat, makes a Jmp-based critical roll to attack twice. Each initial critical hit has a 45% chance to grant a follow-up (once per combat). Hits roll crit independently; initiating critical attacks use 1.1×.",
         "timing": "COMBAT_START > COMBAT_LIVE"
       },
       "C": {
@@ -3403,7 +3403,7 @@
     },
     "extended": {
       "Perfectionism": "A stacking Named Buff gained after combat and lasting for the match. The first combat starts at zero stacks. Each stack grants Pow/Rec/Jmp+1 during combat and adds 2 percentage points to critical chance. Dispel removes one stack.",
-      "B": "The preliminary check uses start-of-combat live Jmp and consumes no hit. Sakusa must have higher Jmp. On success, both his initial attack and any follow-up hit twice; otherwise each hits once. Every actual hit rolls crit independently. Each initial critical hit makes a 45% follow-up roll until one succeeds. Follow-up hits cannot grant another follow-up. Usual follow-up denial applies. Sakusa’s offensive critical multiplier is fixed at 1.1×.",
+      "B": "Relentless Pressure applies only when Sakusa initiates combat. The preliminary check uses start-of-combat live Jmp and consumes no hit. Sakusa must have higher Jmp. On success, both his initial attack and any follow-up hit twice; otherwise each hits once. Every actual hit rolls crit independently. Each initial critical hit makes a 45% follow-up roll until one succeeds. Follow-up hits cannot grant another follow-up. Usual follow-up denial applies. Sakusa’s offensive critical multiplier is fixed at 1.1× only when initiating; defending uses the normal critical rules.",
       "Dispel": "Removes one positive Named Buff after the hit. Visible stat buffs and intrinsic Burden/Learning/Terror resources are excluded. A live aura such as Excellence is suppressed for the rest of that combat.",
       "Named Buff": "A positive named status or active Excellence. Multiple stacks of one named status count as one effect."
     },

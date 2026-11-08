@@ -119,6 +119,29 @@ class SakusaTests(unittest.TestCase):
         self.assertNotIn('Open Play',d.statuses);self.assertIn('Learning',d.statuses)
         self.assertEqual(d.visible_bonus('spd'),6)
 
+    def test_defending_sakusa_gets_no_b_precheck_double_hit_or_followup_roll(self):
+        e=BattleEngine(specs(['Daichi']),specs(['Sakusa']),seed=1)
+        a,d=e.team_a.units[0],e.team_b.units[0];a.base['jmp']=0;d.base['jmp']=100
+        e.team_a.hp=e.team_a.max_hp=10000;e.team_b.hp=e.team_b.max_hp=10000
+        ctx=CombatContext(e,a,d,a,d);e.rng=Mock(random=Mock(return_value=0))
+        e.sakusa_precheck(ctx);self.assertEqual(e.rng.random.call_count,0)
+        e.combat(ctx)
+        self.assertEqual(d.attacks_made,1);self.assertFalse(e.attacks_twice(ctx,d))
+        self.assertFalse(ctx.temp_flags.get('sakusa_followup:'+d.uid))
+        self.assertEqual(e.crit_multiplier(ctx,d),1.2)
+        e.after_combat(ctx);self.assertEqual(e.sakusa_stacks(d),1)
+
+    def test_defensive_dispel_and_other_critical_support_remain_active(self):
+        e=BattleEngine(specs(['Daichi']),specs(['Sakusa','Iwaizumi']),seed=1)
+        a,d=e.team_a.units[0],e.team_b.units[0];ctx=CombatContext(e,a,d,a,d)
+        a.add_status('Open Play',True)
+        e.rng=Mock(random=Mock(return_value=0),choice=Mock(side_effect=lambda rows:rows[0]))
+        e.sakusa_hit_result(ctx,d,a,True)
+        self.assertNotIn('Open Play',a.statuses)
+        self.assertFalse(ctx.temp_flags.get('sakusa_followup:'+d.uid))
+        self.assertEqual(e.rng.random.call_count,1)
+        self.assertEqual(e.crit_multiplier(ctx,d),1.5)
+
     def test_ultimate_penetration_and_half_damage_heal(self):
         e,a,d,ctx=duel(['Sakusa'])
         self.assertEqual(a.max_cd,5);a.cd=0;e.team_a.hp=10

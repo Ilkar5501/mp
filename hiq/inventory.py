@@ -10,7 +10,8 @@ from .data import CHAR_BY_ID
 from .items import ITEM_BY_KEY,inventory_label
 from .shard_balances import label as shard_label
 
-CATEGORIES=('School shards','Item shards','Character shards','Items')
+CATEGORIES=('Non-equip Items','School Shards','Character Shards','Equip Shards','Equip Items',
+            'Unique Equip Shards','Unique Equip Items')
 MODES={'toggle','view','stacked','compact','regular','ids'}
 ITEM_NAMES={'mergecopy':'Merge Copy','blessing':'Blessing','starpack':'Star Pack',
             'pack_base':'Base Pack','pack_school':'School Pack','pack_position':'Position Pack'}
@@ -50,11 +51,12 @@ def inventory_entries(schools,balances,items,*,stacked=False):
     for school,qty in schools.items():
         if qty>0:
             aliases=tuple(short for short,name in SCHOOLS.items() if name==school)
-            rows.append(InventoryEntry('School shards',school+' Shard',qty,terms=(school,*aliases)))
+            rows.append(InventoryEntry('School Shards',school+' Shard',qty,terms=(school,*aliases)))
     for row in balances:
         if row['quantity']<=0:continue
         kind,detail=row['kind'],row['detail']
-        rows.append(InventoryEntry('Item shards' if kind=='item_shard' else 'Character shards',
+        category=('Unique Equip Shards' if ITEM_BY_KEY.get(detail,{}).get('signature') else 'Equip Shards') if kind=='item_shard' else 'Character Shards'
+        rows.append(InventoryEntry(category,
                                    shard_label(kind,detail),row['quantity'],terms=searchable_terms(kind,detail)))
     groups=defaultdict(list)
     for item in items:
@@ -62,7 +64,8 @@ def inventory_entries(schools,balances,items,*,stacked=False):
     for (kind,stars,detail,_),copies in groups.items():
         name=inventory_label(copies[0]) or ((f'{stars}★ ' if stars else '')+ITEM_NAMES.get(kind,kind)+(f' · {detail}' if detail else ''))
         terms=searchable_terms(kind,detail)+tuple(item['id'] for item in copies)
-        rows.append(InventoryEntry('Items',name,len(copies),'' if stacked else copies[0]['id'],
+        category=('Unique Equip Items' if ITEM_BY_KEY.get(detail,{}).get('signature') else 'Equip Items') if kind=='equipment' else 'Non-equip Items'
+        rows.append(InventoryEntry(category,name,len(copies),'' if stacked else copies[0]['id'],
                                    '' if stacked else copies[0].get('equipped_on') or '',terms))
     return sorted(rows,key=lambda row:(CATEGORIES.index(row.category),row.label.casefold(),row.reference))
 

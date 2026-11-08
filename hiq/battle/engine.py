@@ -786,7 +786,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         return universal or defender.offense_key==attacker.offense_key
 
     def attacks_twice(self,ctx,u):
-        if has(u,'Sakusa'):return bool(ctx.temp_flags.get('sakusa_twice:'+u.uid))
+        if has(u,'Sakusa'):return u is ctx.attacker and bool(ctx.temp_flags.get('sakusa_twice:'+u.uid))
         if has(u,'Suga'): return True
         if has(u,'Hinata','Wings of Dawn') and self.allied(u,'Kageyama'): return True
         return False
@@ -794,7 +794,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
     def followup(self,ctx,u,foe,initiated):
         st=self.combat_stats(ctx); us,fs=st[u.uid],st[foe.uid]
         guaranteed=has(u,'Kageyama','Prodigious Talent') and initiated and len(self.distinct_bonuses(ctx,u,st))>=4
-        guaranteed=guaranteed or bool(ctx.temp_flags.get('sakusa_followup:'+u.uid))
+        guaranteed=guaranteed or (u is ctx.attacker and bool(ctx.temp_flags.get('sakusa_followup:'+u.uid)))
         prevented=False
         if has(u,'Hinata','Wings of Dawn') and not self.allied(u,'Kageyama') and self.skill_spd(u,us)>=self.skill_spd(foe,fs)+5: guaranteed=True
         if has(u,'Nishinoya') and not initiated and self.skill_spd(u,us)>=self.skill_spd(foe,fs)+5: guaranteed=True
@@ -926,7 +926,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         return self.equipment_charge(ctx,u,foe,is_attacking,acceleration,guard,st)
 
     def crit_multiplier(self,ctx,u):
-        if has(u,'Sakusa'):return 1.1
+        if has(u,'Sakusa') and u is ctx.attacker:return 1.1
         if any(has(a,'Iwaizumi') and self.source_allowed(ctx,a) for a in self.team(u).units): return 1.5
         return 1.2
 

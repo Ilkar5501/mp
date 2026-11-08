@@ -11,7 +11,9 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v11.7.0
+## Latest release: v11.7.1
+
+See [WISPBYTE-11.7.1.md](WISPBYTE-11.7.1.md) for Sakusa’s initiation-only B, the standard illustrated Tiny Titans 6v6 result, and the inventory category selector. Signature equipment and event shards have separate categories; search, arrows and stacking/ID controls remain available.
 
 See [WISPBYTE-11.7.0.md](WISPBYTE-11.7.0.md) for the shared monthly PvP Elo ladder. `;pvp` matches the closest eligible player in the selected format; `;pvp @user` is rated only if neither participant has used their targeted rating allowance that day. Further targeted matches are practice. `;pvpset` / `;pvps` selects and locks separate 3v3 and 6v6 teams; `;pvpboard` / `;pvpb` shows the monthly standings. The top three each receive one pack of every rarity, and Elo starts fresh at 1000 each month.
 

@@ -24,14 +24,13 @@ class SakusaEffects:
                 self._log(f'{self._unit_label(u)}: Perfectionism {n}/5.')
 
     def sakusa_precheck(self,ctx):
-        if self.crits_disabled(ctx):return
+        u,foe=ctx.attacker,ctx.defender
+        if u.name!='Sakusa' or self.crits_disabled(ctx):return
         stats=self.combat_stats(ctx)
-        for u,foe in ((ctx.attacker,ctx.defender),(ctx.defender,ctx.attacker)):
-            if u.name!='Sakusa':continue
-            diff=stats[u.uid]['jmp']-stats[foe.uid]['jmp']
-            chance=min(100,max(0,diff)*5+self.critical_bonus(u))
-            enabled=diff>0 and self.rng.random()<chance/100
-            ctx.temp_flags['sakusa_twice:'+u.uid]=enabled
+        diff=stats[u.uid]['jmp']-stats[foe.uid]['jmp']
+        chance=min(100,max(0,diff)*5+self.critical_bonus(u))
+        enabled=diff>0 and self.rng.random()<chance/100
+        ctx.temp_flags['sakusa_twice:'+u.uid]=enabled
 
     def dispellable_buffs(self,ctx,u):
         buffs=[name for name,status in u.statuses.items() if status.positive and name not in RESOURCE_STATUSES]
@@ -44,7 +43,7 @@ class SakusaEffects:
         key='sakusa_followup:'+attacker.uid
         # Each initial critical hit gets one roll until a follow-up is earned.
         # Follow-up hits cannot generate another follow-up.
-        if critical and not followup and not ctx.temp_flags.get(key):
+        if attacker is ctx.attacker and critical and not followup and not ctx.temp_flags.get(key):
             ctx.temp_flags[key]=self.rng.random()<.45
         choices=self.dispellable_buffs(ctx,defender)
         if not choices or self.rng.random()>=.5:return

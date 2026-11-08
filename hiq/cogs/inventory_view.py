@@ -1,6 +1,7 @@
 """Owner-only inventory pages with search and the existing saved view preference."""
 import discord
-from ..inventory import inventory_entries,search_entries
+from collections import Counter
+from ..inventory import CATEGORIES,inventory_entries,search_entries
 from ..ui import SafeView,PURPLE
 
 
@@ -15,10 +16,10 @@ class InventorySearch(discord.ui.Modal,title='Search inventory'):
 
 class InventoryView(SafeView):
     PAGE_SIZE=25
-    def __init__(self,store,uid,name,schools,balances,items,*,stacked=False,query=''):
+    def __init__(self,store,uid,name,schools,balances,items,*,stacked=False,query='',category=None):
         super().__init__(timeout=600)
         self.store=store;self.uid=uid;self.name=name;self.schools=schools;self.balances=balances;self.items=items
-        self.stacked=stacked;self.query=query;self.page=0;self.build()
+        self.stacked=stacked;self.query=query;self.category=category;self.page=0;self.build()
 
     async def interaction_check(self,i):
         if i.user.id!=self.uid:
@@ -32,7 +33,12 @@ class InventoryView(SafeView):
         return f'{name} · **{row.quantity}×**'
 
     def make_pages(self):
-        rows=search_entries(inventory_entries(self.schools,self.balances,self.items,stacked=self.stacked),self.query)
+        all_rows=inventory_entries(self.schools,self.balances,self.items,stacked=self.stacked)
+        self.category_counts=Counter(row.category for row in all_rows)
+        if self.category is None:
+            self.category='All' if self.query else next((c for c in CATEGORIES if self.category_counts[c]),CATEGORIES[0])
+        rows=all_rows if self.category=='All' else [row for row in all_rows if row.category==self.category]
+        rows=search_entries(rows,self.query)
         self.total=len(rows);pages=[];chunk=[];size=0
         for row in rows:
             # Keep 25 entries per page while respecting Discord's description limit.
@@ -49,23 +55,30 @@ class InventoryView(SafeView):
                 if category:lines.append('')
                 lines.append('**'+row.category+'**');category=row.category
             lines.append(self.row_text(row))
-        if not self.total:lines.append('No matching entries.' if self.query else 'Your inventory is empty.')
+        if not self.total:lines.append('No matching entries.' if self.query else 'No entries in this category.' if self.category!='All' else 'Your inventory is empty.')
         e=discord.Embed(title=f'{self.name} — Inventory'[:256],description='\n'.join(lines),color=PURPLE)
         e.set_footer(text=f'Page {self.page+1}/{len(self.pages)} · {self.total} entries · '+('Stacked' if self.stacked else 'IDs'))
         return e
 
     def build(self):
         self.clear_items();self.make_pages()
+        options=[discord.SelectOption(label='All categories',value='All',default=self.category=='All')]
+        options.extend(discord.SelectOption(label=c,value=c,default=self.category==c,description=f'{self.category_counts[c]} entries') for c in CATEGORIES)
+        categories=discord.ui.Select(placeholder='Choose an inventory category',options=options,row=0)
+        async def choose_category(i):
+            self.category=categories.values[0];self.page=0;self.build()
+            await i.response.edit_message(embed=self.embed(),view=self)
+        categories.callback=choose_category;self.add_item(categories)
         for step,emoji in ((-1,'◀️'),(1,'▶️')):
-            b=discord.ui.Button(emoji=emoji,style=discord.ButtonStyle.secondary,disabled=self.page==0 if step<0 else self.page==len(self.pages)-1)
+            b=discord.ui.Button(emoji=emoji,style=discord.ButtonStyle.secondary,disabled=self.page==0 if step<0 else self.page==len(self.pages)-1,row=1)
             async def turn(i,d=step):
                 self.page=max(0,min(len(self.pages)-1,self.page+d));self.build()
                 await i.response.edit_message(embed=self.embed(),view=self)
             b.callback=turn;self.add_item(b)
-        search=discord.ui.Button(label='Search',style=discord.ButtonStyle.secondary)
+        search=discord.ui.Button(label='Search',style=discord.ButtonStyle.secondary,row=1)
         async def find(i):await i.response.send_modal(InventorySearch(self))
         search.callback=find;self.add_item(search)
-        mode=discord.ui.Button(label='Show IDs' if self.stacked else 'Stack items',style=discord.ButtonStyle.secondary)
+        mode=discord.ui.Button(label='Show IDs' if self.stacked else 'Stack items',style=discord.ButtonStyle.secondary,row=1)
         async def toggle(i):
             stacked=not self.stacked
             async with self.store.tx() as c:
@@ -74,7 +87,7 @@ class InventoryView(SafeView):
             await i.response.edit_message(embed=self.embed(),view=self)
         mode.callback=toggle;self.add_item(mode)
         if self.query:
-            clear=discord.ui.Button(label='Clear search',style=discord.ButtonStyle.secondary)
+            clear=discord.ui.Button(label='Clear search',style=discord.ButtonStyle.secondary,row=1)
             async def reset(i):
                 self.query='';self.page=0;self.build();await i.response.edit_message(embed=self.embed(),view=self)
             clear.callback=reset;self.add_item(clear)

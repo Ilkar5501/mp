@@ -120,18 +120,28 @@ class EventsCog(commands.Cog):
             try:
                 row=await self.store.start(uid,mode,index);state=row['state']
                 cls=TinyTitansEngine if mode=='tiny_titans' else AllForOneEngine
-                engine=cls(restore_specs(state['a']),restore_specs(state['b']),seed=state['seed'],name_a=ctx.author.display_name,name_b=state['label'])
-                result=await asyncio.to_thread(engine.run)
+                engine=cls(restore_specs(state['a']),restore_specs(state['b']),seed=state['seed'],name_a=ctx.author.display_name,name_b=state['label'],owner_a=uid)
+                file=None
+                if mode=='tiny_titans':
+                    a=[(u.card,u.character,u.lane) for u in engine.team_a.units]
+                    b=[(u.card,u.character,u.lane) for u in engine.team_b.units]
+                    result,em,view,file=await self.bot.get_cog('BattleCog')._finish_battle(
+                        ctx,engine,a,b,None,ctx.author.display_name,state['label'],reward_regular_win=False)
+                else:result=await asyncio.to_thread(engine.run)
                 earned=await self.store.finish(uid,row['id'],asdict(result))
             except ValueError as error:await send(str(error));return
             outcome={'A':'Win','B':'Loss','draw':'Draw'}[result.winner_side]
-            text=f'You: **{result.team_a_hp}/{engine.team_a.max_hp} HP**\nCPU: **{result.team_b_hp}/{engine.team_b.max_hp} HP**\n{result.turns} turns'
             if mode=='tiny_titans':
                 name=ITEM_BY_KEY.get(state.get('signature_key'),{}).get('name','Unique Item')
-                text+='\n'+(f'Drop: 1 **{name} Shard**' if earned else 'No drop.')
-            em=discord.Embed(title=f'{outcome} · {state["label"]}',description=text,color=PURPLE)
-            view=BattleLogLauncher({uid},state['label'],result.log)
-            await send(embed=em,view=view)
+                em.title=f'Tiny Titans · {outcome} · {state["label"]}'
+                em.add_field(name='Challenge Drop',value=f'1 **{name} Shard**' if earned else 'No drop.',inline=False)
+                em.set_footer(text='6v6 · Tiny Titans · 50% unique equip shard chance')
+                await send(embed=em,view=view,file=file)
+            else:
+                text=f'You: **{result.team_a_hp}/{engine.team_a.max_hp} HP**\nCPU: **{result.team_b_hp}/{engine.team_b.max_hp} HP**\n{result.turns} turns'
+                em=discord.Embed(title=f'{outcome} · {state["label"]}',description=text,color=PURPLE)
+                view=BattleLogLauncher({uid},state['label'],result.log)
+                await send(embed=em,view=view)
     @commands.hybrid_command(name='tinytitans',aliases=['tt'],description='Play Tiny Titans against boosted 6v6 CPU teams.')
     async def tiny_titans(self,ctx,opponent:int=0):
         if opponent:
