@@ -16,7 +16,7 @@ from ..data import CHAR_BY_ID
 from ..community_store import CommunityStore, ADMIN_ID, PREFECTURE_DAILY_CAP, PREFECTURE_WIN_REWARD
 from ..prefecture import FORMATIONS, PodBattleEngine, cpu_specs
 from ..tournament import restore_specs, restore_result
-from ..ui import SafeView, EmbedPager, text_pages, PURPLE
+from ..ui import expire_result_view,SafeView, EmbedPager, text_pages, PURPLE
 
 log=logging.getLogger(__name__)
 
@@ -101,7 +101,7 @@ class RedeemLimitView(SafeView):
 class SeriesResultsView(SafeView):
     """The regular result image and log controls, plus game navigation."""
     def __init__(self,battle,games,a,b,name_a,name_b,owners,title):
-        super().__init__(timeout=900);self.battle=battle;self.games=games;self.a=a;self.b=b;self.names=(name_a,name_b);self.owners=owners;self.title=title;self.index=0
+        super().__init__(timeout=900);self.battle=battle;self.games=games;self.a=a;self.b=b;self.names=(name_a,name_b);self.owners=owners;self.title=title;self.index=0;expire_result_view(self)
         self.sync()
     def sync(self):self.previous.disabled=self.index==0;self.next.disabled=self.index==len(self.games)-1
     async def interaction_check(self,i):
@@ -124,7 +124,7 @@ class SeriesResultsView(SafeView):
     @discord.ui.button(label='View Full Battle Log',emoji='📜',style=discord.ButtonStyle.primary)
     async def logs(self,i,button):
         from .battle import BattleLogPager
-        await i.response.send_message(embed=(p:=BattleLogPager(self.owners,self.title,self.games[self.index].log)).embed(),view=p,ephemeral=True)
+        await i.response.send_message(embed=(p:=BattleLogPager(self.owners,self.title,self.games[self.index].log,deadline=self.result_deadline)).embed(),view=p,ephemeral=True)
 
 
 class PrefTeamView(SafeView):

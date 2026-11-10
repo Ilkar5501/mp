@@ -11,7 +11,16 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v11.7.3
+## Latest release: v11.7.4
+
+See [WISPBYTE-11.7.4.md](WISPBYTE-11.7.4.md) and [STORAGE-RETENTION.md](STORAGE-RETENTION.md).
+Completed battle/session details become eligible for cleanup after 30 minutes;
+data-changing activity schedules shared delayed batches instead of continuous polling, preserving permanent
+progress, ratings, scores, clan records and small reward safeguards. Includes a
+read-only table-size report and verified-backup cleanup/compaction tool for existing
+large databases. Active sessions and original character definitions remain recoverable.
+
+## Previous release: v11.7.3
 
 See [WISPBYTE-11.7.3.md](WISPBYTE-11.7.3.md). Tiny Titans (`;tt`), All For One (`;af1`) and both Gauntlets (`;gn`) now use five-second cooldowns. Event timers remain independent and run from battle start.
 

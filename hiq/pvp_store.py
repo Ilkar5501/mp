@@ -228,6 +228,8 @@ class PvPStore(CommunityStore):
                 for owner,change,win,loss in ((a,delta,winner=='A',winner=='B'),(b,-delta,winner=='B',winner=='A')):
                     await c.execute('UPDATE pvp_ratings SET rating=rating+?,wins=wins+?,losses=losses+?,draws=draws+? WHERE month=? AND owner_id=?',(change,int(win),int(loss),int(winner=='draw'),month,owner))
                 await c.execute('INSERT INTO pvp_history(match_id,a_id,b_id) VALUES (?,?,?)',(sid,a,b))
+                from .retention import PVP_HISTORY_TRIM_SQL
+                await c.execute(PVP_HISTORY_TRIM_SQL)
             reward=None;winner_id=a if winner=='A' else b if winner=='B' else None
             if winner_id:
                 from .rewards import award_in

@@ -1,7 +1,22 @@
 from __future__ import annotations
 import discord
+import asyncio
+import time
 
 PURPLE=discord.Color.from_rgb(72,42,115)
+
+
+def expire_result_view(view, deadline=None):
+    """Absolute lifetime: button activity cannot keep heavy results in RAM forever."""
+    view.result_deadline = deadline if deadline is not None else time.monotonic()+1800
+    def release():
+        view.stop()
+        view.clear_items()
+        for name in ('lines','pages','stats','records','games','a','b'):
+            value=getattr(view,name,None)
+            if isinstance(value,list):setattr(view,name,[])
+            elif isinstance(value,dict):setattr(view,name,{})
+    asyncio.get_running_loop().call_later(max(0,view.result_deadline-time.monotonic()),release)
 
 
 class SafeView(discord.ui.View):

@@ -144,6 +144,8 @@ class ResultsView(discord.ui.View):
 
     @discord.ui.button(label='View my matches',style=discord.ButtonStyle.primary,custom_id='matches')
     async def my_matches(self,interaction,button):
+        if not await self.cog.store.get(self.tid):
+            await interaction.response.send_message('These tournament details expired after 30 minutes.',ephemeral=True);return
         matches=await self.cog.store.matches(self.tid)
         own=[r for r in matches.values() if interaction.user.id in (r['owner_a'],r['owner_b'])]
         if not own:
@@ -225,7 +227,12 @@ class TournamentCog(commands.Cog):
         except discord.HTTPException:log.warning('Could not update tournament lobby %s',tid)
 
     async def show_match(self,sender,tid,key,owner,*,ephemeral=False):
-        entries=await self.store.entries(tid);matches=await self.store.matches(tid);r=matches[key]
+        entries=await self.store.entries(tid);matches=await self.store.matches(tid)
+        if key not in matches:
+            await sender.send('These match details expired after 30 minutes.',**({'ephemeral':True} if ephemeral else {}));return
+        r=matches[key]
+        if r['owner_a'] not in entries or r['owner_b'] not in entries:
+            await sender.send('These match details have expired.',**({'ephemeral':True} if ephemeral else {}));return
         if owner not in (r['owner_a'],r['owner_b']):raise ValueError('This match belongs to another player.')
         a=entries[r['owner_a']];b=entries[r['owner_b']]
         a_specs=restore_specs(json.loads(a['snapshot_json']));b_specs=restore_specs(json.loads(b['snapshot_json']))

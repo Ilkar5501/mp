@@ -34,6 +34,7 @@ EXTENSIONS = (
     'hiq.cogs.market',
     'hiq.cogs.events',
     'hiq.cogs.pvp',
+    'hiq.cogs.retention',
 )
 PURPLE = discord.Color.from_rgb(72, 42, 115)
 

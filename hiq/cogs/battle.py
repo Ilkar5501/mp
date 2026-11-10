@@ -17,7 +17,7 @@ from ..data import CHAR_BY_ID
 from ..economy import daily_win_reward, local_date_key, next_daily_at, next_week_reset, week_key, weekly_milestone_rewards
 from ..gauntlet import gauntlet_sequence, npc_specs, school_order, total_games
 from ..progression import TRAINING_SCHOOLS, post50_bonus_increment, post50_bonus_total
-from ..ui import EmbedPager
+from ..ui import EmbedPager,expire_result_view
 
 PURPLE = discord.Color.from_rgb(72, 42, 115)
 LOG_PAGE_LIMIT = 3600
@@ -48,8 +48,9 @@ def _chunk_log(lines: list[str], limit: int = LOG_PAGE_LIMIT) -> list[str]:
 
 
 class BattleLogPager(discord.ui.View):
-    def __init__(self, owner_ids: set[int], title: str, lines: list[str]):
+    def __init__(self, owner_ids: set[int], title: str, lines: list[str], *, deadline=None):
         super().__init__(timeout=600)
+        expire_result_view(self,deadline)
         self.owner_ids = set(owner_ids)
         self.title = title
         self.pages = _chunk_log(lines)
@@ -95,6 +96,7 @@ class BattleLogPager(discord.ui.View):
 class BattleLogLauncher(discord.ui.View):
     def __init__(self, owner_ids: set[int], title: str, lines: list[str], *, label: str = 'View Full Battle Log'):
         super().__init__(timeout=900)
+        expire_result_view(self)
         self.owner_ids = set(owner_ids)
         self.log_title = title
         self.lines = list(lines)
@@ -108,7 +110,7 @@ class BattleLogLauncher(discord.ui.View):
 
     @discord.ui.button(label='View Full Battle Log', emoji='📜', style=discord.ButtonStyle.primary)
     async def open_log(self, interaction: discord.Interaction, button: discord.ui.Button):
-        pager = BattleLogPager(self.owner_ids, self.log_title, self.lines)
+        pager = BattleLogPager(self.owner_ids, self.log_title, self.lines,deadline=self.result_deadline)
         await interaction.response.send_message(embed=pager.embed(), view=pager, ephemeral=True)
 
 
@@ -130,6 +132,7 @@ class GauntletSchoolSelect(discord.ui.Select):
 class GauntletPerformanceView(discord.ui.View):
     def __init__(self, owner_id: int, records: list[dict], cog: 'BattleCog', mode_title: str):
         super().__init__(timeout=900); self.owner_id=owner_id; self.records=records; self.cog=cog; self.mode_title=mode_title
+        expire_result_view(self)
         self.school=records[0]['school'] if records else ''; self.game_index=0; self.rebuild()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -150,7 +153,7 @@ class GauntletPerformanceView(discord.ui.View):
         logs=discord.ui.Button(label='View Full Battle Log',emoji='📜',style=discord.ButtonStyle.primary,row=2)
         async def logcb(i):
             r=self.school_records()[self.game_index]
-            pager=BattleLogPager({self.owner_id},f'{self.mode_title} — {self.school} G{r["game_no"]}',r['result'].log)
+            pager=BattleLogPager({self.owner_id},f'{self.mode_title} — {self.school} G{r["game_no"]}',r['result'].log,deadline=self.result_deadline)
             await i.response.send_message(embed=pager.embed(),view=pager,ephemeral=True)
         logs.callback=logcb;self.add_item(logs)
 

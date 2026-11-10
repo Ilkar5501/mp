@@ -156,6 +156,7 @@ class Database:
     def __init__(self, path: str | Path = DB_PATH):
         self.path = str(path)
         self._lock = asyncio.Lock()
+        self.on_write = None
 
     async def init(self) -> None:
         async with aiosqlite.connect(self.path) as db:
@@ -188,6 +189,14 @@ class Database:
             await migrate_legacy_signature_shards(db)
             from .pvp_store import SCHEMA as PVP_SCHEMA
             await db.executescript(PVP_SCHEMA)
+
+        from .retention import install
+        import sqlite3
+        from contextlib import closing
+        def install_retention():
+            with closing(sqlite3.connect(self.path, timeout=30)) as conn:
+                install(conn)
+        await asyncio.to_thread(install_retention)
 
     async def _migrate_saved_teams(self,db):
         # SQLite CHECK constraints need a transactional table rebuild. Copy every
@@ -321,10 +330,15 @@ class Database:
     async def connect(self):
         db = await aiosqlite.connect(self.path)
         db.row_factory = aiosqlite.Row
+        succeeded = False
         try:
             yield db
+            succeeded = True
         finally:
+            changed = succeeded and db.total_changes > 0 and not db.in_transaction
             await db.close()
+            if changed and self.on_write is not None:
+                self.on_write()
 
     async def ensure_user(self, discord_id: int) -> None:
         async with self.connect() as db:

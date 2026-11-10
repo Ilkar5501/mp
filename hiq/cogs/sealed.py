@@ -11,7 +11,7 @@ from ..sealed import POSITIONS
 from ..sealed_store import SealedStore,LIVE
 from ..team_render import _fetch_square,_font
 from ..tournament import restore_specs,restore_result
-from ..ui import SafeView,PURPLE
+from ..ui import SafeView,PURPLE,expire_result_view
 
 log=logging.getLogger(__name__)
 
@@ -96,6 +96,7 @@ class SealedTeamView(SafeView):
 class SealedResultsView(SafeView):
     def __init__(self,cog,row):
         super().__init__(timeout=600);self.owners=set(row['state']['order'])
+        expire_result_view(self)
         matches=[m for m in row['state']['matches'] if m['games']]
         picker=discord.ui.Select(placeholder='View a match and battle logs',options=[discord.SelectOption(label=f'Round {m["round"]} • Match {m["index"]+1} • {m["score"][0]}–{m["score"][1]}',value=str(n)) for n,m in enumerate(matches)])
         async def choose(i):
@@ -130,6 +131,7 @@ class SealedView(SafeView):
     @discord.ui.button(label='Match Results / Logs',style=discord.ButtonStyle.secondary,custom_id='results')
     async def results(self,i,button):
         row=await self.cog.store.session(self.sid)
+        if not row:raise ValueError('These draft results expired after 30 minutes.')
         if i.user.id not in row['state']['order']:raise ValueError('You are not a participant in this draft.')
         if not any(m['games'] for m in row['state']['matches']):raise ValueError('No played matches yet.')
         await i.response.send_message('Choose a completed match.',view=SealedResultsView(self.cog,row),ephemeral=True)

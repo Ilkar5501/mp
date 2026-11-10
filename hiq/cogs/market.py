@@ -11,6 +11,8 @@ log=logging.getLogger(__name__)
 
 
 def auction_embed(row):
+    if not row:
+        raise ValueError('This auction receipt has expired. Completed listings are removed after 30 minutes.')
     asset=row['asset'];e=discord.Embed(title=f'Market — {row["id"]}',color=PURPLE)
     nature=''
     if asset['kind']=='card':nature='\nNature: '+(f'+{asset["boon"].upper()}/−{asset["bane"].upper()}' if asset['boon'] and asset['bane'] else 'Neutral')
@@ -154,7 +156,7 @@ class MarketBrowse(OwnedView):
     def embed(self):
         chunk=self.rows[self.page*10:(self.page+1)*10]
         e=discord.Embed(title='Match Point — Global Market',description='\n\n'.join(f'`{r["id"]}` **{discord.utils.escape_markdown(r["asset"]["label"])}**\n'+ ' · '.join(f'{CURRENCIES[k]}: {p["min"]:,} minimum' for k,p in r['prices'].items())+f' · <t:{int(r["expires_at"])}:R>' for r in chunk) or 'No active listings match your search.',color=PURPLE)
-        e.add_field(name='Auction house',value='Shared across all servers. Use `;auction` to sell, `;auction <ID>` to inspect a listing, or `;myauctions` for your sale history. Item shards cannot be sold.',inline=False)
+        e.add_field(name='Auction house',value='Shared across all servers. Use `;auction` to sell, `;auction <ID>` to inspect a listing, or `;myauctions` for active listings and receipts from the last 30 minutes. Item shards cannot be sold.',inline=False)
         e.set_footer(text=f'Page {self.page+1}/{max(1,(len(self.rows)+9)//10)} • Refresh to see the latest listings.')
         return e
     def rebuild(self):
@@ -181,8 +183,32 @@ class MarketCog(commands.Cog):
     def cog_unload(self):self.expiry.cancel()
     @tasks.loop(seconds=30)
     async def expiry(self):
-        try:await self.store.settle()
+        try:
+            await self.store.settle()
+            await self.send_receipts()
         except Exception:log.exception('Market settlement failed; will retry without releasing escrow twice.')
+
+    async def send_receipts(self):
+        async with self.bot.db.connect() as c:
+            rows=await self.store.rows(c,"SELECT id FROM market_auctions WHERE status IN ('sold','expired','cancelled')")
+        for entry in rows:
+            row=await self.store.auction(entry['id'])
+            if not row:continue
+            for uid in {row['seller_id'],row['winner_id']} - {None}:
+                async with self.store.tx() as c:
+                    # Claim before sending: best-effort, at most one DM attempt
+                    # per recipient, including across restarts.
+                    if not await self.store.one(c,'SELECT 1 FROM market_auctions WHERE id=?',(row['id'],)):continue
+                    cur=await c.execute('INSERT OR IGNORE INTO market_receipt_delivery VALUES (?,?)',(row['id'],uid))
+                    claimed=bool(cur.rowcount)
+                if not claimed:continue
+                try:
+                    user=self.bot.get_user(uid) or await self.bot.fetch_user(uid)
+                    embed=auction_embed(row)
+                    embed.set_footer(text='Final auction receipt • Items and payments are settled. The bot removes this listing after 30 minutes.')
+                    await user.send(embed=embed,allowed_mentions=discord.AllowedMentions.none())
+                except discord.HTTPException:
+                    log.info('Auction receipt DM unavailable for %s / %s; settlement is unchanged.',row['id'],uid)
     @expiry.before_loop
     async def ready(self):await self.bot.wait_until_ready()
     @commands.hybrid_command(name='market',description='Browse the auction house shared across all servers.')
@@ -196,7 +222,7 @@ class MarketCog(commands.Cog):
             if not row:await ctx.send('Auction not found. Browse `;market` for active listings.');return
             await ctx.send(embed=auction_embed(row),view=AuctionView(self.store,row));return
         await ctx.send('Choose what to sell. You’ll review the asset, minimum prices, optional buyouts and duration before anything leaves your inventory.',view=ListingStart(self.store,ctx.author.id))
-    @commands.hybrid_command(name='myauctions',description='See your active auctions and completed sales.')
+    @commands.hybrid_command(name='myauctions',description='See your active auctions and receipts from the last 30 minutes.')
     async def myauctions(self,ctx):
         await ctx.defer();rows=await self.store.browse(owner=ctx.author.id)
         pages=[discord.Embed(title='Your Auctions',description='\n\n'.join(f'`{r["id"]}` — **{r["status"].title()}**\n{discord.utils.escape_markdown(r["asset"]["label"])}'+ (f'\nSold for {r["amount"]:,} {CURRENCIES[r["currency"]]}' if r['winner_id'] else '') for r in rows[n:n+10]) or 'You haven’t listed anything yet. Use `;auction` to get started.',color=PURPLE) for n in range(0,max(1,len(rows)),10)]

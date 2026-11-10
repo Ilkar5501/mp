@@ -291,7 +291,7 @@ class RaidCog(commands.Cog):
         if not raid_id:
             pending=await self.store.pending(ctx.author.id);raid_id=pending[0]['id'] if pending else None
         row=await self.store.raid(raid_id) if raid_id else None
-        if not row or row['owner_id']!=ctx.author.id:await ctx.send('No matching raid. Supply your raid ID to reopen one of your 20 recent completed results.');return
+        if not row or row['owner_id']!=ctx.author.id:await ctx.send('No matching raid. Completed raid details expire after 30 minutes; active raids can still be recovered.');return
         if row['status']=='complete':
             if getattr(ctx,'interaction',None):await ctx.defer()
             await self.show_result(row,ctx)
