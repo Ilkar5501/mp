@@ -43,7 +43,8 @@ Discord messages already delivered remain on Discord; this cleanup removes bot d
 Only each player's last-five-match opponent window remains in `pvp_history`, because
 automatic matchmaking uses it. This is trimmed inside the ranked-match settlement
 transaction, rather than rescanned by background cleanup. The offline cleanup also
-trims any existing history. Monthly ratings/prizes and small reward markers remain.
+trims any existing history. Five-week ratings, weekly prizes, legacy monthly records,
+and small reward markers remain.
 Daily/weekly caps, redemption claims and settlement guards are not reset or discarded.
 Compact completed wars remain, including participants and series scores.
 

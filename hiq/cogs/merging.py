@@ -34,7 +34,7 @@ class MultiMergeView(SafeView):
             if base and card.character_id!=base.character_id:continue
             score=character_search_score(char,self.query) if q else 1
             if q and q not in iid and q not in card.full_instance_id.casefold() and score<.54:continue
-            out.append((iid,f'{char.name} — {char.title} +{card.merge_level}',f'{char.rarity}★ • {nature_text(card,compact=True).replace("**","")} • {iid}',score))
+            out.append((iid,f'{char.name} — {char.title} +{card.merge_level}',f'{char.rarity_label} • {nature_text(card,compact=True).replace("**","")} • {iid}',score))
         out.sort(key=lambda r:(-r[3],r[1],r[0]))
         if base:
             stars=CHAR_BY_ID[base.character_id].rarity
@@ -58,6 +58,8 @@ class MultiMergeView(SafeView):
             if len(lines)>10:shown.append(f'… and {len(lines)-10} more materials. Remove materials to stay within +10.')
             e.add_field(name='Consumed materials',value='\n'.join(shown) or 'Choose from the dropdown.',inline=False)
             e.add_field(name='Preview',value=f'**+{self.level()}** • '+('Within +10 cap' if self.level()<=10 else 'Above +10: remove materials'),inline=False)
+            if CHAR_BY_ID[base.character_id].is_duo:
+                e.add_field(name='Duo merge cost',value=f'{max(0,self.level()-base.merge_level)*100:,} coins. Unlocked shiny slots from all copies combine on Card 1.',inline=False)
             if self.max_transfer():
                 e.add_field(name='Transfer a +10 card',value='The +10 donor will be consumed. Card 1 becomes +10 and keeps **its own boon/bane**, ID and equipment. This replaces the donor’s nature; it does not add extra merges.\n'+('**Are you sure? Click Confirm +10 Transfer to continue.**' if self.max_confirm else 'An extra confirmation is required.'),inline=False)
         elif self.pending:e.add_field(name='Candidate',value=f'`{self.pending}` • click **Set Card 1**.',inline=False)

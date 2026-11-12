@@ -79,7 +79,7 @@ class RecycleConfirmView(discord.ui.View):
         char=CHAR_BY_ID[card.character_id]
         payout=recycle_payout(char.rarity,card.merge_level)
         try:
-            await self.cog.bot.db.recycle_card(self.owner_id,card.instance_id,payout)
+            _,payout=await self.cog.bot.db.recycle_card(self.owner_id,card.instance_id,payout)
         except ValueError as exc:
             await interaction.response.edit_message(content=str(exc),embed=None,view=None); return
         await interaction.response.edit_message(content=f'♻️ Recycled **{display_title(char)} +{card.merge_level}** for **{payout} coins**. Any saved-team slot using that exact instance is now empty.',embed=None,view=None)
@@ -318,7 +318,8 @@ class ProgressionCog(commands.Cog):
         battle=self.bot.get_cog('BattleCog')
         e=battle._result_embed(result,ctx.author.display_name,school,specs,enemy)
         e.title=f'🏋️ {school} Training • {difficulty} (+{merge})'
-        if result.winner_side=='A':
+        from ..youth_rewards import loss_reward
+        if result.winner_side=='A' or (result.winner_side=='B' and loss_reward(specs)):
             awarded,new_wins,balance=await self.bot.db.award_training_shard(ctx.author.id,school,wk,9)
             if awarded:
                 e.add_field(name='Training Reward',value=f'✅ **+1 {school} Shard** • inventory: **{balance}** • weekly progress: **{new_wins}/9**',inline=False)
@@ -360,7 +361,7 @@ class ProgressionCog(commands.Cog):
         if card.locked:
             await ctx.send('That card is locked and cannot be recycled.'); return
         c=CHAR_BY_ID[card.character_id]; payout=recycle_payout(c.rarity,card.merge_level)
-        e=discord.Embed(title='Confirm Recycle',description=f'**{display_title(c)} {c.rarity}★ +{card.merge_level}**\nID: `{card.instance_id}`\n{nature_text(card)}\n\nPayout: **{payout} coins** = {c.rarity}★ × 10 × ({card.merge_level}+1).\n\n**This permanently deletes the card.**',color=discord.Color.red())
+        e=discord.Embed(title='Confirm Recycle',description=f'**{display_title(c)} {c.rarity_label} +{card.merge_level}**\nID: `{card.instance_id}`\n{nature_text(card)}\n\nBase payout: **{payout} coins** = {c.rarity} × 10 × ({card.merge_level}+1).\n\n**This permanently deletes the card.**',color=discord.Color.red())
         await ctx.send(embed=e,view=RecycleConfirmView(self,ctx.author.id,card.instance_id))
 
     @commands.hybrid_command(name='pity',description='Set, replace, view, or clear your global pity target.')
@@ -372,8 +373,8 @@ class ProgressionCog(commands.Cog):
                 await ctx.send('**Pity: Inactive** — no target set. Use `;pity <name>` to choose one.'); return
             c=CHAR_BY_ID.get(state['character_id'])
             status='Active' if state['armed'] else 'Inactive'
-            explanation=(f'Your next {c.rarity}★ pull from an eligible pack is guaranteed to be this character.' if state['armed'] else 'A same-rarity miss activates the guarantee.')
-            await ctx.send(f'🎯 Pity target: **{display_title(c)} {c.rarity}★**\n**Pity: {status}** — {explanation}')
+            explanation=(f'Your next {c.rarity_label} pull from an eligible pack is guaranteed to be this character.' if state['armed'] else 'A same-rarity miss activates the guarantee.')
+            await ctx.send(f'🎯 Pity target: **{display_title(c)} {c.rarity_label}**\n**Pity: {status}** — {explanation}')
             return
         if q.casefold() in {'clear','none','off'}:
             await self.bot.db.clear_pity(ctx.author.id); await ctx.send('Pity target cleared. **Pity: Inactive**.'); return
@@ -382,8 +383,10 @@ class ProgressionCog(commands.Cog):
             await ctx.send(f'No player matched **{q}**.'); return
         if len(matches)>1:
             await ctx.send('Be more specific: '+', '.join(f'`{c.id}`' for c in matches[:10])); return
-        c=matches[0]; await self.bot.db.set_pity(ctx.author.id,c.id,False)
-        await ctx.send(f'🎯 Pity target set to **{display_title(c)} {c.rarity}★**. **Pity: Inactive** — a same-rarity miss activates the guarantee.')
+        c=matches[0]
+        if c.is_duo:await ctx.send('Duo cards are created with ;fuse and cannot be pity targets.');return
+        await self.bot.db.set_pity(ctx.author.id,c.id,False)
+        await ctx.send(f'🎯 Pity target set to **{display_title(c)} {c.rarity_label}**. **Pity: Inactive** — a same-rarity miss activates the guarantee.')
 
     @commands.hybrid_command(name='trade',description='Request a two-player trade of cards, coins, and school shards.')
     async def trade(self,ctx:commands.Context,user:discord.Member):

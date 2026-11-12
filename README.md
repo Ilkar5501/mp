@@ -4,14 +4,54 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 ## Deploying from GitHub to Wispbyte
 
-1. Back up the current SQLite database, then pull the v11 commit into Wispbyte.
+1. Stop the bot and back up the current SQLite database, then install the v12 runtime or changed-files update.
 2. Keep the existing `DISCORD_TOKEN`, database, and `HIQ_DB_PATH`. Store the database on persistent host storage, outside any checkout directory that the deployment replaces.
 3. Install `requirements.txt` and restart with `python bot.py`. The existing Dockerfile also supports deployment.
 4. Verify `;questview`, `;raid`, `;clanwar`, and `;sealed` in a test channel. Slash commands synchronize at startup; prefix commands remain available if Discord sync fails.
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.0.0
+## Latest release: v12.1.3 — AF1 results and cumulative update
+
+AF1 results now show the two mains' damage dealt, tanked and mitigated, with each
+side's supports in a two-row, three-column grid underneath. Results include the
+winner's trophy, turns, AF1 Marks and battle-log access, without OPOM/DPOM awards.
+The cumulative archive includes all v12.1.0–v12.1.2 changes. Apply its changed-files
+ZIP directly over v11.7.4 (with or without the Sakusa v12.0.0 patch), or use the
+full runtime with your existing database. See V12.1.3-CUMULATIVE.md.
+
+## Previous release: v12.1.2 — quest earnings guide
+
+`;qv` has a fifth page explaining Young Emperor, King of the Lost Court and
+the Duo's effects on earnings, including merge scaling, caps and ownership.
+Reward calculations are unchanged.
+
+## Previous release: v12.1.1 — Duo search and emoji
+
+Searching Oikawa or Kageyama in collection/gallery now includes their Duo.
+Duo card headers and collection rows use the supplied custom Duo emoji.
+Collection reward bonuses depend on current ownership; removing the last copy
+stops future bonuses without undoing earned rewards or resetting used caps.
+
+## Previous release: v12.1.0 — gameplay expansion
+
+All five new characters are implemented: Ikejiri — Old Friend, Hinata — Furious
+Upstart, Oikawa — Young Emperor, Kageyama — King of the Lost Court, and the
+Oikawa & Kageyama — Kings of the Playground Duo. The four regular characters
+are available through normal matching-rarity pulls; the Duo is created with
+`;fuse` using its two matching-merge ingredients and capped AF1 Marks.
+
+Includes their combat and reward effects, shiny artwork unlocks/selection,
+shiny-slot merging, dismantling, persistent equipment autoclean, tradeable PvP
+Shields, bulk clan-shop purchases, weekly five-week PvP prizes, team recovery,
+Tiny Titans shard limits/formatting, and revised help pages. Sakusa's 50% change
+and the complete SQLite retention/maintenance update remain included.
+
+See [V12-GAMEPLAY-UPDATE.md](V12-GAMEPLAY-UPDATE.md) for installation, exact
+mechanics and the new commands. Existing databases upgrade automatically;
+do not upload an empty database or delete the existing one.
+
+## Previous release: v12.0.0
 
 Sakusa — Coiled Precision now has a 50% follow-up roll per initial critical hit
 when initiating combat. The once-per-combat restriction and all other Sakusa

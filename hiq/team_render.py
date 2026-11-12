@@ -119,7 +119,7 @@ async def _render_six(entries,team_name):
                 if draw.textlength((lines[-1]+' '+word).strip(),font=_font(16))>200:lines.append(word)
                 else:lines[-1]=(lines[-1]+' '+word).strip()
             for j,line in enumerate(lines[:3]):draw.text((x+176,y+93+j*23),line,fill=(200,203,222),font=_font(16))
-            draw.text((x+176,y+169),f'{c.rarity}★ • +{card.merge_level} • {c.position}',fill=(221,222,236),font=_font(16,True))
+            draw.text((x+176,y+169),f'{c.rarity_label} • +{card.merge_level} • {c.position}',fill=(221,222,236),font=_font(16,True))
             st=add_base_equipment(permanent_stats(c,card.merge_level,card.boon_stat,card.bane_stat),equipment_key(card));off=c.offense_key
             draw.text((x+18,y+213),f'HP {st["hp"]}   {off.upper()} {st[off]}   DEF {st["def"]}',fill='white',font=_font(20,True))
             draw.text((x+18,y+248),f'REC {st["rec"]}   SPD {st["spd"]}   JMP {st["jmp"]}',fill=(205,207,230),font=_font(20))

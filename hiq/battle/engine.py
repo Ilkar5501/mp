@@ -16,6 +16,7 @@ from .talent import ProdigiousTalentEffects
 from .expansion import ExpansionEffects
 from .anchor import AnchorEffects
 from .sakusa import SakusaEffects
+from .youth import YouthEffects,YOUTH_TITLES
 
 STATS = ('pow','qik','def','rec','spd','jmp')
 
@@ -36,10 +37,10 @@ def pct(hp: int, max_hp: int) -> float:
 
 
 def has(u: BattleUnit, name: str, title: str | None = None) -> bool:
-    return u.name == name and (title is None or u.title == title)
+    return u.name == name and (u.title == title if title is not None else u.title not in YOUTH_TITLES)
 
 
-class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
+class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
     """Deterministic-enough 3v3 / 6v6 simulator for the current HiQ Battler rules.
 
     The spreadsheet remains the display/source-of-truth. Character-specific mechanics that cannot
@@ -49,6 +50,8 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
     def __init__(self, team_a_specs, team_b_specs, *, owner_a: int | None = None,
                  owner_b: int | None = None, name_a: str = 'Player', name_b: str = 'Opponent',
                  mode: str = 'battle', seed: int | None = None):
+        from ..lineups import validate_duos
+        validate_duos([c for _,c,_ in team_a_specs]);validate_duos([c for _,c,_ in team_b_specs])
         self.rng = random.Random(seed)
         self.mode = mode
         self.turn = 0
@@ -90,13 +93,13 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         if size==6:
             chosen=[];names=set()
             while len(chosen)<6:
-                c=rng.choice(CHARACTERS)
+                c=rng.choice([c for c in CHARACTERS if not c.is_duo])
                 if c.name not in names:chosen.append(c);names.add(c.name)
             ranking=sorted(chosen,key=lambda c:('tank' in (c.role_class or '').casefold(),
                 c.bst if 'tank' in (c.role_class or '').casefold() else c.stats['def']+c.stats['rec'],c.bst,c.id),reverse=True)
             fronts=ranking[:3];backs=[c for c in chosen if c not in fronts]
             return [(None,c,'front') for c in fronts]+[(None,c,'back') for c in backs]
-        pool = list(CHARACTERS)
+        pool = [c for c in CHARACTERS if not c.is_duo]
         chosen = []
         names = set()
         while len(chosen) < 3:
@@ -243,6 +246,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         self.talent_turn_start(u)
         if not forced: self.equipment_turn_start(u)
         self.expansion_turn_start(u)
+        self.youth_turn(u)
         team=self.team(u); enemy=self.enemy_team(u)
         # Kanbayashi supports himself and one randomly selected ally among the
         # lowest current Def+Rec ties. Each buff lasts through its recipient's next action.
@@ -715,6 +719,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
                         ctx.temp_flags.setdefault('ally_stat_impacts',{}).setdefault(u.uid,set()).add((source.uid,'B'))
         # Combat-local Kyotani intercept steroid
         if ctx.kyotani_intercept and u is ctx.attacker and has(u,'Kyotani'): m['jmp']+=8
+        self.youth_mods(ctx,u,foe,us,fs,initiated,m)
         self.expansion_mods(ctx,u,foe,us,fs,initiated,m)
         self.equipment_mods(ctx,u,foe,initiated,m)
         if self.aran_signature(u):
@@ -770,7 +775,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         if has(defender,'Lev') and attacker.offense_key=='qik' and defender.offense_key=='qik':
             st=stats or self.combat_stats(ctx)
             if self.skill_spd(defender,st[defender.uid])>self.skill_spd(attacker,st[attacker.uid]): return False
-        universal = any(has(defender,n) for n in ('Hirugami','Kuroo','Yaku','Daichi','Yamagata'))
+        universal = (defender.title=='Kings of the Playground' and self.skill_enabled(defender,'A')) or any(has(defender,n) for n in ('Hirugami','Kuroo','Yaku','Daichi','Yamagata'))
         if has(defender,'Nishinoya'): universal=True
         if has(defender,'Tendo'):
             st=stats or self.combat_stats(ctx)
@@ -807,6 +812,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         if has(u,'Takeru') and fs['def']+fs['rec']>us['def']+us['rec']: guaranteed=True
         if has(u,'Kiryu','Last Hope') and initiated and u.burden_stacks>=3 and self.can_counter(ctx,foe,u,st): guaranteed=True
         if 'Charged' in u.statuses: guaranteed=True
+        if 'Fun Memory' in u.statuses and not initiated and self.start_hp_pct(ctx,u)>=25:guaranteed=True
         if initiated and self.gear(foe,'open_guard'):guaranteed=True
         if initiated and self.gear(u,'last_rally') and self.start_hp_pct(ctx,u)<=50 and self.can_counter(ctx,foe,u,st):guaranteed=True
         if self.gear(u,'flashy_new_shoes') and not initiated and self.start_hp_pct(ctx,u)>=75 and self.can_counter(ctx,u,foe,st):guaranteed=True
@@ -830,7 +836,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         return guaranteed and not prevented
 
     def desperation(self,ctx,u):
-        return has(u,'Osamu') and self.start_hp_pct(ctx,u)<=75
+        return (has(u,'Osamu') and self.start_hp_pct(ctx,u)<=75) or (ctx.attacker is u and ctx.defender.title=='Kings of the Playground' and self.skill_enabled(ctx.defender,'A'))
 
     def vantage(self,ctx,u,foe):
         return ((has(u,'Suga') and self.start_hp_pct(ctx,u)<=75) or (has(u,'Ezota') and self.start_enemy_hp_pct(ctx,u)<=75)) and self.can_counter(ctx,u,foe)
@@ -875,6 +881,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
 
     def offensive_ult_ready(self,u,foe,ctx):
         if u.cd!=0 or 'UltimateDisabled' in u.statuses or self.ultimates_suppressed(ctx): return False
+        if u.title=='Young Emperor':return False
         # Postcombat/save/defensive Ultimates do not trigger on own attack.
         if u.name in ('Echigo','Watari','Ezota','Himekawa','Akifumi'): return False
         if has(u,'Kageyama') or has(u,'Bokuto') or has(u,'Fukunaga') or has(u,'Tendo'): return False
@@ -914,6 +921,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
             if has(u,'Kyotani') and st[u.uid]['pow']>st[foe.uid]['pow']: delta+=1
             if 'AkaashiCharge' in u.statuses: delta+=1
         # Guard-type effects from opponent / allies.
+        if u.title=='King of the Lost Court' and ctx.defender is u and self.skill_enabled(u,'B'):delta+=1
         acceleration=delta-1
         if has(foe,'Tsuki') and self.start_hp_pct(ctx,foe)>=50: delta-=1
         if has(foe,'Konoha') and ctx.defender is foe: delta-=1
@@ -976,13 +984,13 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         if not self.crits_disabled(ctx):
             diff=a['jmp']-d['jmp']
             rate=int(GAME_CONFIG['battle']['crit_per_jmp_difference_percent'])
-            off_chance=min(100,max(0,diff)*rate+self.critical_bonus(attacker))
-            def_chance=min(100,max(0,-diff)*rate+self.critical_bonus(defender))
+            off_chance=min(100,max(0,diff)*rate+self.critical_bonus(attacker)+self.youth_crit_bonus(attacker))
+            def_chance=min(100,max(0,-diff)*rate+self.critical_bonus(defender)+self.youth_crit_bonus(defender))
             if off_chance>0 and self.rng.random()<off_chance/100:
                 offensive_crit=True
                 if not has(defender,'Kanoka'): attack_stat=floori(attack_stat*self.crit_multiplier(ctx,attacker))
                 attacker.crits+=1
-            elif def_chance>0 and self.rng.random()<def_chance/100:
+            if (not offensive_crit or self.youth_crit_bonus(attacker)>0 or self.youth_crit_bonus(defender)>0) and def_chance>0 and self.rng.random()<def_chance/100:
                 defensive_crit=True
                 if not has(attacker,'Kanoka'): def_stat=floori(def_stat*1.2)
 
@@ -1014,6 +1022,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         if has(attacker,'Goshiki') and self.start_enemy_hp_pct(ctx,attacker)<=75: penetration=max(penetration,0.20)
         if has(attacker,'Korai') and attacker.lane=='back' and self.skill_spd(attacker,a)>self.skill_spd(defender,d): penetration=max(penetration,0.20)
         if 'Open Play' in attacker.statuses: penetration=max(penetration,0.20)
+        if off_trigger and attacker.title in ('Old Friend','Kings of the Playground'):penetration=max(penetration,.30)
         effective_def=floori(def_stat*(1-penetration))
         if off_trigger and has(attacker,'Matsukawa'): attack_stat=floori(attack_stat*1.5)
         attack_power_before_def=attack_stat
@@ -1025,7 +1034,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         if self.gear(attacker,'firm_contact') and hit_index==0:bonus+=3
         if off_trigger and self.gear(attacker,'ultimate_impact'):bonus+=attacker.max_cd*4
         if has(attacker,'Kageyama','Prodigious Talent') and len(self.distinct_bonuses(ctx,attacker,stats))>=6: bonus+=5
-        if 'Open Play' in attacker.statuses and has(attacker,'Hinata'): bonus+=floori(self.skill_spd(attacker,a)*0.15)
+        if 'Open Play' in attacker.statuses and attacker.name=='Hinata': bonus+=floori(self.skill_spd(attacker,a)*0.15)
         if has(attacker,'Tenma Udai') and self.skill_spd(attacker,a)>self.skill_spd(defender,d): bonus+=5
         if has(attacker,'Kosuke'):
             bonus+=sum(1 for ally in self.team(attacker).units if ally is not attacker and
@@ -1044,6 +1053,8 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
             impacts=self.ally_skill_impacts(ctx,attacker,stats)
             bonus+=min(10,2*len(impacts))
             self._log(f'{self._unit_label(attacker)} A: {len(impacts)} active ally skills, +{min(10,2*len(impacts))} damage.')
+        bonus+=self.youth_damage_bonus(ctx,attacker,stats)
+        if off_trigger and attacker.title=='Furious Upstart':bonus+=floori(a['spd']*.30)
         if 'Exposed' in defender.statuses: bonus+=5
         if attacker.stored_attack_bonus:
             bonus+=attacker.stored_attack_bonus
@@ -1055,6 +1066,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         damage_mult=1.2 if self.gear(attacker,'block_breaker') and defender.character.position=='MB' else 1.0
         neutralize_percent_dr=(has(attacker,'Kiryu','Last Hope') and ctx.attacker is attacker and attacker.burden_stacks>=5)
         if off_trigger:
+            if attacker.title=='King of the Lost Court':damage_mult*=2.5
             if has(attacker,'Shibayama'): damage_mult*=1.5
             if has(attacker,'Atema'): bonus+=floori(a['def']*.5)
             if has(attacker,'Ushijima'):
@@ -1102,6 +1114,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         if has(defender,'Korai') and defender.lane=='front' and d['jmp']>a['jmp'] and first_attack_action:
             drs.append(0.30)
             if hit_index==0: ctx.next_attack_bonus[defender.uid]=ctx.next_attack_bonus.get(defender.uid,0)+5
+        if defender.title=='Kings of the Playground' and ctx.defender is defender and self.skill_enabled(defender,'A') and self.followup(ctx,attacker,defender,True):drs.append(.30)
         ultimate_start=len(drs)
         if def_trigger:
             if has(defender,'Ezota'): drs.append(0.30)
@@ -1156,6 +1169,8 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
             if has(attacker,'Daichi'): self.heal_team(attacker,floori(damage*0.50))
             if has(attacker,'Kanoka'): self.heal_team(attacker,floori(damage*0.60))
             if has(attacker,'Kanbayashi'): self.heal_team(attacker,floori(a['rec']*0.75))
+        if off_trigger and attacker.title=='Kings of the Playground':self.heal_team(attacker,floori(damage*.30))
+        if attacker.title=='Furious Upstart' and self.skill_enabled(attacker,'B'):self.heal_team(attacker,max(0,a['spd']-d['spd']))
         if def_trigger and has(defender,'Kosuke'): self.heal_team(defender,10)
         if def_trigger and has(defender,'Hinata','Miracle Maker') and defender.lane=='back':
             defender.stored_attack_bonus+=floori(d['spd']*0.40)
@@ -1293,6 +1308,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         if a.uid not in self.siphon_used and any(has(source,'Usuri') and self.skill_enabled(source,'A') and source is not a and self.source_allowed(ctx,source) for source in self.team(a).units):
             self.siphon_used.add(a.uid)
             ctx.temp_flags['siphon'] = True
+        self.youth_start_combat(ctx)
         ctx.temp_flags['tendo_attacks_before']=d.attacks_tanked
         canctr=self.can_counter(ctx,d,a)
         used_vantage=False
@@ -1327,6 +1343,7 @@ class BattleEngine(SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTal
         self.effect_context=ctx;self.in_post_combat=True
         self.begin_bonus_event()
         self.sakusa_after_combat(ctx)
+        self.youth_after_combat(ctx)
         a,d=ctx.attacker,ctx.defender
         self.resolve_siphon(ctx)
         ctx.next_attack_bonus.clear()

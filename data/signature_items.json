@@ -16,7 +16,8 @@
     "signature": true,
     "character_shards": 25,
     "shard_cost": 25,
-    "coin_cost": 500
+    "coin_cost": 500,
+    "recycle_value": 25
   },
   {
     "key": "lev_rookie_gains",
@@ -34,7 +35,8 @@
     "signature": true,
     "character_shards": 25,
     "shard_cost": 25,
-    "coin_cost": 500
+    "coin_cost": 500,
+    "recycle_value": 25
   },
   {
     "key": "aran_out_of_nowhere",
@@ -52,7 +54,8 @@
     "signature": true,
     "character_shards": 25,
     "shard_cost": 25,
-    "coin_cost": 500
+    "coin_cost": 500,
+    "recycle_value": 25
   },
   {
     "key": "tanaka_mountain_chalk",
@@ -70,6 +73,7 @@
     "signature": true,
     "character_shards": 25,
     "shard_cost": 25,
-    "coin_cost": 500
+    "coin_cost": 500,
+    "recycle_value": 25
   }
 ]

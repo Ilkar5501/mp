@@ -33,6 +33,8 @@ def can_equip(item,char):
 
 def inventory_label(item):
     key=item.get('detail','');kind=item['kind']
+    if kind=='pvpshield':return 'PvP Shield'
+    if kind=='shiny_stone':return 'Shiny Stone'
     if kind=='equipment':return ITEM_BY_KEY.get(key,{}).get('name',key)
     if kind=='item_shard':return ITEM_BY_KEY.get(key,{}).get('name',key)+' Shard'
     if kind=='character_shard':return key+' Shard'

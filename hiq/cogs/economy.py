@@ -104,6 +104,9 @@ class EconomyCog(commands.Cog):
         targeted_cost = pack_cost('position')
         e = discord.Embed(title=f'{ctx.author.display_name} — Balance', color=discord.Color.from_rgb(72, 42, 115))
         e.description = f'🪙 **Coins:** {u.coins:,}'
+        from ..event_store import EventStore
+        wallet=await EventStore(self.bot.db).wallet(ctx.author.id)
+        e.add_field(name='AF1 Marks',value=f'{wallet["af1_marks"]:,} · Used by ;fuse. Earn up to 25 per day.',inline=False)
         e.add_field(name='Packs you can buy', value=(
             f'**Base Packs:** {u.coins // base_cost}  (`{base_cost}` 🪙 each)\n'
             f'**Position Packs:** {u.coins // targeted_cost}  (`{targeted_cost}` 🪙 each)\n'
@@ -131,6 +134,7 @@ class EconomyCog(commands.Cog):
         e.add_field(name='School Pack — 450 coins', value=f'3 cards from one eligible school\n**{schools}**\nSame targeted rarity odds as Position Packs.', inline=False)
         e.add_field(name='Boons / Banes', value='Each pull rolls HP, active POW/QIK, DEF, REC, SPD, and JMP independently for its boon and bane. Different rolls give **+3 / −3**; matching rolls cancel into **Neutral**.', inline=False)
         e.add_field(name='Free & earned', value='`;daily` gives one free Base Pack per day. Battle wins award **50 coins each**, up to **450 coins per daily allowance**. Unused Battle allowances roll over within the week.', inline=False)
+        e.add_field(name='Consumables',value='**PvP Shield — 500 coins:** `;buy pvpshield [quantity]`\n**Shiny Stone — 10,000 coins:** `;buy shinystone [quantity]`\nItems can be traded. Activate them with `;use ID`.',inline=False)
         await ctx.send(embed=e)
 
     @commands.hybrid_group(name='pack', aliases=['p'], description='Buy a Base, Position, or School Pack.', invoke_without_command=True)

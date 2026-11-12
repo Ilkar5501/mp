@@ -102,8 +102,10 @@ class TournamentStore:
             for _,iid,lane in team.entries:
                 cur=await db.execute('SELECT * FROM cards WHERE instance_id=? AND owner_id=?',(iid,owner));row=await cur.fetchone()
                 if not row:raise ValueError('A selected team member is no longer in your collection.')
-                card=self.db._card(row);c=CHAR_BY_ID[card.character_id];specs.append((card,c,lane));names.append(c.name)
+                card=self.db._card(row);c=CHAR_BY_ID[card.character_id];specs.append((card,c,lane));names.extend(c.components or (c.name,))
             if len(names)!=len(set(names)):raise ValueError('A team can use only one version of each character.')
+            from .pvp_store import auto_team_tx
+            await auto_team_tx(db,owner,team)
             await db.execute('INSERT INTO tournament_entries VALUES (?,?,?,?,?)',(tid,owner,display_name[:80],json.dumps(snapshot_specs(specs)),now()))
             owners.append(owner);started=len(owners)==8
             if started:
@@ -190,7 +192,10 @@ class TournamentStore:
             for owner in owners:
                 if is_cpu(owner):continue
                 from .rewards import award_in
-                payout=await award_in(db,owner,'tournament',day=day,human_tournament=sum(not is_cpu(uid) for uid in owners)>=4) if owner==winner else {'coins':0}
+                from .youth_rewards import loss_reward
+                entry=await (await db.execute('SELECT snapshot_json FROM tournament_entries WHERE tournament_id=? AND owner_id=?',(tid,owner))).fetchone()
+                consolation=owner!=winner and loss_reward(json.loads(entry[0]),key=f'{tid}:{owner}')
+                payout=await award_in(db,owner,'tournament',day=day,human_tournament=sum(not is_cpu(uid) for uid in owners)>=4) if owner==winner or consolation else {'coins':0}
                 amount=payout['coins'];kind='win' if owner==winner else 'participation'
                 await db.execute('INSERT INTO tournament_rewards(tournament_id,owner_id,kind,amount,day_key,champion_coins,participation_coins) VALUES (?,?,?,?,?,?,?)',(tid,owner,kind,amount,day,amount,0))
             await db.execute("UPDATE tournaments SET status='complete',champion_id=?,finished_at=? WHERE id=?",(winner,now(),tid));await db.commit()

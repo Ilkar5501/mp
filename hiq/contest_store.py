@@ -61,10 +61,14 @@ class ContestStore(CommunityStore):
             old=await self.one(c,'SELECT * FROM contest_scores WHERE owner_id=? AND day=?',(row['owner_id'],row['day']))
             participation=0
             if not settled:
-                if old:await c.execute('UPDATE contest_scores SET score=MAX(score,?) WHERE owner_id=? AND day=?',(score,row['owner_id'],row['day']))
+                if old:
+                    await c.execute('UPDATE contest_scores SET score=MAX(score,?) WHERE owner_id=? AND day=?',(score,row['owner_id'],row['day']))
+                    from .youth_rewards import extra,currency
+                    allowance=await extra(c,row['owner_id'],'contest',[row['day']])
+                    if allowance:participation=await currency(c,row['owner_id'],int(200*allowance[1]),clan=True,qualifies=True)
                 else:
                     await c.execute('INSERT INTO contest_scores VALUES (?,?,?,?,?)',(row['owner_id'],row['day'],week,row['clan_id'],score))
-                    await self._credit(c,row['owner_id'],200);participation=200
+                    participation=await self._credit(c,row['owner_id'],200)
             row['state'].update(score=score,result=result,participation=participation,week_closed=bool(settled))
             row['status']='complete';await c.execute("UPDATE contest_runs SET status='complete',state_json=? WHERE id=?",(json.dumps(row['state']),sid))
             return row
@@ -108,6 +112,7 @@ class ContestStore(CommunityStore):
                 for rank,player in enumerate(players[:3]):
                     uid=player['owner_id'];amount=(1000,750,500)[rank]
                     await c.execute("INSERT INTO contest_prizes VALUES (?,?,'player',?)",(week,uid,amount))
-                    await c.execute('UPDATE users SET coins=coins+? WHERE discord_id=?',(amount,uid))
+                    from .youth_rewards import currency
+                    await currency(c,uid,amount)
                 await c.execute('INSERT INTO contest_weeks VALUES (?,?)',(week,json.dumps(result)));done.append(week)
         return done

@@ -11,6 +11,11 @@ SEALED_LIFETIME=30*60
 POSITIONS=('Front Left','Front Middle','Front Right','Back Left','Back Middle','Back Right')
 
 
+def draft_capacity(pool):
+    names={CHAR_BY_ID[cid].name for cid in pool if not CHAR_BY_ID[cid].is_duo}
+    return max([len(names)]+[1+len(names-set(CHAR_BY_ID[cid].components)) for cid in pool if CHAR_BY_ID[cid].is_duo])
+
+
 def make_draft(users,roster,rng=None):
     rng=rng or random.SystemRandom()
     if not 2<=len(users)<=7 or len({u['id'] for u in users})!=len(users):raise ValueError('Choose 2–7 distinct human players.')
@@ -20,10 +25,10 @@ def make_draft(users,roster,rng=None):
     # With at most two extra variants in the entire pool, every possible
     # eight-card draft contains at least six distinct player names. All variants
     # remain eligible, but an unlucky draft can never make a legal team impossible.
-    while len(pool)-len({CHAR_BY_ID[cid].name for cid in pool})>2:
+    while len(pool)-draft_capacity(pool)>2:
         counts=Counter(CHAR_BY_ID[cid].name for cid in pool)
-        redundant=rng.choice([cid for cid in pool if counts[CHAR_BY_ID[cid].name]>1])
-        replacements=[cid for cid in roster if CHAR_BY_ID[cid].name not in counts]
+        redundant=rng.choice([cid for cid in pool if counts[CHAR_BY_ID[cid].name]>1 or CHAR_BY_ID[cid].is_duo])
+        replacements=[cid for cid in roster if not CHAR_BY_ID[cid].is_duo and CHAR_BY_ID[cid].name not in counts]
         if not replacements:raise ValueError('The roster cannot guarantee six distinct player names per draft.')
         pool[pool.index(redundant)]=rng.choice(replacements)
     rng.shuffle(pool)
@@ -65,3 +70,5 @@ def team_specs(sid,uid,cids):
 def validate_team(picks,cids):
     if len(cids)!=6 or len(set(cids))!=6 or not set(cids)<=set(picks):raise ValueError('Place six distinct drafted characters in all six positions.')
     if len({CHAR_BY_ID[cid].name for cid in cids})!=6:raise ValueError('Only one variant of each player name may be used on a team.')
+    from .lineups import validate_duos
+    validate_duos([CHAR_BY_ID[cid] for cid in cids])

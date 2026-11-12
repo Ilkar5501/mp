@@ -3408,5 +3408,272 @@
       "Named Buff": "A positive named status or active Excellence. Multiple stacks of one named status count as one effect."
     },
     "clarification_count": 4
+  },
+  {
+    "id": "Ikejiri — Old Friend",
+    "name": "Ikejiri",
+    "title": "Old Friend",
+    "school": "Tokonami High",
+    "rarity": 1,
+    "role_class": "DPS/Support",
+    "position": "WS",
+    "stats": {
+      "hp": 160,
+      "pow": 50,
+      "qik": 0,
+      "def": 29,
+      "rec": 25,
+      "spd": 28,
+      "jmp": 30,
+      "bst": 322
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Soulful Spike",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 30% during damage calculation for that attack.",
+        "timing": "ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "Friendly Contest",
+        "text": "Grants Pow/Def+3 during combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Memory Jolt",
+        "text": "At start of turn, if unit is allied with Daichi, grants Daichi Pow/Def/Rec/Spd/Jmp+1 and [Fun Memory] until the start of unit's next turn. If unit is not allied with Daichi, restores 20 HP to team at the start of even turns instead.",
+        "timing": "TURN_START"
+      },
+      "C": {
+        "name": "Reliable Soul",
+        "text": "Grants Pow/Qik/Def/Rec+1 to allied OP and WS during combat. Excludes unit.",
+        "timing": "COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "[Fun Memory]: If team's HP ≥ 25% and foe initiates combat, unit makes a guaranteed follow-up attack. This effect does not stack. The stat bonus and Fun Memory expire at Ikejiri's next start of turn; repeated applications do not stack.",
+      "C": ""
+    },
+    "clarification_count": 1,
+    "card_art": "https://i.pinimg.com/1200x/34/8e/74/348e749a5aa532140e2b30fefea87a17.jpg",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Ikejiri.png",
+    "shiny_arts": []
+  },
+  {
+    "id": "Hinata — Furious Upstart",
+    "name": "Hinata",
+    "title": "Furious Upstart",
+    "school": "Yukigaoka Junior High",
+    "rarity": 1,
+    "role_class": "DPS/Support",
+    "position": "WS",
+    "stats": {
+      "hp": 190,
+      "pow": 47,
+      "qik": 0,
+      "def": 19,
+      "rec": 15,
+      "spd": 36,
+      "jmp": 34,
+      "bst": 341
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Speed Burst",
+        "text": "When unit's Ultimate triggers during combat, deals damage = 30% of unit's Spd.",
+        "timing": "ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "I Will Beat You",
+        "text": "If unit initiates combat, grants Pow/Spd+4 during combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Limitless Drive",
+        "text": "When unit attacks, restores HP to team = unit's Spd − foe's Spd.",
+        "timing": "ATTACK"
+      },
+      "C": {
+        "name": "Never Give Up",
+        "text": "If unit's team loses a battle that would grant rewards for winning, has a chance = unit's merge level × 7% to receive those rewards instead.",
+        "timing": "BATTLE_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "",
+      "B": "Restoration cannot be negative.",
+      "C": "Applies while this card is on the participating team, including PvE and PvP. Only the highest-merge participating copy applies. Normal reward caps and drop rolls still apply. Does not grant a win, Elo, contest score, or tournament score. At +0, the chance is 0%; at +10, it is 70%."
+    },
+    "clarification_count": 2,
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/YoungHinata2.png",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/YoungHinata.png",
+    "shiny_arts": []
+  },
+  {
+    "id": "Oikawa — Young Emperor",
+    "name": "Oikawa",
+    "title": "Young Emperor",
+    "school": "Kitagawa Daiichi",
+    "rarity": 3,
+    "role_class": "Support",
+    "position": "S",
+    "stats": {
+      "hp": 160,
+      "pow": 50,
+      "qik": 0,
+      "def": 29,
+      "rec": 25,
+      "spd": 28,
+      "jmp": 30,
+      "bst": 322
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Best Setter",
+        "text": "After combat, if unit's Ultimate is ready, triggers unit's Ultimate and grants each ally Pow/Qik/Jmp+5 through their next action. Excludes unit.",
+        "timing": "COMBAT_END"
+      },
+      "A": {
+        "name": "Outwork",
+        "text": "After unit's combat, if unit took more damage than it dealt, grants unit 1 stack of [Overwork] (max. 4). Each stack grants Pow/Spd+2 during combat. If unit has 4 stacks, also inflicts Def/Spd−4 on foe during combat. If unit is allied with Iwaizumi, grants all allies a 15% base critical-hit chance, irrespective of Jmp.",
+        "timing": "COMBAT_LIVE / COMBAT_END"
+      },
+      "B": {
+        "name": "Genius Next Door",
+        "text": "During combat, if any ally or foe has higher base Spd or Jmp than unit, grants Pow/Jmp+4 to unit. If foe is Ushijima, also grants Def/Rec+5 to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Fear of the Future",
+        "text": "Grants one additional daily reward allowance. Coin and Clan Dollar rewards from the additional allowance are earned at a rate = unit's merge level × 5% of the normal reward. This card does not need to be on an active team.",
+        "timing": "REWARD"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "[Overwork] stacks persist for the battle. The 15% base critical-hit chance can trigger even when the ally loses the Jump check; both sides can score a critical hit. This chance is separate from winning the Jump check.",
+      "B": "Base Spd and Jmp refer to permanent values before visible or in-combat modifiers.",
+      "C": "Applies to battles, Regional and National Gauntlets, tournaments, PvP, clan wars, check-ins, raid coin and Clan Dollar allowances, and Clan Contest. Training shards are excluded. The extra reward rate is 0% at +0 and 50% at +10, with no additional 50% reduction. Only the highest-merge owned copy applies; copies do not stack."
+    },
+    "clarification_count": 3,
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/oikawa_best_setter.png",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/oikawa_best_setter2.png",
+    "shiny_arts": []
+  },
+  {
+    "id": "Kageyama — King of the Lost Court",
+    "name": "Kageyama",
+    "title": "King of the Lost Court",
+    "school": "Kitagawa Daiichi",
+    "rarity": 3,
+    "role_class": "DPS",
+    "position": "S",
+    "stats": {
+      "hp": 154,
+      "pow": 49,
+      "qik": 0,
+      "def": 27,
+      "rec": 25,
+      "spd": 31,
+      "jmp": 30,
+      "bst": 316
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Tyrant's Tantrum",
+        "text": "When unit's Ultimate triggers during combat, boosts damage dealt by 150% for that attack.",
+        "timing": "ULTIMATE_TRIGGER"
+      },
+      "A": {
+        "name": "King's Curse",
+        "text": "Grants Pow/Def/Rec/Spd/Jmp+1 during combat for each time an ally has taken damage from [Demand] this battle (max. 10). After combat, if unit attacked or was attacked, grants [Demand] to 1 random ally through their next action. Does not stack.",
+        "timing": "COMBAT_LIVE / COMBAT_END"
+      },
+      "B": {
+        "name": "Accelerating Pace",
+        "text": "If foe initiates combat, grants Def/Rec+2 during combat and grants Ultimate cooldown charge+1 per attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Eking Out Advantage",
+        "text": "When an item drops from a raid, AF1, or Tiny Titans, has a chance = unit's merge level × 1% to duplicate that drop. This card does not need to be on an active team.",
+        "timing": "REWARD"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "[Demand]: Grants Pow/Def/Rec/Spd/Jmp+2 during combat. After combat, deals 6 damage to unit's team. Demand expires after the recipient's next action. Each Demand damage event grants a stack to King's Curse, including repeated events from the same ally; the stat bonus caps at +10.",
+      "B": "",
+      "C": "Duplicates non-currency drops, including shards. Coin and Clan Dollar drops are excluded. The original drop remains subject to its normal cap; the additional copy does not consume that cap. Only the highest-merge owned copy applies. The chance is 0% at +0 and 10% at +10; copies do not stack."
+    },
+    "clarification_count": 2,
+    "card_art": "https://i.pinimg.com/1200x/e0/0b/77/e00b77fe613bfc1155745d05f973b0e4.jpg",
+    "character_icon": "https://i.pinimg.com/1200x/2a/7c/79/2a7c7957dc8ce3647325d83756032943.jpg",
+    "shiny_arts": []
+  },
+  {
+    "id": "Oikawa & Kageyama — Kings of the Playground",
+    "name": "Oikawa & Kageyama",
+    "title": "Kings of the Playground",
+    "school": "Kitagawa Daiichi",
+    "rarity": 6,
+    "role_class": "Support/DPS",
+    "position": "S",
+    "stats": {
+      "hp": 168,
+      "pow": 53,
+      "qik": 0,
+      "def": 33,
+      "rec": 29,
+      "spd": 32,
+      "jmp": 37,
+      "bst": 352
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Young & Reckless",
+        "text": "When unit's Ultimate triggers during combat, treats foe's Def/Rec as if reduced by 30% during damage calculation for that attack and restores HP to team = 30% of damage dealt. After combat, grants [Fountain of Youth] to all allies through their next action.",
+        "timing": "ULTIMATE_TRIGGER / COMBAT_END"
+      },
+      "A": {
+        "name": "Relentless Pursuit",
+        "text": "Unit can counterattack regardless of foe's attack type. If foe initiates combat, foe can make a follow-up attack before unit can counterattack; also inflicts Pow/Qik−4 on foe and, if foe can make a follow-up attack, reduces damage from all of foe's attacks by 30%.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Learning the Game",
+        "text": "During combat, if unit or ally initiated combat, deals +2 damage for each ally skill affecting that unit (max. +10). After combat, if unit initiated combat, grants [Fountain of Youth] to 1 random ally through their next action. Allies with [Fountain of Youth] gain Spd/Jmp+4 during combat.",
+        "timing": "COMBAT_LIVE / COMBAT_END"
+      },
+      "C": {
+        "name": "Practice Makes Precious",
+        "text": "Whenever you earn coins or Clan Dollars, grants an additional amount = unit's merge level +1 (max. 11). This card does not need to be on an active team.",
+        "timing": "REWARD"
+      }
+    },
+    "extended": {
+      "U": "[Fountain of Youth]: After combat, if unit's Ultimate triggered during combat, restores HP to team = unit's maximum Ultimate cooldown count × 5. Otherwise, grants Pow/Qik/Def/Rec/Spd/Jmp+3 to unit. Fountain of Youth expires after the recipient's next action. Grants the status to allies, excluding the Duo itself.",
+      "A": "The early follow-up applies only if the foe can already make a follow-up attack; it does not grant a follow-up by itself.",
+      "B": "Counts distinct ally source/skill-slot pairs affecting the attacking unit, following Bokuto's ally-skill counting rules. Own skills, equipment, and bonds do not count. The bonus is at most +10 damage per attack. Fountain of Youth does not stack.",
+      "C": "Duo card: cannot share a team with any version of Oikawa or Kageyama. Counts as 6 stars for recycling and donating. Fuse Oikawa — Young Emperor and Kageyama — King of the Lost Court at the same merge level. Cost: 100 coins and 25 AF1 Marks × max(1, ingredient merge level). The Duo preserves that merge level: +0 costs 100 coins / 25 Marks; +10 costs 1,000 coins / 250 Marks. AF1 awards 1 Mark per successful run, capped at 25 per day. The currency bonus uses the highest-merge owned copy once per payout, does not stack, and is added outside normal caps."
+    },
+    "clarification_count": 4,
+    "card_art": "https://i.pinimg.com/1200x/c2/72/6f/c2726f5de3dcf67e8a3070e96e030c95.jpg",
+    "character_icon": "https://i.pinimg.com/736x/68/9f/05/689f058766fcb9d694d2dc190b9bb924.jpg",
+    "is_duo": true,
+    "shiny_arts": [
+      "https://i.pinimg.com/736x/36/6e/2b/366e2ba481d2093b7c4e98900dd50193.jpg"
+    ],
+    "components": [
+      "Oikawa",
+      "Kageyama"
+    ]
   }
 ]

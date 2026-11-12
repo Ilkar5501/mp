@@ -34,11 +34,12 @@ class ItemBrowser(SafeView):
     def embed(self):
         blocks=[]
         for it in self.matches[self.page*3:self.page*3+3]:
-            if it.get('signature'):
-                blocks.append(f'**{it["name"]}**\n{it["effect"]}\nEquip: {it["eligible"]}\nCraft: {it["shard_cost"]} item shards + {it["character_shards"]} character shards + {it["coin_cost"]} coins\nSource: matching Tiny Titans challenge · 50% per clear')
-                continue
-            cost=it['shard_cost'];cap=cost*2*self.progress.get('_days',1);earned=self.progress.get(it['key'],0)
-            blocks.append(f'> **{it["name"]} — {it.get("emoji","🏐")}**\n> **`{it["effect"]}`**\n> -# Shard Cost: {cost}\n> -# Raid Type: *{it["theme"].title()}*\n> -# Who can equip: *{it["eligible"]}*\n> -# Accrued Shard Allowance: {cap} | {earned/cap:.0%} ({earned}/{cap}) • +{cost*2}/day; expires weekly')
+            cost=it['shard_cost'];days=self.progress.get('_days',1)
+            daily_cap=25 if it.get('signature') else cost*2
+            cap=daily_cap*days;earned=self.progress.get(it['key'],0)
+            price=(f"{cost} Item shards + {it['character_shards']} character shards + {it['coin_cost']} coins" if it.get('signature') else str(cost))
+            raid_type=('Tiny Titans '+it['eligible'].split(' — ')[0]+' Challenge' if it.get('signature') else it['theme'].title())
+            blocks.append(f'> **{it["name"]} — {it.get("emoji","🏐")}**\n> **`{it["effect"]}`**\n> -# Item Cost: {price}\n> -# Raid Type: *{raid_type}*\n> -# Who can equip: *{it["eligible"]}*\n> -# Accrued Shard Allowance: {days/7:.0%} | {earned/cap:.0%} ({earned}/{cap}) • +{daily_cap}/day; expires weekly\n> -# Recycle Value: {it.get("recycle_value",cost)} Clan Dollars')
         e=discord.Embed(title='Equipment Items',description='\n\n'.join(blocks) or 'No matching items. Try another search or browse all items.',color=PURPLE)
         e.set_footer(text=f'Page {self.page+1}/{max(1,math.ceil(len(self.matches)/3))} • {len(self.matches)} items • ;craft name • ;allcraft')
         return e

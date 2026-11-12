@@ -28,6 +28,9 @@ def load_characters(path: Path | None = None) -> list[CharacterDef]:
             abilities={k: AbilityDef(**v) for k, v in row['abilities'].items()},
             extended=row.get('extended', {}),
             clarification_count=int(row.get('clarification_count', 0)),
+            is_duo=bool(row.get('is_duo',False)),
+            components=tuple(row.get('components',())),
+            shiny_arts=tuple(row.get('shiny_arts',())),
         ))
     return out
 
@@ -104,7 +107,9 @@ def match_roster_names(query):
     for c in CHARACTERS:groups.setdefault(norm(c.name),[]).append(c)
     aliases={name:name for name in groups}
     aliases.update({'sakunami':'kosuke','kosuke sakunami':'kosuke','sakunami kosuke':'kosuke'})
-    if q in aliases:return groups[aliases[q]]
+    if q in aliases:
+        name=aliases[q]
+        return [c for c in CHARACTERS if norm(c.name)==name or any(norm(component)==name for component in c.components)]
     exact=[c for c in CHARACTERS if q in (norm(c.id),norm(c.card_id))]
     if exact:return exact
     named=[a for a in aliases if q.startswith(a+' ') or q.endswith(' '+a)]

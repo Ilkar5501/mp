@@ -123,7 +123,7 @@ class PvPCog(commands.Cog):
         else:embed.add_field(name='Practice · Elo unchanged',value=state['reason'],inline=False)
         reward=settlement['reward']
         if reward:embed.add_field(name='PvP coins',value=f'<@{settlement["winner_id"]}>: **+{reward["coins"]} coins**',inline=False)
-        embed.set_footer(text=f'{row["format"]}v{row["format"]} · One shared monthly ladder · Existing daily coin limits apply')
+        embed.set_footer(text=f'{row["format"]}v{row["format"]} · One shared five-week ladder · Existing daily coin limits apply')
         view=BattleLogLauncher({row['a_id'],row['b_id']},'PvP Battle Log',result.log)
         try:
             image=await render_battle_summary(result,a,b,state['name_a'],state['name_b'])
@@ -167,14 +167,17 @@ class PvPCog(commands.Cog):
         view=PvPTeamView(self,ctx.author.id,prefs,await self.bot.db.list_saved_teams(ctx.author.id),await self.bot.db.get_cards(ctx.author.id))
         await ctx.send(embed=view.embed(),view=view)
 
-    @commands.hybrid_command(name='pvpboard',aliases=['pvpb'],description='View this month’s shared PvP Elo leaderboard.')
+    @commands.hybrid_command(name='pvpboard',aliases=['pvpb'],description='View the shared five-week PvP Elo leaderboard and weekly prize.')
     async def pvpboard(self,ctx):
         month,rows,own=await self.store.board(ctx.author.id);pages=[]
         for start in range(0,max(1,len(rows)),15):
             lines=[f'**{i}.** <@{r["owner_id"]}> · **{r["rating"]} Elo** · {r["wins"]}W/{r["losses"]}L/{r["draws"]}D' for i,r in enumerate(rows[start:start+15],start+1)]
             e=discord.Embed(title='PvP Ladder · '+month,description='\n'.join(lines) or 'No ranked matches yet. Use ;pvp to begin.',color=PURPLE)
             e.add_field(name='Your Elo',value=str(own['rating']),inline=True)
-            e.add_field(name='Monthly prizes',value='Top 3: one each of the 5★, 4★, 3★, 2★ and 1★ packs.',inline=False)
+            from ..pvp_cycles import cycle_for
+            from ..economy import local_date_key,next_week_reset
+            _,phase=cycle_for(local_date_key())
+            e.add_field(name=f'Week {phase}/5 · First place',value=f'{phase}★ pack'+(f' + {(5-phase)*100} coins' if phase<5 else '')+f'\nCutoff <t:{int(next_week_reset().timestamp())}:F>. Elo carries until week 5 ends, then resets.',inline=False)
             pages.append(e)
         view=EmbedPager(pages,ctx.author.id);await ctx.send(embed=view.embed(),view=view,allowed_mentions=discord.AllowedMentions.none())
 

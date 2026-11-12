@@ -64,9 +64,9 @@ class RewardChangesTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.rewards.award(1,'tournament',day='2026-11-02',human_tournament=True))['coins'],450)
         self.assertEqual((await self.rewards.award(1,'tournament',day='2026-11-02',human_tournament=True))['coins'],0)
 
-    async def test_four_quest_pages_and_all_training_schools(self):
+    async def test_five_quest_pages_and_all_training_schools(self):
         pages=await quest_pages(self.db,1)
-        self.assertEqual(len(pages),4)
+        self.assertEqual(len(pages),5)
         self.assertIn('Coin Dailies',pages[0].title)
         for school in ('Karasuno','Tsubakihara','Mujinazaka'):self.assertIn(school,pages[2].description)
         self.assertTrue(all(len(p.description)<4096 for p in pages))

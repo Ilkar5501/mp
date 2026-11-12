@@ -41,3 +41,12 @@ class CharacterNotesView(discord.ui.View):
     def __init__(self,character):
         super().__init__(timeout=600)
         add_learn_more(self,character)
+        self.art_slot=0
+        if character.shiny_arts:
+            for text,d in [('↑',-1),('↓',1)]:
+                button=discord.ui.Button(label=text,row=0)
+                async def nav(i,delta=d):
+                    from .cards import template_embed
+                    self.art_slot=(self.art_slot+delta)%(1+len(character.shiny_arts))
+                    await i.response.edit_message(embed=template_embed(i.client,character,art_slot=self.art_slot),view=self)
+                button.callback=nav;self.add_item(button)

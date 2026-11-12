@@ -48,6 +48,7 @@ class CraftMenu(SafeView):
             matching={c.id for c in match_roster_names(self.query)}
             rows=[]
             for c in CHARACTERS:
+                if c.is_duo:continue
                 if c.id not in matching:continue
                 sources={'character':(self.balances.get(('character_shard',c.id),0),CHARACTER_SHARD_COST[c.rarity])}
                 if c.school in TRAINING_SCHOOLS:sources['school']=(self.schools.get(c.school,0),craft_cost(c.rarity))
@@ -105,7 +106,7 @@ class CraftMenu(SafeView):
             self.busy=True
             try:
                 made=await self.store.craft(self.uid,self.username,self.target,self.source)
-                self.result=(f'**{selected["name"]}** • Item ID `{made}`' if self.category=='items' else f'**{selected["name"]}** • Card ID `{made.instance_id}` • Neutral +0')
+                self.result=((f'**{selected["name"]}** • Item ID `{made}`' if made else f'**{selected["name"]}** • Recycled automatically for Clan Dollars.') if self.category=='items' else f'**{selected["name"]}** • Card ID `{made.instance_id}` • Neutral +0')
                 await self.reload();await i.response.edit_message(embed=self.embed(),view=self)
             finally:self.busy=False
         craft.callback=commit;self.add_item(craft)

@@ -101,6 +101,8 @@ class EquipmentView(SafeView):
         from ..character_notes import add_learn_more
         from ..data import CHAR_BY_ID
         add_learn_more(self,CHAR_BY_ID[self.card.character_id])
+        from .youth_menus import add_art_buttons
+        if not self.key:add_art_buttons(self,self.bot,self.uid,self.card)
 
 class CraftSourceView(SafeView):
     def __init__(self,bot,uid,username,char):super().__init__(timeout=180);self.bot=bot;self.uid=uid;self.username=username;self.char=char;self.finished=False
@@ -131,7 +133,7 @@ async def craft_command(bot,ctx,query=''):
         try:iid=await store.craft(ctx.author.id,str(ctx.author),item['key'])
         except ValueError as exc:await ctx.send(str(exc));return
         cost=(f'{item["shard_cost"]} signature shards + {item["character_shards"]} character shards + {item["coin_cost"]} coins' if item.get('signature') else f'{item["shard_cost"]} item shards')
-        await ctx.send(f'Crafted **{item["name"]}**. Inventory ID: `{iid}` • {cost}. Use ;equip.');return
+        await ctx.send(f'Crafted **{item["name"]}**. '+(f'Inventory ID: `{iid}` • {cost}. Use ;equip.' if iid else f'Recycled automatically for Clan Dollars • {cost}.'));return
     matches=find_character(query)
     if len(matches)!=1:
         choices=[it['name'] for it in items]+[c.id for c in matches]
@@ -320,7 +322,7 @@ class RaidCog(commands.Cog):
         results=await self.store.craft_all_items(ctx.author.id,str(ctx.author))
         if not results:await ctx.send('You do not have enough item or character shards to craft anything. School shards were preserved.');return
         from ..ui import text_pages
-        lines=[f'**{r["item"]["name"] if "item" in r else r["character"].id} ×{r["count"]}**\n'+('Equipment added to ;inv.' if 'item' in r else 'Neutral +0 cards added to ;collection.') for r in results]
+        lines=[f'**{r["item"]["name"] if "item" in r else r["character"].id} ×{r["count"]}**\n'+(f'{sum(i is not None for i in r["ids"])} equipment added to ;inv; {sum(i is None for i in r["ids"])} recycled automatically.' if 'item' in r else 'Neutral +0 cards added to ;collection.') for r in results]
         pages=[discord.Embed(title='All Crafted • school shards preserved',description='\n\n'.join(lines[n:n+3]),color=PURPLE) for n in range(0,len(lines),3)]
         pager=EmbedPager(pages,ctx.author.id)
         if len(pages)==1:pager.clear_items()

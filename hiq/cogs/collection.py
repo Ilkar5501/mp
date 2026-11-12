@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 
 from ..character_notes import CharacterNotesView
-from ..cards import card_embed, compact_card_line, display_title, nature_text, template_embed
+from ..cards import card_embed, compact_card_line, display_title, nature_text, template_embed,rarity_display
 from ..config import GAME_CONFIG
 from ..data import CHARACTERS, CHAR_BY_ID, character_search_score
 from ..search import filter_cards, filter_characters, filters_summary, parse_filters, stat_label
@@ -169,14 +169,14 @@ class SearchResultsView(OwnerOnlyView):
                 options.append(discord.SelectOption(
                     label=display_title(c)[:100],
                     value=card.instance_id,
-                    description=f'{c.rarity}★ | +{card.merge_level} | {nature} | {card.instance_id}'[:100],
+                    description=f'{c.rarity_label} | +{card.merge_level} | {nature} | {card.instance_id}'[:100],
                 ))
         else:
             for c in self.page_items():
                 options.append(discord.SelectOption(
                     label=display_title(c)[:100],
                     value=c.id,
-                    description=f'{c.rarity}★ | {c.position} | {c.school} | BST {c.bst}'[:100],
+                    description=f'{c.rarity_label} | {c.position} | {c.school} | BST {c.bst}'[:100],
                 ))
         return options
 
@@ -207,7 +207,7 @@ class SearchResultsView(OwnerOnlyView):
             lines = [compact_card_line(c) for c in self.page_items()]
             title = 'Card Search — Your Collection'
         else:
-            lines = [f'**{display_title(c)} {c.rarity}★** | **{c.position}** | {c.school} | **BST:** {c.bst}' for c in self.page_items()]
+            lines = [f'**{display_title(c)} {rarity_display(c)}** | **{c.position}** | {c.school} | **BST:** {c.bst}' for c in self.page_items()]
             title = 'Card Gallery'
         e = discord.Embed(title=title, description='\n'.join(lines) or 'No matching cards.', color=PURPLE)
         e.add_field(name='Filters', value=self.query_summary, inline=False)

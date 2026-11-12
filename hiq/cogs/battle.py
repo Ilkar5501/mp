@@ -187,9 +187,13 @@ class BattleCog(commands.Cog):
         specs = []
         for iid, lane in [(iid,lane) for _,iid,lane in team.entries]:
             card = await self.bot.db.get_card(iid)
-            if not card:
+            if not card or card.owner_id!=owner_id:
                 return None, team
             specs.append((card, CHAR_BY_ID[card.character_id], lane))
+        from ..lineups import validate_characters
+        validate_characters([char for _,char,_ in specs])
+        from ..pvp_store import auto_team_tx
+        async with CommunityStore(self.bot.db).tx() as conn:await auto_team_tx(conn,owner_id,team)
         return specs, team
 
     async def _award_win(self, user_id: int) -> tuple[int, int, int, int]:
@@ -309,8 +313,12 @@ class BattleCog(commands.Cog):
             await ctx.defer()
         result = await asyncio.to_thread(engine.run)
         reward = daily = weekly = bonus = 0
-        if reward_regular_win and result.winner_side == 'A':
-            reward, daily, weekly, bonus = await self._award_win(ctx.author.id)
+        from ..youth_rewards import loss_reward
+        consolation=result.winner_side=='B' and loss_reward(a_specs)
+        if reward_regular_win and (result.winner_side=='A' or consolation):
+            from ..rewards import RewardStore
+            earned=await RewardStore(self.bot.db).award(ctx.author.id,'battle',record_win=result.winner_side=='A')
+            reward=daily=earned['coins']
         e = self._result_embed(result, name_a, name_b, a_specs, b_specs, reward, daily, weekly, bonus)
         allowed = {ctx.author.id}
         if owner_b:
@@ -411,7 +419,9 @@ class BattleCog(commands.Cog):
 
         completed=wins==total and failed_at is None
         reward=0
-        if completed:
+        from ..youth_rewards import loss_reward
+        consolation=not completed and bool(records) and records[-1]['result'].winner_side=='B' and loss_reward(a_specs)
+        if completed or consolation:
             from ..rewards import RewardStore
             reward=(await RewardStore(self.bot.db).award(ctx.author.id,'gauntlet_'+mode,lineup=[char.id for _,char,_ in a_specs]))['coins']
 
@@ -426,7 +436,7 @@ class BattleCog(commands.Cog):
             if not rows: value='Not reached.'
             else: value='\n'.join(f'{"✅" if r["won"] else "❌"} **G{r["game_no"]}:** {r["result_word"]} • {r["result"].team_a_hp}-{r["result"].team_b_hp} HP • {r["result"].turns}T' for r in rows)
             final.add_field(name=school,value=value,inline=True)
-        if completed:
+        if completed or consolation:
             reset=int(next_daily_at().timestamp())
             final.add_field(name='Champion Reward',value=(f'🪙 **+{reward} coins**' if reward else 'All accrued rewards claimed • **0 additional coins**') + f'\nYou can replay immediately. Another daily allowance unlocks <t:{reset}:R>; unused allowance banks until weekly reset.',inline=False)
         final.set_footer(text='Use the school selector and game arrows below to inspect per-game player performance. Gauntlet opponents are Neutral.')

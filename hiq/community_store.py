@@ -262,7 +262,8 @@ class CommunityStore(WarActivity):
             return row['coins'] if row else 0
 
     async def _credit(self,c,uid,amount):
-        await c.execute('INSERT INTO clan_wallets(user_id,coins) VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET coins=coins+excluded.coins',(uid,amount))
+        from .youth_rewards import currency
+        return await currency(c,uid,amount,clan=True)
 
     async def donate(self,user_id,card_id,day=None):
         day=day or local_date_key()
@@ -289,13 +290,19 @@ class CommunityStore(WarActivity):
             clan=await self.clan(user_id=user_id,conn=c)
             if not clan:raise ValueError('You must be in a clan to check in.')
             old=await self.one(c,'SELECT checkin_clan FROM clan_daily WHERE user_id=? AND day=?',(user_id,day))
-            if old and old['checkin_clan']:raise ValueError('You have already checked in today.')
+            extra_rate=None
+            if old and old['checkin_clan']:
+                from .youth_rewards import extra
+                allowance=await extra(c,user_id,'checkin',[day])
+                if not allowance:raise ValueError('You have already checked in today.')
+                extra_rate=allowance[1]
             await c.execute('INSERT INTO clan_daily(user_id,day,checkin_clan) VALUES (?,?,?) ON CONFLICT(user_id,day) DO UPDATE SET checkin_clan=excluded.checkin_clan',(user_id,day,clan['id']))
             await c.execute('UPDATE clan_members SET last_checkin=?,username=? WHERE user_id=?',(day,username,user_id))
-            await self._credit(c,user_id,150)
+            from .youth_rewards import currency
+            await currency(c,user_id,150 if extra_rate is None else int(150*extra_rate),clan=True,qualifies=True)
             members=await self.members(clan['id'],c)
             count=await self.one(c,'SELECT COUNT(*) AS n FROM clan_daily d JOIN clan_members m ON d.user_id=m.user_id WHERE m.clan_id=? AND d.checkin_clan=? AND day=?',(clan['id'],clan['id'],day))
-            bonus=len(members)==5 and count['n']==5
+            bonus=extra_rate is None and len(members)==5 and count['n']==5
             if bonus:
                 cur=await c.execute('INSERT OR IGNORE INTO clan_checkin_bonus(clan_id,day) VALUES (?,?)',(clan['id'],day))
                 bonus=bool(cur.rowcount)
@@ -315,6 +322,11 @@ class CommunityStore(WarActivity):
             return await self.rows(c,'SELECT kind,detail,quantity FROM shard_balances WHERE owner_id=? AND quantity>0 ORDER BY kind,detail',(user_id,))
 
     async def _issue_item(self,c,uid,kind,stars=0,detail=''):
+        if kind=='equipment' and await self.one(c,'SELECT 1 FROM autoclean_items WHERE owner_id=? AND item_key=?',(uid,detail)):
+            from .items import ITEM_BY_KEY
+            item=ITEM_BY_KEY[detail]
+            await self._credit(c,uid,item.get('recycle_value',item['shard_cost']))
+            return None
         from .shard_balances import KINDS,credit
         if kind in KINDS:
             await credit(c,uid,kind,detail)
@@ -340,6 +352,7 @@ class CommunityStore(WarActivity):
             base=self.db._card(row)
             if base.locked:raise ValueError('Unlock Card 1 before merging.')
             level=base.merge_level;cards=[];items=[];seen={base.instance_id};max_donor=False
+            shiny=set(base.shiny_slots)
             for iid in consumed_ids:
                 row=await self.one(c,'SELECT * FROM cards WHERE owner_id=? AND (instance_id=? OR full_instance_id=?)',(uid,iid,iid))
                 if row:
@@ -347,7 +360,7 @@ class CommunityStore(WarActivity):
                     if card.instance_id in seen:raise ValueError('Every material must be distinct from Card 1 and other materials.')
                     seen.add(card.instance_id)
                     if card.locked or card.character_id!=base.character_id:raise ValueError('All card materials must be unlocked copies of the exact same character variant.')
-                    level+=card.merge_level+1;cards.append(card.instance_id)
+                    level+=card.merge_level+1;cards.append(card.instance_id);shiny.update(card.shiny_slots)
                     max_donor=max_donor or card.merge_level==10
                 else:
                     item=await self.one(c,'SELECT * FROM inventory_items WHERE id=? AND owner_id=?',(iid,uid))
@@ -362,9 +375,12 @@ class CommunityStore(WarActivity):
                 await self.db._replace_merged_card_tx(c,iid,base.instance_id)
                 await c.execute('DELETE FROM cards WHERE instance_id=?',(iid,))
             for iid in items:await c.execute('DELETE FROM inventory_items WHERE id=?',(iid,))
-            await c.execute('UPDATE cards SET merge_level=? WHERE instance_id=?',(level,base.instance_id))
-            base.merge_level=level
-            return base
+            if CHAR_BY_ID[base.character_id].is_duo:
+                cost=max(0,level-base.merge_level)*100
+                paid=await c.execute('UPDATE users SET coins=coins-? WHERE discord_id=? AND coins>=?',(cost,uid,cost))
+                if not paid.rowcount:raise ValueError(f'Duo merging requires {cost} coins.')
+            await c.execute('UPDATE cards SET merge_level=?,shiny_slots=?,bane_stat=CASE WHEN ? THEN NULL ELSE bane_stat END WHERE instance_id=?',(level,json.dumps(sorted(shiny)),bool(shiny),base.instance_id))
+            return self.db._card(await self.one(c,'SELECT * FROM cards WHERE instance_id=?',(base.instance_id,)))
 
     async def bless(self,uid,item_id,card_id,boon,bane):
         async with self.tx() as c:
@@ -377,9 +393,9 @@ class CommunityStore(WarActivity):
             boon,bane=boon.casefold(),bane.casefold()
             if boon not in allowed or bane not in allowed:raise ValueError('Choose usable stats: '+', '.join(sorted(allowed)))
             if boon==bane:boon=bane=None
-            await c.execute('UPDATE cards SET boon_stat=?,bane_stat=?,nature_rolled=1 WHERE instance_id=?',(boon,bane,row['instance_id']))
+            await c.execute('UPDATE cards SET boon_stat=?,bane_stat=?,nature_rolled=1 WHERE instance_id=?',(boon,None if json.loads(row['shiny_slots']) else bane,row['instance_id']))
             await c.execute('DELETE FROM inventory_items WHERE id=?',(item_id,))
-            row['boon_stat'],row['bane_stat']=boon,bane
+            row['boon_stat'],row['bane_stat']=boon,None if json.loads(row['shiny_slots']) else bane
             return self.db._card(row)
 
     async def _issue_card(self,c,uid,username,char):
@@ -435,7 +451,9 @@ class CommunityStore(WarActivity):
             claims=await self.rows(c,'SELECT user_id FROM redeem_claims WHERE code=?',(row['code'],))
             if any(r['user_id']==uid for r in claims) or (row['scope']=='overall' and claims):raise ValueError('That code has already been redeemed for its allowed limit.')
             prize=json.loads(row['prize_json']);kind=prize['kind'];iid=None
-            if kind=='coins':await c.execute('UPDATE users SET coins=coins+? WHERE discord_id=?',(prize['amount'],uid))
+            if kind=='coins':
+                from .youth_rewards import currency
+                await currency(c,uid,prize['amount'])
             elif kind=='clancoins':await self._credit(c,uid,prize['amount'])
             else:
                 ids=[await self._issue_item(c,uid,kind,prize.get('stars',0),prize.get('detail','')) for _ in range(prize.get('count',1))]
@@ -573,8 +591,11 @@ class CommunityStore(WarActivity):
             cardrow=await self.one(c,'SELECT * FROM cards WHERE owner_id=? AND instance_id=?',(uid,iid))
             if not cardrow:raise ValueError('A selected team card is no longer owned by you.')
             card=self.db._card(cardrow);char=CHAR_BY_ID[card.character_id]
-            if char.name in names:raise ValueError('Your team has a duplicate character name.')
-            names.add(char.name);specs.append((card,char,lane))
+            from .lineups import identities
+            if identities(char)&names:raise ValueError('Your team has duplicate characters or a Duo alongside a component character.')
+            names.update(identities(char));specs.append((card,char,lane))
+        from .pvp_store import auto_team_tx
+        await auto_team_tx(c,uid,team)
         return snapshot_specs(specs)
 
     async def select_war_team(self,sid,uid,slot,round_no):
@@ -615,7 +636,9 @@ class CommunityStore(WarActivity):
             await c.execute('UPDATE clans SET '+('wins' if side==winner else 'losses')+'='+('wins' if side==winner else 'losses')+'+1 WHERE id=?',(cid,))
             for member in st['rosters'][side]:
                 uid=member['user_id']
-                payout=await award_in(c,uid,'war') if side==winner else {'coins':0,'clan_coins':0}
+                from .youth_rewards import loss_reward,HINATA
+                consolation=loss_reward([{'card':{'character_id':HINATA,'merge_level':st.get('loss_reward_merges',{}).get(str(uid),0)}}],key=f'{row["id"]}:{uid}')
+                payout=await award_in(c,uid,'war') if side==winner or consolation else {'coins':0,'clan_coins':0}
                 st['gold_rewards'][str(uid)]=payout['coins']
                 await c.execute('INSERT INTO community_rewards(session_id,user_id,amount) VALUES (?,?,?)',(row['id'],uid,payout['clan_coins']))
         st['teams']=[None,None]
@@ -626,6 +649,11 @@ class CommunityStore(WarActivity):
             row=await self.session(sid,c)
             if not row or row['status']!='running' or row['kind']!='war' or row['state']['round']!=round_no:raise ValueError('That series is already resolved or cancelled.')
             st=row['state'];loser=1-winner;a,b=st['sends']
+            from .youth_rewards import HINATA
+            for side,player in enumerate(st['sends']):
+                merge=max((unit['card']['merge_level'] for unit in (st['teams'][side] or []) if unit['card']['character_id']==HINATA),default=0)
+                recorded=st.setdefault('loss_reward_merges',{})
+                recorded[str(player)]=max(merge,recorded.get(str(player),0))
             st['eliminated'][loser].append(st['sends'][loser])
             uid=st['sends'][winner];st['wins'][str(uid)]=st['wins'].get(str(uid),0)+1
             st['series'].append({'round':round_no,'players':[a,b],'winner':winner,'score':score})
@@ -660,8 +688,8 @@ class CommunityStore(WarActivity):
             for other in await self.rows(c,"SELECT * FROM community_sessions WHERE kind='prefecture' AND status IN ('open','running','broken') AND id<>?",(sid,)):
                 if uid in [p['user_id'] for p in json.loads(other['state_json'])['players']]:raise ValueError('Leave your other Prefecture lobby first.')
             snapshot=await self._team_snapshot(c,uid,slot,3)
-            used={r['character']['name'] for p in players for r in p['snapshot']}
-            if used & {r['character']['name'] for r in snapshot}:raise ValueError('Your pod repeats a character already submitted by another player; choose a different 3v3 team.')
+            used={name for p in players for r in p['snapshot'] for name in (r['character'].get('components') or [r['character']['name']])}
+            if used & {name for r in snapshot for name in (r['character'].get('components') or [r['character']['name']])}:raise ValueError('Your pod repeats a character or Duo component already submitted by another player; choose a different 3v3 team.')
             players.append({'user_id':uid,'username':username,'snapshot':snapshot})
             await self._save(c,row);return row
 
@@ -680,7 +708,8 @@ class CommunityStore(WarActivity):
             reward_day=local_date_key()
             for player in row['state']['players']:
                 uid=player['user_id'];amount=0
-                if result['winner_side']=='A':
+                from .youth_rewards import loss_reward
+                if result['winner_side']=='A' or (result['winner_side']=='B' and loss_reward(player['snapshot'],key=f'{sid}:{uid}')):
                     from .rewards import award_in
                     amount=(await award_in(c,uid,'prefecture',day=reward_day))['coins']
                 await c.execute('INSERT INTO community_rewards(session_id,user_id,amount) VALUES (?,?,?)',(sid,uid,amount))

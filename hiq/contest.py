@@ -24,6 +24,8 @@ SUPPORT_SLOTS={'Oikawa':('B','C'),'Ushijima':('C',),'Aran':('C',),
 
 
 def support_slots(char):
+    youth={'Old Friend':('B','C'),'Furious Upstart':('C',),'Young Emperor':('A','C'),'King of the Lost Court':('C',),'Kings of the Playground':('B','C')}
+    if char.title in youth:return youth[char.title]
     if char.name=='Kageyama':
         return ('B',) if char.title=='Crown of Precision' else ('C',)
     if char.name=='Kiryu' and char.title!='Last Hope':return ()
@@ -42,6 +44,7 @@ def support_note(index,char):
 def character(name,title=None):
     name=name.split('@',1)[0]
     if ' — ' in name:name,title=name.split(' — ',1)
+    if title is None:title={'Oikawa':'Grand Conductor','Hinata':'Wings of Dawn','Kageyama':'Crown of Precision'}.get(name)
     matches=[c for c in CHARACTERS if c.name==name and (title is None or c.title==title)]
     if len(matches)!=1:raise ValueError('Choose an exact contest variant: '+name)
     return matches[0]

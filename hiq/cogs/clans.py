@@ -98,7 +98,7 @@ class WarBanView(SafeView):
         return True
     def rebuild(self):
         self.clear_items();chunk=self.units[self.page*20:(self.page+1)*20]
-        select=discord.ui.Select(placeholder='Select one unit to lock your ban',options=[discord.SelectOption(label=f'{c.name} — {c.title}'[:100],value=c.id,description=f'{c.rarity}★ • {c.school} • {c.id}'[:100]) for c in chunk],row=0)
+        select=discord.ui.Select(placeholder='Select one unit to lock your ban',options=[discord.SelectOption(label=f'{c.name} — {c.title}'[:100],value=c.id,description=f'{c.rarity_label} • {c.school} • {c.id}'[:100]) for c in chunk],row=0)
         async def choose(i):
             selected=select.values[0]
             await self.cog.store.ban_war_unit(self.sid,i.user.id,selected)

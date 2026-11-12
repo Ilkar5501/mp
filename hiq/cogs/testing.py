@@ -46,7 +46,7 @@ class BotSearchModal(discord.ui.Modal,title='Search test-team roster'):
 class BotRosterSelect(discord.ui.Select):
     def __init__(self,parent:'BotSetView'):
         self.parent_view=parent
-        opts=[discord.SelectOption(label=display_title(c)[:100],value=c.id,description=f'{c.rarity}★ | {c.position} | {c.school}'[:100]) for c in parent.page_chars()]
+        opts=[discord.SelectOption(label=display_title(c)[:100],value=c.id,description=f'{c.rarity_label} | {c.position} | {c.school}'[:100]) for c in parent.page_chars()]
         super().__init__(placeholder='Choose a roster player…',options=opts or [discord.SelectOption(label='No results',value='__none__')],disabled=not bool(opts),row=0)
     async def callback(self,interaction:discord.Interaction):
         if self.values[0]=='__none__':
@@ -74,7 +74,8 @@ class BotPlacementView(discord.ui.View):
             await interaction.response.edit_message(content='The test-team format changed. Choose the player again.',view=None); return
         positions=test_positions(size)
         newc=CHAR_BY_ID[self.character_id]
-        if any(CHAR_BY_ID[current[slot]].name==newc.name and current[slot]!=self.character_id for _,slot,_ in positions if slot!=key and current.get(slot) in CHAR_BY_ID):
+        from ..lineups import identities
+        if any(identities(CHAR_BY_ID[current[slot]])&identities(newc) and current[slot]!=self.character_id for _,slot,_ in positions if slot!=key and current.get(slot) in CHAR_BY_ID):
             await interaction.response.edit_message(content='A test team cannot contain two versions of the same character name.',view=None); return
         for _,slot,_ in positions:
             if current.get(slot)==self.character_id: current[slot]=None

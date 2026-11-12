@@ -14,7 +14,7 @@ def af1_support_slots(char):
     return ('C',) if char.name=='Shibayama' else support_slots(char)
 
 def boosted_character(char):
-    bonus=2*(5-char.rarity)
+    bonus=max(0,2*(5-char.rarity))
     stats=dict(char.stats)
     for key in ('hp',char.offense_key,'def','rec','spd','jmp'):stats[key]+=bonus
     stats['bst']=sum(stats[key] for key in ('hp','pow','qik','def','rec','spd','jmp'))
@@ -24,6 +24,8 @@ def validate_af1(specs,*,complete=False):
     if not 1<=len(specs)<=7:raise ValueError('Choose a main and up to six supports.')
     if any(c.name=='Fukunaga' for _,c,_ in specs):raise ValueError('Fukunaga cannot enter AF1.')
     if len({c.id for _,c,_ in specs})!=len(specs):raise ValueError('Use different card variants.')
+    from .lineups import validate_duos
+    validate_duos([c for _,c,_ in specs])
     if any(lane not in ('front','back') for _,_,lane in specs):raise ValueError('Choose front or back.')
 
 def cpu_specs(mode,index):
@@ -135,6 +137,8 @@ class AllForOneEngine(BattleEngine):
     def formation_distance(self,a,b):return 0 if a is b else 1 if a.lane==b.lane else 2
 
     def support_turn(self,source):
+        from .battle.youth import YOUTH_TITLES
+        if source.title in YOUTH_TITLES:self.youth_turn(source);return
         f=self.mains[source.side];enemy=self.enemy_team(source);name=source.name;buffs={}
         if name=='Tenma Udai' and source.lane==f.lane:buffs={'def':4,'rec':4}
         elif name=='Ushijima' and self.turn%2:buffs={'jmp':6}

@@ -50,6 +50,7 @@ class RaidStore(CommunityStore):
                 crafted.append(dict(item=item,count=count,ids=ids))
             # Character-specific balances only. School shards are never read or spent.
             for char in CHARACTERS:
+                if char.is_duo:continue
                 cost=CHARACTER_SHARD_COST[char.rarity]
                 count=(await shard_balance(c,uid,'character_shard',char.id))//cost
                 if not count:continue
@@ -107,6 +108,7 @@ class RaidStore(CommunityStore):
         return [i for i in rows if i['detail'] in ITEM_BY_KEY and can_equip(ITEM_BY_KEY[i['detail']],CHAR_BY_ID[card.character_id])]
 
     async def craft_sources(self,uid,char):
+        if char.is_duo:raise ValueError('Duo cards are made with ;fuse, using both required character cards and AF1 Marks.')
         async with self.db.connect() as c:
             count=await shard_balance(c,uid,'character_shard',char.id)
             school=await self.one(c,'SELECT quantity FROM shards WHERE owner_id=? AND school=?',(uid,char.school))
@@ -128,6 +130,7 @@ class RaidStore(CommunityStore):
             else:
                 char=CHAR_BY_ID.get(target)
                 if not char or source not in ('character','school'):raise ValueError('No matching crafting recipe.')
+                if char.is_duo:raise ValueError('Create Duo cards with ;fuse.')
                 kind,detail,cost='character_shard',target,CHARACTER_SHARD_COST[char.rarity]
             if source=='school':
                 if char.school not in TRAINING_SCHOOLS:raise ValueError('That character has no school-shard recipe.')
@@ -160,6 +163,12 @@ class RaidStore(CommunityStore):
         currency=(await daily(conn,uid,day)).get('raid',{})
         progress['coins']=currency.get('coins',0)
         progress['clancoins']=currency.get('clan_coins',0)
+        from .youth_rewards import highest,OIKAWA
+        merge=await highest(conn,uid,OIKAWA)
+        if merge is not None:
+            for kind in ('coins','clancoins'):
+                used=await self.one(conn,'SELECT COALESCE(SUM(claims),0) AS n FROM youth_daily WHERE owner_id=? AND reward_key=? AND day BETWEEN ? AND ?',(uid,'raid_'+kind,days[0],day))
+                progress['_extra_'+kind]=max(0,len(days)-used['n'])
         return progress
 
     def reward_caps(self,theme,earned,difficulty='hard'):
@@ -184,8 +193,8 @@ class RaidStore(CommunityStore):
                 item_weight*float(item['drop_rate'])/total,1,item['key'])
         add('character_shard','character_shard',50*accrued_days,.50 if difficulty=='easy' else .145,1,
             weekly_remaining=350-int(earned.get('character_shard_weekly',0)))
-        add('coins','coins',300*accrued_days,.05,100)
-        add('clancoins','clancoins',300*accrued_days,.05,100)
+        add('coins','coins',300*accrued_days+100*earned.get('_extra_coins',0),.05,100)
+        add('clancoins','clancoins',300*accrued_days+100*earned.get('_extra_clancoins',0),.05,100)
         return candidates
 
     def reward_pool(self,theme,earned,difficulty='hard'):
@@ -230,7 +239,8 @@ class RaidStore(CommunityStore):
             row=await self.raid(sid,c)
             if not row or row['status'] not in ('running','broken'):raise ValueError('That raid is already resolved or closed.')
             uid=row['owner_id'];st=row['state'];reward=None
-            if result['winner_side']=='A':
+            from .youth_rewards import loss_reward,duplicate,currency,extra
+            if result['winner_side']=='A' or (result['winner_side']=='B' and loss_reward(st.get('a'),key=sid)):
                 reward_day=local_date_key();reward_week=week_key_for(datetime.fromisoformat(reward_day))
                 earned=await self.shard_progress(uid,c,day=reward_day,week=reward_week)
                 difficulty=st.get('difficulty','hard')
@@ -242,7 +252,7 @@ class RaidStore(CommunityStore):
                     candidates=caps,eligible_keys=[r['key'] for r in pool],all_capped=all_capped)
                 rng=random.Random(int.from_bytes(hashlib.sha256(sid.encode()).digest()[:8],'big'))
                 from .raids import drop_count
-                slots=drop_count(rng,difficulty);rewards=[];coins=clan=0
+                slots=drop_count(rng,difficulty);rewards=[];coins=clan=0;paid_coins=paid_clan=0
                 for _ in range(slots):
                     # Rebuild after each slot. Duplicate drops are legal only while eligible.
                     pool=self.reward_pool(st['theme'],earned,difficulty)
@@ -253,19 +263,27 @@ class RaidStore(CommunityStore):
                         from .raids import choose_character
                         char=choose_character(rng,CHARACTERS,st.get('difficulty','hard'));reward['detail']=char.id;stars=char.rarity
                     if kind=='coins':
-                        coins+=reward['amount']
-                        await c.execute('UPDATE users SET coins=coins+? WHERE discord_id=?',(reward['amount'],uid))
+                        if earned.get('coins',0)>=300*earned['_days']:
+                            allowance=await extra(c,uid,'raid_coins',await allowance_days(c,uid,reward_day))
+                            reward['amount']=int(100*allowance[1]);earned['_extra_coins']-=1
+                        else:coins+=reward['amount'];earned['coins']=earned.get('coins',0)+reward['amount']
+                        reward['amount']=await currency(c,uid,reward['amount'],qualifies=True);paid_coins+=reward['amount']
                     elif kind=='clancoins':
-                        clan+=reward['amount']
-                        await self._credit(c,uid,reward['amount'])
+                        if earned.get('clancoins',0)>=300*earned['_days']:
+                            allowance=await extra(c,uid,'raid_clancoins',await allowance_days(c,uid,reward_day))
+                            reward['amount']=int(100*allowance[1]);earned['_extra_clancoins']-=1
+                        else:clan+=reward['amount'];earned['clancoins']=earned.get('clancoins',0)+reward['amount']
+                        reward['amount']=await currency(c,uid,reward['amount'],clan=True,qualifies=True);paid_clan+=reward['amount']
                     else:
                         await self._issue_item(c,uid,kind,stars,reward['detail'])
+                        earned[reward['key']]=earned.get(reward['key'],0)+1
+                        if await duplicate(c,uid,rng=rng):
+                            await self._issue_item(c,uid,kind,stars,reward['detail']);reward['amount']+=1
                         reward['balance']=await shard_balance(c,uid,kind,reward['detail'])
                         await c.execute('INSERT INTO raid_shard_daily VALUES (?,?,?,1) ON CONFLICT(owner_id,day_key,reward_key) DO UPDATE SET amount=amount+1',(uid,reward_day,reward['key']))
                         if kind=='character_shard':
                             await c.execute('INSERT INTO raid_shard_weekly VALUES (?,?,1) ON CONFLICT(owner_id,week_key) DO UPDATE SET amount=amount+1',(uid,reward_week))
                             earned['character_shard_weekly']=earned.get('character_shard_weekly',0)+1
-                    earned[reward['key']]=earned.get(reward['key'],0)+reward['amount']
                     rewards.append(reward)
                 reward=rewards[0] if rewards else None
                 st['rewards']=rewards;st['drop_slots']=slots
@@ -275,9 +293,9 @@ class RaidStore(CommunityStore):
                     (uid,reward_day,'raid',coins,clan))
                 if reward is None and not all_capped:raise RuntimeError('Eligible raid victory has no reward.')
                 st['reward_status']='awarded' if reward else 'all_capped'
-                st['currency']=dict(coins=coins,clan_coins=clan)
+                st['currency']=dict(coins=paid_coins,clan_coins=paid_clan)
                 st['reward_version']=3
-                if st.get('rotation_version')==2:
+                if st.get('rotation_version')==2 and result['winner_side']=='A':
                     # Progress and rewards commit together, once, only after victory.
                     await c.execute('INSERT INTO raid_theme_cursor VALUES (?,?,?,1) ON CONFLICT(owner_id,format,theme) DO UPDATE SET next_index=next_index+1',(uid,st['format'],st['theme']))
             st.update(result=result,reward=reward)

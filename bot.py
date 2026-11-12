@@ -35,6 +35,7 @@ EXTENSIONS = (
     'hiq.cogs.events',
     'hiq.cogs.pvp',
     'hiq.cogs.retention',
+    'hiq.cogs.gameplay',
 )
 PURPLE = discord.Color.from_rgb(72, 42, 115)
 
@@ -189,6 +190,9 @@ async def help_cmd(ctx: commands.Context):
             'Prefix: **`;`**. Public commands also have `/slash` forms. Run `;start` once before gameplay. `;ab` lists abbreviations.',
             '**Cards:** `;co [filters]`, `;cv ID`, `;cardsearch [filters]`, `;gallery [filters]`, `;lock ID`.',
             '**Merge:** `;merge [name]` or `;merge survivorID [materialIDs…]`. Set Card 1 once, then select any matching copies or Merge Copy items.',
+            '**Dismantle:** `;dismantle cardID` — confirm an unused, unlocked card to receive stars × (merge+1) character shards.',
+            '**Duo cards:** `;fuse` — combine Young Emperor and King of the Lost Court at the same merge level. Earn 1 AF1 Mark per successful run, up to 25/day. Fusion costs 100 coins + 25 Marks × max(1, merge level).',
+            '**Shiny art:** `;buy shinystone` or buy a Shiny Stone in `;clanshop`, then `;use itemID`. Choose an eligible card to unlock its next artwork and remove its bane. In `;cv`, use up/down arrows to browse unlocked art and the lock to save it. `;gallery` previews all art.',
             '**Teams:** `;teamcreate slot [name]`, `;teamedit slot [new name]`, `;teamview [slot]`, `;teamuse slot`. Fifteen slots; 3v3 and 6v6.',
             '**Packs:** `;daily` / `;d`, `;shop`, `;p b`, `;p p WS`, `;p s kar`. School abbreviations work.',
             '**Pack details:** `;info p b`, `;info p p WS`, `;info p s kar` — units and individual pull rates.',
@@ -201,8 +205,10 @@ async def help_cmd(ctx: commands.Context):
         ]),
         ('HiQ Battler — Battles & Quests', [
             '**Events:** `;tt` — Tiny Titans unique-shard challenges. `;af1team` / `;af1use slot` — build/select an AF1 team. `;af1` — AF1 PvE. Use `;craft` for unique items; `;eventreset` clears a pending event.',
-            '`;battle [slot]` — matching-format random CPU. `;pvp [@user] [3v3|6v6]` — shared monthly Elo PvP. Automatic matches avoid both players’ last five rated opponents; only the first targeted match per player/day affects Elo.',
-            '`;pvpset` / `;pvps` — separate 3v3 and 6v6 teams with locks. `;pvpboard` / `;pvpb` — monthly Elo standings. Top 3 each receive 5★/4★/3★/2★/1★ packs.',
+            '`;battle [slot]` — matching-format random CPU. `;pvp [@user] [3v3|6v6]` — shared Elo PvP. Automatic matches avoid both players’ last five rated opponents; only the first targeted match per player/day affects Elo.',
+            '`;pvpset` / `;pvps` — choose and lock 3v3 and 6v6 teams. Using normal teams updates unlocked PvP teams; missing or invalid teams are recovered when possible.',
+            '`;pvpboard` / `;pvpb` — weekly first-place prizes: week 1, 1★ pack + 400 coins; week 2, 2★ + 300; week 3, 3★ + 200; week 4, 4★ + 100; week 5, 5★. Elo resets after week 5. Weeks end with the Monday training reset.',
+            '**PvP Shield:** `;buy pvpshield` or `;clanshop`, then `;use itemID`. Prevents initiating or receiving PvP for 2 hours. Another shield can be used 6 hours after activation.',
             '`;gn r` / `;gn n` — Regional / National Gauntlet. Results use regular 3v3 images/logs with school/game navigation.',
             '`;to` / `;tournament` — 8-player 6v6 double elimination; host Auto-fill supports CPUs.',
             '`;pref` / `;prefecture` — join three distinct 3v3 pods into a shared 9v9 team. Host starts. 100 coins per win, up to 300 per daily allowance.',
@@ -227,7 +233,8 @@ async def help_cmd(ctx: commands.Context):
             '`;clanwar` — choose a clan, 3v3/6v6, and Quick (3 players) or Long (5 players). Opening ban and send share 24 hours. Later sends have separate officer windows; both players get 24 hours after the second send. `;clanwarview [ID]` reopens controls.',
             '`;sealed @User1 @User2 …` — 2–7 players draft 8 private characters, build 6v6 teams, then play an automatic best-of-three single-elimination tournament. `;sealedview [ID]` reopens; expires after 30 minutes.',
             '`;inv toggle` / `;inv view` — switch stacked and ID views. `;recycle water bottle 5` — recycle exactly five unequipped copies. `;allcraft` — craft all item and character shards; school shards are preserved.',
-            'War: private opening sends; then previous winning clan sends publicly first. Fresh teams each series. First to two simulations wins; one player is knocked out. Three knockouts end Quick Wars; five end Long Wars.',
+            '**Clan war rules:** Officers choose which member fights. Opening choices are private; after that, the clan that won the last round chooses first. Players choose fresh teams for each round. Losing a best-of-three eliminates that player. Eliminate all three opponents in Quick or all five in Long to win.',
+            '**Recycle equipment:** `;recycle water bottle 5` recycles exactly five unequipped copies; `;allrecycle` recycles all unequipped equipment. `;autoclean` / `;aclean` saves the item types to recycle automatically when new copies are created. Run it again to change selections.',
             '`;donate cardID` — confirm-delete a card; every clan member earns stars × 10 × (merge+1) clan coins. Six daily donations.',
             '`;clancontest [team slot]` — see today’s featured unit or enter with a 6v6 team; `;contestboard` shows weekly rankings.',
             '`;market [search]` — browse auctions across all servers. `;auction` creates a listing; `;auction <ID>` opens one. `;myauctions` shows your sales. Cards, inventory items, school shards and character shards can be sold for Coins or Clan Dollars; item shards cannot.',
@@ -235,7 +242,15 @@ async def help_cmd(ctx: commands.Context):
             '`;clanshop`, `;clanbuy mergecopy|blessing|starpack stars` — inventory items. Use `;inv` for IDs.',
         ]),
     ]
-    pages=[discord.Embed(title=title,description='\n\n'.join(lines),color=PURPLE) for title,lines in groups]
+    import math
+    lines=[line for title,rows in groups for line in ['**'+title.replace('HiQ Battler — ','')+'**',*rows]]
+    target=math.ceil(sum(len(line)+2 for line in lines)/math.ceil(sum(len(line)+2 for line in lines)/1500))
+    chunks=[];chunk=[];size=0
+    for line in lines:
+        if chunk and size+len(line)+2>target:chunks.append(chunk);chunk=[];size=0
+        chunk.append(line);size+=len(line)+2
+    if chunk:chunks.append(chunk)
+    pages=[discord.Embed(title='HiQ Battler — Commands',description='\n\n'.join(rows),color=PURPLE) for rows in chunks]
     pager=EmbedPager(pages,ctx.author.id)
     await ctx.send(embed=pager.embed(),view=pager)
 

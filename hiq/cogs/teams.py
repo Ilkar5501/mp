@@ -56,7 +56,8 @@ class PlacementView(discord.ui.View):
         card = await self.parent_view.bot.db.get_card(self.card_id)
         c = CHAR_BY_ID[card.character_id]
         lane_label = 'frontline' if lane == 'front' else 'backline'
-        self.parent_view.selected_names.add(c.name)
+        from ..lineups import identities
+        self.parent_view.selected_names.update(identities(c))
         self.parent_view.rebuild()
         await interaction.response.edit_message(
             content=f'Position set! **{display_title(c)}** has been added to **{team.name}** as {lane_label}.',
@@ -86,7 +87,7 @@ class TeamCardSelect(discord.ui.Select):
             opts.append(discord.SelectOption(
                 label=display_title(c)[:100],
                 value=card.instance_id,
-                description=f'{c.rarity}★ | +{card.merge_level} | {c.position} | ID {card.instance_id}'[:100],
+                description=f'{c.rarity_label} | +{card.merge_level} | {c.position} | ID {card.instance_id}'[:100],
             ))
         super().__init__(
             placeholder='Choose a card from this page…',
@@ -136,7 +137,8 @@ class TeamCreateView(discord.ui.View):
         return True
 
     def filtered_cards(self):
-        available = [c for c in self.cards if CHAR_BY_ID[c.character_id].name not in self.selected_names]
+        from ..lineups import identities
+        available = [c for c in self.cards if not identities(CHAR_BY_ID[c.character_id])&self.selected_names]
         if not self.search_query:
             return available
         q = self.search_query
@@ -186,7 +188,9 @@ class TeamCreateView(discord.ui.View):
         self.team_format = team.team_format
         for iid in team.card_ids:
             card = await self.bot.db.get_card(iid) if iid else None
-            if card: self.selected_names.add(CHAR_BY_ID[card.character_id].name)
+            if card:
+                from ..lineups import identities
+                self.selected_names.update(identities(CHAR_BY_ID[card.character_id]))
         self.rebuild()
         if self.message:
             try:
@@ -333,9 +337,8 @@ class TeamEditView(TeamCreateView):
             updated[other],updated[self.position] = updated[self.position],updated[other]
         else:
             updated[self.position] = iid
-        names = [CHAR_BY_ID[self.by_id[x].character_id].name for x in updated if x]
-        if len(names) != len(set(names)):
-            raise ValueError('A team can use only one version of each character name.')
+        from ..lineups import validate_characters
+        validate_characters([CHAR_BY_ID[self.by_id[x].character_id] for x in updated if x])
         self.draft = updated
 
     async def build_embed(self):

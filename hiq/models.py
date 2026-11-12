@@ -30,10 +30,17 @@ class CharacterDef:
     abilities: dict[str, AbilityDef]
     extended: dict[str, str]
     clarification_count: int = 0
+    is_duo: bool = False
+    components: tuple[str,...] = ()
+    shiny_arts: tuple[str,...] = ()
 
     @property
     def offense_key(self) -> str:
         return 'pow' if self.stats.get('pow', 0) > 0 else 'qik'
+
+    @property
+    def rarity_label(self) -> str:
+        return 'Duo' if self.is_duo else f'{self.rarity}★'
 
     @property
     def card_id(self) -> str:
@@ -61,6 +68,8 @@ class CardInstance:
     bane_stat: str | None = None
     equipped_item_id: str | None = None
     equipment_key: str | None = None
+    shiny_slots: tuple[int,...] = ()
+    art_slot: int = 0
 
 
 @dataclass(slots=True)

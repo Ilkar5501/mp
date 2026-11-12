@@ -13,9 +13,9 @@ from hiq.contest import character
 from hiq.database import Database
 from hiq.pvp_store import PvPStore,calendar,elo_delta
 
-NOW=datetime(2026,11,7,17,tzinfo=timezone.utc)
-NEXT_DAY=datetime(2026,11,8,17,tzinfo=timezone.utc)
-OLD=datetime(2026,10,31,18,tzinfo=timezone.utc)
+NOW=datetime(2026,11,12,17,tzinfo=timezone.utc)
+NEXT_DAY=datetime(2026,11,13,17,tzinfo=timezone.utc)
+OLD=datetime(2026,11,8,18,tzinfo=timezone.utc)
 
 
 class EloTests(unittest.TestCase):
@@ -27,8 +27,8 @@ class EloTests(unittest.TestCase):
         self.assertLess(elo_delta(1200,800,1),16)
 
     def test_seasons_and_daily_limits_use_game_timezone(self):
-        self.assertEqual(calendar(datetime(2027,1,1,4,59,tzinfo=timezone.utc)),('2026-12','2026-12-31'))
-        self.assertEqual(calendar(datetime(2027,1,1,5,0,tzinfo=timezone.utc)),('2027-01','2027-01-01'))
+        self.assertEqual(calendar(datetime(2027,1,1,4,59,tzinfo=timezone.utc)),('cycle-2026-12-14','2026-12-31'))
+        self.assertEqual(calendar(datetime(2027,1,1,5,0,tzinfo=timezone.utc)),('cycle-2026-12-14','2027-01-01'))
 
 
 class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
@@ -163,7 +163,7 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
             await self.db._replace_merged_card_tx(c,cards[0].instance_id,donor.instance_id)
         prefs=await self.store.preferences(1);self.assertEqual(prefs['teams'][3]['entries'][0]['id'],donor.instance_id)
         async with self.store.tx() as c:await self.db._clear_card_from_teams_tx(c,donor.instance_id)
-        self.assertFalse((await self.store.preferences(1))['teams'][3]['valid'])
+        self.assertTrue((await self.store.preferences(1))['teams'][3]['valid'])
 
     async def test_owned_cards_are_revalidated_and_invalid_defenders_are_skipped(self):
         cards=await self.team(2);await self.team(1);await self.team(3)
@@ -178,26 +178,76 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(prefs['teams'][3]['entries'][0]['id'],cards[0].instance_id)
         self.assertTrue(prefs['teams'][3]['valid'])
 
-    async def test_monthly_awards_reset_and_concurrent_rollover_are_once_only(self):
-        for uid in range(1,6):await self.db.ensure_user(uid)
+    async def test_shield_blocks_initiating_direct_targeting_and_automatic_targeting(self):
+        from hiq.gameplay_store import GameplayStore
+        await self.users(1,2,3)
+        async with self.store.tx() as c:await c.execute('UPDATE users SET coins=1000 WHERE discord_id=2')
+        game=GameplayStore(self.db);ids,_=await game.buy_consumable(2,'pvpshield')
+        await game.use_shield(2,ids[0])
+        with self.assertRaisesRegex(ValueError,'cannot initiate'):await self.store.start(2,target=1,at=NOW)
+        with self.assertRaisesRegex(ValueError,'active PvP Shield'):await self.store.start(1,target=2,at=NOW)
+        self.assertEqual((await self.store.start(1,at=NOW))['b_id'],3)
+
+    async def test_running_legacy_monthly_match_migrates_without_losing_elo(self):
+        await self.users(1,2);row=await self.store.start(1,target=2,at=NOW)
         async with self.store.tx() as c:
-            for uid,rating in [(1,1200),(2,1100),(3,1050),(4,999)]:await c.execute('INSERT INTO pvp_ratings(month,owner_id,rating,wins) VALUES (?,?,?,1)',('2026-10',uid,rating))
-            await c.execute("INSERT INTO pvp_ratings(month,owner_id,rating) VALUES ('2026-10',5,9999)")
-        await asyncio.gather(self.store.settle(NOW),self.store.settle(NOW));await self.db.init();await self.store.settle(NOW)
-        for uid in (1,2,3):self.assertEqual(sorted(i['stars'] for i in await self.store.items(uid)),[1,2,3,4,5])
-        for uid in (4,5):self.assertEqual(await self.store.items(uid),[])
-        month,board,own=await self.store.board(1,NOW)
-        self.assertEqual(month,'2026-11');self.assertEqual(own['rating'],1000);self.assertEqual(board,[])
+            await c.execute("DELETE FROM economy_migrations WHERE version='v12-weekly-pvp'")
+            await c.execute('DELETE FROM pvp_weeks')
+            await c.execute("UPDATE pvp_ratings SET month='2026-11',rating=1200")
+            await c.execute("UPDATE pvp_runs SET month='2026-11' WHERE id=?",(row['id'],))
+        await self.store.settle(NOW);await self.finish(row)
+        self.assertEqual((await self.store.board(1,NOW))[2]['rating'],1216)
+
+    async def test_legacy_both_formats_are_recovered_and_invalid_teams_cannot_be_locked(self):
+        await self.team(1,1,3);await self.team(1,2,6)
+        async with self.store.tx() as c:
+            await c.execute('DELETE FROM pvp_teams WHERE owner_id=1')
+            await c.execute('DELETE FROM pvp_profiles WHERE owner_id=1')
+        prefs=await self.store.preferences(1)
+        self.assertTrue(all(prefs['teams'][size]['valid'] for size in (3,6)))
+        async with self.store.tx() as c:await c.execute("UPDATE pvp_teams SET entries_json='[]' WHERE owner_id=1 AND format=6")
+        with self.assertRaisesRegex(ValueError,'invalid'):await self.store.set_lock(1,6,True)
+        self.assertTrue((await self.store.preferences(1))['teams'][6]['valid'])
+
+    async def test_hinata_consolation_rewards_do_not_convert_a_loss_to_a_win(self):
+        from hiq.youth_rewards import HINATA
+        from hiq.data import CHAR_BY_ID
+        await self.users(1,2)
+        row=await self.store.start(1,target=2,at=NOW)
+        row['state']['b'][0]['card'].update(character_id=HINATA,merge_level=10)
+        async with self.store.tx() as c:await c.execute('UPDATE pvp_runs SET state_json=? WHERE id=?',(json.dumps(row['state']),row['id']))
+        with patch('hiq.youth_rewards.loss_reward',return_value=True):await self.finish(row)
+        self.assertEqual((await self.db.get_user(2)).coins,100)
+        own=(await self.store.board(2,NOW))[2]
+        self.assertEqual((own['rating'],own['wins'],own['losses']),(984,0,1))
+
+    async def test_five_week_prizes_are_once_only_and_elo_resets_only_after_week_five(self):
+        for uid in range(1,6):await self.db.ensure_user(uid)
+        cycle=calendar(NOW)[0]
+        await self.store.settle(NOW)
+        async with self.store.tx() as c:
+            for uid,rating in [(1,1200),(2,1100),(3,1050),(4,999)]:await c.execute('INSERT INTO pvp_ratings(month,owner_id,rating,wins) VALUES (?,?,?,1)',(cycle,uid,rating))
+            await c.execute('INSERT INTO pvp_ratings(month,owner_id,rating) VALUES (?,5,9999)',(cycle,))
+        from datetime import timedelta
+        for week in range(1,6):
+            at=NOW+timedelta(weeks=week)
+            await asyncio.gather(self.store.settle(at),self.store.settle(at));await self.db.init();await self.store.settle(at)
+            month,board,own=await self.store.board(1,at)
+            self.assertEqual(own['rating'],1200 if week<5 else 1000)
+        self.assertEqual(sorted(i['stars'] for i in await self.store.items(1)),[1,2,3,4,5])
+        for uid in (2,3,4,5):self.assertEqual(await self.store.items(uid),[])
+        self.assertEqual((await self.db.get_user(1)).coins,1000)
+        self.assertEqual(board,[])
         async with self.db.connect() as c:
-            self.assertEqual((await self.store.one(c,'SELECT COUNT(*) n FROM pvp_monthly_awards'))['n'],3)
-            self.assertEqual((await self.store.one(c,"SELECT rating FROM pvp_ratings WHERE month='2026-10' AND owner_id=1"))['rating'],1200)
+            self.assertEqual((await self.store.one(c,'SELECT COUNT(*) n FROM pvp_monthly_awards'))['n'],5)
+            self.assertEqual((await self.store.one(c,'SELECT rating FROM pvp_ratings WHERE month=? AND owner_id=1',(cycle,)))['rating'],1200)
 
     async def test_late_pending_match_finishes_before_old_month_awards(self):
         await self.users(1,2);row=await self.store.start(1,at=OLD)
         await self.store.settle(NOW)
         self.assertEqual(await self.store.items(1),[])
         await self.finish(row,at=NOW)
-        self.assertEqual(len(await self.store.items(1)),5)
+        self.assertEqual([i['stars'] for i in await self.store.items(1)],[5])
         self.assertEqual((await self.store.board(1,NOW))[2]['rating'],1000)
 
     async def test_shared_rating_and_daily_limit_cross_formats(self):
@@ -237,7 +287,7 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         await self.finish(row)
         async with self.store.tx() as c:
             for uid in range(10,30):
-                await c.execute('INSERT INTO pvp_ratings(month,owner_id,wins) VALUES (?,?,1)',('2026-11',uid))
+                await c.execute('INSERT INTO pvp_ratings(month,owner_id,wins) VALUES (?,?,1)',(calendar(NOW)[0],uid))
         cog=object.__new__(PvPCog);cog.store=self.store
         ctx=SimpleNamespace(author=SimpleNamespace(id=1),send=AsyncMock())
         board=await self.store.board(1,at=NOW)

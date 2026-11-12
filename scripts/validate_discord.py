@@ -18,8 +18,8 @@ async def main():
         async with app.bot:
             for extension in app.EXTENSIONS:
                 await app.bot.load_extension(extension);print('Loaded',extension,flush=True)
-            for name in ('sealed','sealedview','clanwar','inv','links','pvp','pvpset','pvps','pvpboard','pvpb','recycle','allcraft','clancontest','contestboard','contestresume','market','auction','myauctions'):
-                assert app.bot.get_command(name),name
+            for name in ('sealed','sealedview','clanwar','inv','links','pvp','pvpset','pvps','pvpboard','pvpb','recycle','allrecycle','allcraft','clancontest','contestboard','contestresume','market','auction','myauctions','dismantle','fuse','autoclean','aclean','use','buy'):
+                assert name in app.bot.all_commands,name
             store=SealedStore(app.bot.db)
             row=await store.create([dict(id=i,name=str(i)) for i in (1,2)],100)
             cog=app.bot.get_cog('SealedCog')

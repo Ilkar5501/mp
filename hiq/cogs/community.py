@@ -245,7 +245,7 @@ class CommunityCog(commands.Cog):
     async def checkin(self,ctx):
         try:bonus,count=await self.store.checkin(ctx.author.id,str(ctx.author))
         except ValueError as exc:await ctx.send(str(exc));return
-        await ctx.send(f'Checked in: **+150 clan coins**. Clan progress: **{count}/5** today.'+(' All five checked in: **+50 additional clan coins for every member!**' if bonus else ''))
+        await ctx.send(f'Check-in reward claimed. Clan progress: **{count}/5** today.'+(' All five checked in: **+50 additional clan coins for every member!**' if bonus else ''))
     @commands.hybrid_command(name='clanshop',description='View and purchase clan items with clan coins.')
     async def clanshop(self,ctx):
         if not await self.store.clan(user_id=ctx.author.id):await ctx.send('Join a clan to use its shop.');return
@@ -253,7 +253,10 @@ class CommunityCog(commands.Cog):
         for kind,mult,desc in [('Merge Copy',150,'Universal +1 merge material for a card of matching rarity. Cannot be a survivor or battle unit.'),('Blessing',200,'Choose a new boon/bane on a matching-rarity card. Same stat = Neutral.'),('Star Pack',100,'One random card of the chosen rarity, with a normal rolled nature.')]:
             e.add_field(name=kind,value=desc+'\n'+' • '.join(f'{s}★: {s*mult}' for s in range(1,6)),inline=False)
         e.set_footer(text='All items have unique IDs, are stored in ;inv, and can be traded. Donations/check-ins are separate from the war reward cap.')
-        await ctx.send(embed=e,view=ClanShopView(self,ctx.author.id))
+        from .youth_menus import BulkClanShop
+        from ..gameplay_store import GameplayStore
+        e.add_field(name='Consumables',value='PvP Shield: 750 Clan Dollars · Shiny Stone: 15,000 Clan Dollars. Activate with ;use itemID.',inline=False)
+        await ctx.send(embed=e,view=BulkClanShop(GameplayStore(self.bot.db),ctx.author.id))
     @commands.hybrid_command(name='clanbuy',description='Buy a mergecopy, blessing or starpack with a star rating.')
     async def clanbuy(self,ctx,item:str,stars:int):
         item=item.casefold().replace('_','')

@@ -62,6 +62,8 @@ class EventStore(CommunityStore):
                 if char.name=='Fukunaga':raise ValueError('Fukunaga cannot enter AF1.')
                 chars.append(char.id)
             if len(chars)!=len(set(chars)):raise ValueError('Use different card variants.')
+            from .lineups import validate_duos
+            validate_duos([CHAR_BY_ID[cid] for cid in chars])
             await c.execute('UPDATE af1_teams SET entries_json=?,revision=revision+1 WHERE owner_id=? AND slot=?',(json.dumps(entries),uid,slot))
             return self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
 
@@ -124,9 +126,29 @@ class EventStore(CommunityStore):
             if not row:raise ValueError('This battle is unavailable.')
             if row['status']!='running':return 0
             state=row['state'];key=state.get('signature_key')
+            from .youth_rewards import loss_reward,duplicate,seeded
+            eligible=result['winner_side']=='A' or (result['winner_side']=='B' and loss_reward(state.get('a'),key=sid))
             reward=int(row['mode']=='tiny_titans' and state.get('reward_policy')=='signature_drop_v2'
-                       and result['winner_side']=='A' and state.get('drop_roll',False) and key in {i['key'] for i in SIGNATURE_ITEMS})
-            if reward:await credit(c,uid,'item_shard',key,1)
+                       and eligible and state.get('drop_roll',False) and key in {i['key'] for i in SIGNATURE_ITEMS})
+            if reward:
+                from .allowances import allowance_days
+                from .economy import local_date_key
+                day=local_date_key();days=await allowance_days(c,uid,day)
+                used=await self.one(c,'SELECT COALESCE(SUM(amount),0) AS n FROM raid_shard_daily WHERE owner_id=? AND reward_key=? AND day_key BETWEEN ? AND ?',(uid,key,days[0],day))
+                reward=int(used['n']<25*len(days))
+                if reward:
+                    await credit(c,uid,'item_shard',key,1)
+                    await c.execute('INSERT INTO raid_shard_daily VALUES(?,?,?,1) ON CONFLICT(owner_id,day_key,reward_key) DO UPDATE SET amount=amount+1',(uid,day,key))
+                    if await duplicate(c,uid,rng=seeded(sid+':duplicate')):
+                        await credit(c,uid,'item_shard',key,1);reward+=1
+            if row['mode']=='all_for_one' and eligible:
+                from .economy import local_date_key
+                day=local_date_key()
+                used=await self.one(c,'SELECT marks FROM af1_daily WHERE owner_id=? AND day=?',(uid,day))
+                if not used or used['marks']<25:
+                    await c.execute('INSERT INTO af1_daily VALUES(?,?,1) ON CONFLICT(owner_id,day) DO UPDATE SET marks=marks+1',(uid,day))
+                    await c.execute('INSERT INTO event_wallets(owner_id,af1_marks) VALUES (?,1) ON CONFLICT(owner_id) DO UPDATE SET af1_marks=af1_marks+1',(uid,))
+                    reward=1
             await c.execute("UPDATE event_runs SET status='done',result_json=?,earned=? WHERE id=?",(json.dumps(result),reward,sid))
             return reward
 

@@ -48,8 +48,9 @@ class SealedStore(CommunityStore):
             if st['team_versions'].get(key,0)!=version:raise ValueError('Your team changed in another menu. Reopen Edit Team.')
             if cid not in st['picks'][key] or position not in range(6):raise ValueError('Choose one of your drafted characters.')
             team=st['draft_teams'].setdefault(key,[None]*6)
+            from .lineups import identities
             for i,other in enumerate(team):
-                if i!=position and other and CHAR_BY_ID[other].name==CHAR_BY_ID[cid].name:team[i]=None
+                if i!=position and other and identities(CHAR_BY_ID[other])&identities(CHAR_BY_ID[cid]):team[i]=None
             team[position]=cid;st['teams'].pop(key,None)
             st['team_versions'][key]=version+1
             await self._save(c,row);return row

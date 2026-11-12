@@ -189,6 +189,12 @@ class Database:
             await migrate_legacy_signature_shards(db)
             from .pvp_store import SCHEMA as PVP_SCHEMA
             await db.executescript(PVP_SCHEMA)
+            from .gameplay_store import SCHEMA as GAMEPLAY_SCHEMA
+            await db.executescript(GAMEPLAY_SCHEMA)
+            from .youth_rewards import SCHEMA as YOUTH_SCHEMA
+            await db.executescript(YOUTH_SCHEMA)
+            from .pvp_cycles import SCHEMA as CYCLE_SCHEMA
+            await db.executescript(CYCLE_SCHEMA)
 
         from .retention import install
         import sqlite3
@@ -242,6 +248,8 @@ class Database:
             if name not in users:
                 await db.execute(f'ALTER TABLE users ADD COLUMN {name} {ddl}')
         cards = await self._columns(db, 'cards')
+        if 'shiny_slots' not in cards:await db.execute("ALTER TABLE cards ADD COLUMN shiny_slots TEXT NOT NULL DEFAULT '[]'")
+        if 'art_slot' not in cards:await db.execute('ALTER TABLE cards ADD COLUMN art_slot INTEGER NOT NULL DEFAULT 0')
         had_boon = 'boon_stat' in cards
         had_bane = 'bane_stat' in cards
         for name in ('boon_stat', 'bane_stat', 'equipped_item_id', 'equipment_key'):
@@ -437,6 +445,8 @@ class Database:
             boon_stat=row['boon_stat'], bane_stat=row['bane_stat'],
             equipped_item_id=row['equipped_item_id'] if 'equipped_item_id' in row.keys() else None,
             equipment_key=row['equipment_key'] if 'equipment_key' in row.keys() else None,
+            shiny_slots=tuple(json.loads(row['shiny_slots'])) if 'shiny_slots' in row.keys() else (),
+            art_slot=int(row['art_slot']) if 'art_slot' in row.keys() else 0,
         )
 
     async def get_card(self, instance_or_full_id: str) -> CardInstance | None:
@@ -565,11 +575,17 @@ class Database:
                         f'Card 1 is +{survivor.merge_level}; Card 2 is +{consumed.merge_level}.'
                     )
                 survivor_id, consumed_id = survivor.instance_id, consumed.instance_id
+                shiny=sorted(set(survivor.shiny_slots)|set(consumed.shiny_slots))
+                from .data import CHAR_BY_ID
+                if CHAR_BY_ID[survivor.character_id].is_duo:
+                    cost=100*(new_level-survivor.merge_level)
+                    paid=await db.execute('UPDATE users SET coins=coins-? WHERE discord_id=? AND coins>=?',(cost,owner_id,cost))
+                    if not paid.rowcount:raise ValueError(f'Duo merging requires {cost} coins.')
                 await self._replace_merged_card_tx(db,consumed_id,survivor_id)
                 await db.execute('DELETE FROM cards WHERE instance_id=? AND owner_id=?', (consumed_id, owner_id))
                 await db.execute(
-                    'UPDATE cards SET merge_level=? WHERE instance_id=? AND owner_id=?',
-                    (new_level, survivor_id, owner_id),
+                    'UPDATE cards SET merge_level=?,shiny_slots=?,bane_stat=CASE WHEN ? THEN NULL ELSE bane_stat END WHERE instance_id=? AND owner_id=?',
+                    (new_level,json.dumps(shiny),bool(shiny),survivor_id,owner_id),
                 )
                 await db.commit()
 
@@ -673,7 +689,7 @@ class Database:
                     cur=await db.execute('SELECT character_id FROM cards WHERE owner_id=? AND instance_id=?',(owner_id,iid))
                     card=await cur.fetchone()
                     if not card: raise ValueError('A selected card is no longer in your collection. Reopen the editor.')
-                    names.append(CHAR_BY_ID[card['character_id']].name)
+                    names.extend(CHAR_BY_ID[card['character_id']].components or (CHAR_BY_ID[card['character_id']].name,))
                 if len(names)!=len(set(names)): raise ValueError('A team can use only one version of each character name.')
                 await db.execute('UPDATE saved_teams SET front_id=?,front2_id=?,front3_id=?,back1_id=?,back2_id=?,back3_id=?,team_format=?,updated_at=? WHERE owner_id=? AND slot=?',
                     (*ids,fmt,datetime.now(timezone.utc).isoformat(),owner_id,slot))
@@ -810,7 +826,8 @@ class Database:
                     raise ValueError('Locked cards cannot be recycled. Unlock the card first.')
                 await self._clear_card_from_teams_tx(db, instance_id)
                 await db.execute('DELETE FROM cards WHERE instance_id=? AND owner_id=?', (instance_id, owner_id))
-                await db.execute('UPDATE users SET coins=coins+? WHERE discord_id=?', (int(payout), owner_id))
+                from .youth_rewards import currency
+                payout=await currency(db,owner_id,int(payout))
                 await db.commit()
         return card, int(payout)
 
@@ -909,6 +926,8 @@ class Database:
         return dict(row) if row else None
 
     async def set_pity(self, owner_id: int, character_id: str, armed: bool = False) -> None:
+        from .data import CHAR_BY_ID
+        if CHAR_BY_ID[character_id].is_duo:raise ValueError('Duo cards are created with ;fuse and cannot be pity targets.')
         await self.ensure_user(owner_id)
         async with self.connect() as db:
             await db.execute('''
@@ -935,6 +954,9 @@ class Database:
 
     async def save_test_team(self, owner_id: int, front: str | None, back1: str | None, back2: str | None, *, team_format: int = 3, front2: str | None = None, front3: str | None = None, back3: str | None = None) -> None:
         if team_format not in (3,6): raise ValueError("Test format must be 3 or 6.")
+        from .lineups import validate_duos
+        from .data import CHAR_BY_ID
+        validate_duos([CHAR_BY_ID[cid] for cid in (front,front2,front3,back1,back2,back3) if cid in CHAR_BY_ID])
         await self.ensure_user(owner_id)
         async with self._lock,self.connect() as db:
             await db.execute('BEGIN IMMEDIATE')

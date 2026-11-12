@@ -2,6 +2,7 @@
 import json
 import secrets
 import uuid
+import time
 from datetime import datetime
 
 from .community_store import CommunityStore,now
@@ -50,7 +51,9 @@ def calendar(at=None):
     at=at or datetime.now(TIMEZONE)
     if at.tzinfo is None:raise ValueError('PvP dates need a timezone.')
     local=at.astimezone(TIMEZONE)
-    return local.strftime('%Y-%m'),local.date().isoformat()
+    from .pvp_cycles import cycle_for
+    day=local.date().isoformat()
+    return cycle_for(day)[0],day
 
 
 def elo_delta(a,b,score):
@@ -92,27 +95,71 @@ class PvPStore(CommunityStore):
         fmt=active['team_format'] if active else 3
         await c.execute('INSERT OR IGNORE INTO pvp_profiles(owner_id,default_format) VALUES (?,?)',(uid,fmt))
         if display_name:await c.execute('UPDATE pvp_profiles SET display_name=? WHERE owner_id=?',(display_name[:100],uid))
-        if active:
-            team=self.db._saved_team(active)
-            if team.complete:
-                # Bootstrap legacy active teams once, without overwriting either PvP slot.
-                entries=[dict(id=iid,lane=lane) for _,iid,lane in team.entries]
-                await c.execute('INSERT OR IGNORE INTO pvp_teams(owner_id,format,name,entries_json) VALUES (?,?,?,?)',(uid,fmt,team.name,json.dumps(entries)))
+        registered=await self.rows(c,'SELECT * FROM pvp_teams WHERE owner_id=?',(uid,))
+        usable=set()
+        for existing in registered:
+            try:await self.validate_entries(c,uid,existing['format'],json.loads(existing['entries_json']))
+            except (ValueError,TypeError):continue
+            usable.add(existing['format'])
+        saved=await self.rows(c,'SELECT * FROM saved_teams WHERE owner_id=? ORDER BY CASE WHEN slot=? THEN 0 ELSE 1 END,slot',(uid,user['active_team_slot']))
+        for raw in saved:
+            team=self.db._saved_team(raw)
+            if not team.complete or team.team_format in usable:continue
+            entries=[dict(id=iid,lane=lane) for _,iid,lane in team.entries]
+            try:await self.validate_entries(c,uid,team.team_format,entries)
+            except ValueError:continue
+            # Recover missing/invalid legacy slots even if an invalid lock was set.
+            await c.execute('''INSERT INTO pvp_teams(owner_id,format,name,entries_json) VALUES (?,?,?,?)
+                ON CONFLICT(owner_id,format) DO UPDATE SET name=excluded.name,entries_json=excluded.entries_json,
+                locked=0,revision=revision+1''',(uid,team.team_format,team.name,json.dumps(entries)))
+            usable.add(team.team_format)
+        profile=await self.one(c,'SELECT * FROM pvp_profiles WHERE owner_id=?',(uid,))
+        from .lineups import identities
+        formats={r['format'] for r in registered}-usable
+        if not usable:formats.add(3)
+        owned=await self.rows(c,'SELECT * FROM cards WHERE owner_id=? ORDER BY merge_level DESC,obtained_at,instance_id',(uid,)) if formats else []
+        selected=[];seen=set()
+        for card in owned:
+            char=CHAR_BY_ID.get(card['character_id'])
+            if char and not identities(char)&seen:selected.append(card);seen.update(identities(char))
+        if len(selected)<6:
+            plain=[];plain_names=set()
+            for card in owned:
+                char=CHAR_BY_ID.get(card['character_id'])
+                if char and not char.is_duo and char.name not in plain_names:plain.append(card);plain_names.add(char.name)
+            if len(plain)>len(selected):selected=plain
+        for size in formats:
+            if len(selected)<size:continue
+            entries=[dict(id=card['instance_id'],lane='front' if i<(1 if size==3 else 3) else 'back') for i,card in enumerate(selected[:size])]
+            await c.execute('''INSERT INTO pvp_teams(owner_id,format,name,entries_json) VALUES (?,?,?,?)
+                ON CONFLICT(owner_id,format) DO UPDATE SET name=excluded.name,entries_json=excluded.entries_json,locked=0,revision=revision+1''',(uid,size,'Recovered team',json.dumps(entries)))
+            usable.add(size)
+        if usable and profile['default_format'] not in usable:
+            await c.execute('UPDATE pvp_profiles SET default_format=? WHERE owner_id=?',(min(usable),uid))
         return await self.one(c,'SELECT * FROM pvp_profiles WHERE owner_id=?',(uid,))
 
     async def specs_tx(self,c,uid,fmt):
         row=await self.one(c,'SELECT * FROM pvp_teams WHERE owner_id=? AND format=?',(uid,fmt))
         if not row:raise ValueError(f'Choose a {fmt}v{fmt} PvP team with ;pvpset.')
-        entries=json.loads(row['entries_json']);specs=[]
+        return await self.validate_entries(c,uid,fmt,json.loads(row['entries_json']))
+
+    async def validate_entries(self,c,uid,fmt,entries):
+        if not isinstance(entries,list) or len(entries)!=fmt or any(not isinstance(e,dict) or not isinstance(e.get('id'),str) or e.get('lane') not in ('front','back') for e in entries):
+            raise ValueError('This PvP lineup is incomplete or invalid. Update ;pvpset.')
+        specs=[]
         for entry in entries:
             raw=await self.one(c,'SELECT * FROM cards WHERE owner_id=? AND instance_id=?',(uid,entry['id']))
             if not raw:raise ValueError('A PvP card is missing. Update the team with ;pvpset.')
             card=self.db._card(raw);char=CHAR_BY_ID.get(card.character_id)
             if not char:raise ValueError('A PvP card is unavailable. Update ;pvpset.')
             specs.append((card,char,entry['lane']))
-        if len(specs)!=fmt or len({char.name for _,char,_ in specs})!=fmt or sum(lane=='front' for _,_,lane in specs)!=(1 if fmt==3 else 3) or any(lane not in ('front','back') for _,_,lane in specs):
+        if len(specs)!=fmt or not __import__('hiq.lineups',fromlist=['valid_characters']).valid_characters([char for _,char,_ in specs]) or sum(lane=='front' for _,_,lane in specs)!=(1 if fmt==3 else 3) or any(lane not in ('front','back') for _,_,lane in specs):
             raise ValueError('This PvP lineup is incomplete or invalid. Update ;pvpset.')
         return specs
+
+    async def shielded_tx(self,c,uid,at=None):
+        at=time.time() if at is None else at
+        return bool(await self.one(c,'SELECT 1 FROM pvp_shields WHERE owner_id=? AND protected_until>?',(uid,at)))
 
     async def preferences(self,uid,name=''):
         async with self.tx() as c:
@@ -152,6 +199,7 @@ class PvPStore(CommunityStore):
             row=await self.one(c,'SELECT * FROM pvp_teams WHERE owner_id=? AND format=?',(uid,fmt))
             if not row:raise ValueError('Choose that PvP team first.')
             if revision is not None and row['revision']!=revision:raise ValueError('Your PvP team changed. Reopen ;pvpset.')
+            if locked:await self.specs_tx(c,uid,fmt)
             await c.execute('UPDATE pvp_teams SET locked=?,revision=revision+1 WHERE owner_id=? AND format=?',(int(locked),uid,fmt))
 
     async def rating_tx(self,c,uid,month):
@@ -166,10 +214,15 @@ class PvPStore(CommunityStore):
         month,day=calendar(at)
         targeted=target is not None
         async with self.tx() as c:
+            if await self.shielded_tx(c,uid):raise ValueError('Your PvP Shield is active. You cannot initiate PvP until it expires.')
+            if target is not None and await self.shielded_tx(c,target):raise ValueError('That player has an active PvP Shield.')
             old=await self.one(c,"SELECT * FROM pvp_runs WHERE a_id=? AND status='running' ORDER BY created_at LIMIT 1",(uid,))
             if old:return self.unpack(old)
             if await self.one(c,'SELECT 1 FROM pvp_busy WHERE owner_id=?',(uid,)):raise ValueError('Your team is already in a PvP match. Try again after it finishes.')
-            await self.settle_tx(c,month)
+            await self.settle_tx(c,month,day)
+            from .pvp_cycles import week_start
+            if await self.one(c,'SELECT 1 FROM pvp_weeks WHERE closed=0 AND week<?',(week_start(day).isoformat(),)):
+                raise ValueError('A match from the previous week is still resolving. Try again after it finishes.')
             profile=await self.profile_tx(c,uid,name)
             fmt=fmt or profile['default_format']
             if fmt not in (3,6):raise ValueError('Choose 3v3 or 6v6.')
@@ -191,6 +244,7 @@ class PvPStore(CommunityStore):
                     AND NOT EXISTS(SELECT 1 FROM pvp_busy WHERE owner_id=discord_id)''',(uid,))
                 for owner in owners:
                     oid=owner['discord_id']
+                    if await self.shielded_tx(c,oid):continue
                     if oid in recent:continue
                     try:
                         candidate_profile=await self.profile_tx(c,oid)
@@ -214,7 +268,7 @@ class PvPStore(CommunityStore):
             return self.unpack(await self.one(c,'SELECT * FROM pvp_runs WHERE id=?',(sid,)))
 
     async def finish(self,sid,result,*,at=None):
-        current,_=calendar(at)
+        current,day=calendar(at)
         if result.get('winner_side') not in ('A','B','draw'):raise ValueError('Invalid PvP result.')
         async with self.tx() as c:
             row=self.unpack(await self.one(c,'SELECT * FROM pvp_runs WHERE id=?',(sid,)))
@@ -234,33 +288,31 @@ class PvPStore(CommunityStore):
             if winner_id:
                 from .rewards import award_in
                 reward=await award_in(c,winner_id,'pvp',opponent=b if winner=='A' else a,day=row['state']['day'])
+            consolation=None
+            if winner_id:
+                from .youth_rewards import loss_reward
+                loser=b if winner=='A' else a
+                if loss_reward(row['state']['b' if winner=='A' else 'a'],key=f'{sid}:loss'):
+                    consolation=await award_in(c,loser,'pvp',opponent=winner_id,day=row['state']['day'])
             settlement=dict(a_before=ar['rating'],b_before=br['rating'],a_after=ar['rating']+delta,b_after=br['rating']-delta,delta=delta,reward=reward,winner_id=winner_id)
+            settlement['loss_reward']=consolation
             await c.execute("UPDATE pvp_runs SET status='done',result_json=?,settlement_json=? WHERE id=?",(json.dumps(result),json.dumps(settlement),sid))
             await c.execute('DELETE FROM pvp_busy WHERE match_id=?',(sid,))
-            await self.settle_tx(c,current)
+            await self.settle_tx(c,current,day)
             return self.unpack(await self.one(c,'SELECT * FROM pvp_runs WHERE id=?',(sid,)))
 
-    async def settle_tx(self,c,current):
-        months=await self.rows(c,'''SELECT DISTINCT month FROM pvp_ratings WHERE month<?
-            AND month NOT IN (SELECT month FROM pvp_closed_months) ORDER BY month''',(current,))
-        for row in months:
-            month=row['month']
-            if await self.one(c,"SELECT 1 FROM pvp_runs WHERE month=? AND status='running' AND rated=1",(month,)):continue
-            winners=await self.rows(c,'''SELECT * FROM pvp_ratings WHERE month=? AND wins+losses+draws>0
-                ORDER BY rating DESC,wins DESC,losses ASC,owner_id LIMIT 3''',(month,))
-            for rank,winner in enumerate(winners,1):
-                ids=[await self._issue_item(c,winner['owner_id'],'starpack',stars=stars) for stars in (5,4,3,2,1)]
-                await c.execute('INSERT INTO pvp_monthly_awards VALUES (?,?,?,?,?)',(month,winner['owner_id'],rank,winner['rating'],json.dumps(ids)))
-            await c.execute('INSERT INTO pvp_closed_months VALUES (?,?)',(month,now()))
+    async def settle_tx(self,c,current,day=None):
+        from .pvp_cycles import settle
+        return await settle(self,c,day or calendar()[1])
 
     async def settle(self,at=None):
-        month,_=calendar(at)
-        async with self.tx() as c:await self.settle_tx(c,month)
+        month,day=calendar(at)
+        async with self.tx() as c:await self.settle_tx(c,month,day)
 
     async def board(self,uid,at=None):
-        month,_=calendar(at)
+        month,day=calendar(at)
         async with self.tx() as c:
-            await self.settle_tx(c,month)
+            await self.settle_tx(c,month,day)
             rating=await self.rating_tx(c,uid,month)
             rows=await self.rows(c,'''SELECT * FROM pvp_ratings WHERE month=? AND wins+losses+draws>0
                 ORDER BY rating DESC,wins DESC,losses ASC,owner_id''',(month,))

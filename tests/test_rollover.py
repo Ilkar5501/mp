@@ -180,8 +180,12 @@ class RolloverTests(unittest.IsolatedAsyncioTestCase):
         with patch('hiq.quest_pages.local_date_key',return_value=SUN):
             await BattleCog.questview.callback(BattleCog(SimpleNamespace(db=self.db)),context)
         pages=context.send.call_args.kwargs['view'].pages
-        self.assertEqual(len(pages),4)
-        self.assertIn('Battle Count: 0 / 175',pages[0].description)
+        self.assertEqual(len(pages),5)
+        self.assertEqual(pages[4].title,'How cards affect earnings')
+        for text in ('Young Emperor','King of the Lost Court','Kings of the Playground','merge × 5%','merge × 1%','merge + 1','highest-merged owned copy','do not reset'):
+            self.assertIn(text,pages[4].description)
+        self.assertLessEqual(len(pages[4].description),4096)
+        self.assertIn('Battle Count: 0 / 63',pages[0].description)
         self.assertIn('0 / 3150',pages[0].description)
         self.assertIn('0 / 2100',pages[0].description)
         self.assertIn('do not carry over',pages[3].description)

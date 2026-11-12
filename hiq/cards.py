@@ -13,6 +13,12 @@ from .battle.equipment import add_base_equipment,equipment_key
 from .items import ITEM_BY_KEY
 
 DIVIDER = '────────────────────────'
+DUO_EMOJI='<:duo:1570428970460250212>'
+DUO_ICON='https://cdn.discordapp.com/emojis/1570428970460250212.png'
+
+
+def rarity_display(c):
+    return DUO_EMOJI if c.is_duo else c.rarity_label
 
 
 def resolve_custom_emoji(bot: discord.Client, kind: str) -> str:
@@ -38,6 +44,8 @@ def nature_text(card: CardInstance, *, compact: bool = False) -> str:
     if not card.boon_stat and not card.bane_stat:
         return '⚪ **Neutral**' if compact else '**Neutral**'
     boon = stat_label(card.boon_stat)
+    if not card.bane_stat:
+        return f'🟢 **{boon}**' if compact else f'🟢 +{amount} {boon}'
     bane = stat_label(card.bane_stat)
     if compact:
         return f'🟢 **{boon}** / 🔴 **{bane}**'
@@ -47,7 +55,7 @@ def nature_text(card: CardInstance, *, compact: bool = False) -> str:
 def compact_card_line(card: CardInstance) -> str:
     c = CHAR_BY_ID[card.character_id]
     return (
-        f'**{display_title(c)} {c.rarity}★** | **+{card.merge_level}** | '
+        f'{"✨ " if card.shiny_slots else ""}**{display_title(c)} {rarity_display(c)}** | **+{card.merge_level}** | '
         f'{nature_text(card, compact=True)} | **ID:** `{card.instance_id}`'
     )
 
@@ -64,7 +72,7 @@ def ability_block(c: CharacterDef, slot: str) -> str:
     return '\n'.join(lines)
 
 
-def card_embed(bot: discord.Client, card: CardInstance) -> discord.Embed:
+def card_embed(bot: discord.Client, card: CardInstance, *, art_slot=None) -> discord.Embed:
     c = CHAR_BY_ID[card.character_id]
     stats = add_base_equipment(permanent_stats(c, card.merge_level, card.boon_stat, card.bane_stat),equipment_key(card))
     title = display_title(c)
@@ -102,14 +110,18 @@ def card_embed(bot: discord.Client, card: CardInstance) -> discord.Embed:
         f'**Obtained:** <t:{int(card.obtained_at.replace(tzinfo=timezone.utc).timestamp())}:F>',
     ]
     embed = discord.Embed(
-        title=f'{c.rarity}★  {title}',
+        title=f'{"Duo" if c.is_duo else str(c.rarity)+"★"}  {title}'+(' ✨' if card.shiny_slots else ''),
         description='\n'.join(body)[:4096],
         color=discord.Color.from_rgb(72, 42, 115),
     )
     if c.character_icon:
         embed.set_thumbnail(url=c.character_icon)
-    if c.card_art:
-        embed.set_image(url=c.card_art)
+    if c.is_duo:
+        embed.title=None
+        embed.set_author(name=title+(' ✨' if card.shiny_slots else ''),icon_url=DUO_ICON)
+    slot=card.art_slot if art_slot is None else art_slot
+    art=c.shiny_arts[slot-1] if slot in card.shiny_slots and 0<slot<=len(c.shiny_arts) else c.card_art
+    if art:embed.set_image(url=art)
     role = f' • Class: {c.role_class}' if c.role_class else ''
     item=ITEM_BY_KEY.get(equipment_key(card))
     embed.add_field(name='Equipment',value=(f'**{item["name"]}** • `{card.equipped_item_id}`\n{item["effect"]}' if item else 'Empty'),inline=False)
@@ -117,7 +129,7 @@ def card_embed(bot: discord.Client, card: CardInstance) -> discord.Embed:
     return embed
 
 
-def template_embed(bot: discord.Client, c: CharacterDef) -> discord.Embed:
+def template_embed(bot: discord.Client, c: CharacterDef, *, art_slot=0) -> discord.Embed:
     stats = {k: int(c.stats.get(k, 0)) for k in ('hp', 'pow', 'qik', 'def', 'rec', 'spd', 'jmp')}
     pow_emoji = resolve_custom_emoji(bot, 'pow')
     qik_emoji = resolve_custom_emoji(bot, 'qik')
@@ -145,14 +157,17 @@ def template_embed(bot: discord.Client, c: CharacterDef) -> discord.Embed:
         ability_block(c, 'C'),
     ]
     embed = discord.Embed(
-        title=f'{c.rarity}★  {display_title(c)}',
+        title=f'{"Duo" if c.is_duo else str(c.rarity)+"★"}  {display_title(c)}'+(f' · Shiny {art_slot}' if art_slot else ''),
         description='\n'.join(body)[:4096],
         color=discord.Color.from_rgb(72, 42, 115),
     )
     if c.character_icon:
         embed.set_thumbnail(url=c.character_icon)
-    if c.card_art:
-        embed.set_image(url=c.card_art)
+    if c.is_duo:
+        embed.title=None
+        embed.set_author(name=display_title(c)+(f' · Shiny {art_slot}' if art_slot else ''),icon_url=DUO_ICON)
+    art=c.shiny_arts[art_slot-1] if 0<art_slot<=len(c.shiny_arts) else c.card_art
+    if art:embed.set_image(url=art)
     role = f' • Class: {c.role_class}' if c.role_class else ''
     embed.set_footer(text=f'Gallery template • Base stats only; no ownership, merges, boons, or banes.{role}')
     return embed

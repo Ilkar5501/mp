@@ -88,7 +88,7 @@ class EventMenu(OwnedView):
         super().__init__(timeout=900);self.cog=cog;self.ctx=ctx;self.uid=ctx.author.id;self.mode=mode;self.index=0;self.build()
     def embed(self):
         rows=EVENT_TEAMS[self.mode];r=rows[self.index];af1=self.mode=='all_for_one'
-        description=('Choose a CPU team. Your main fights with HP ×6.' if af1 else '6v6 • Lower stars gain extra stats.')
+        description=('Choose a CPU team. Your main fights with HP ×6. Earn 1 AF1 Mark per successful run, up to 25/day. Spend Marks with ;fuse.' if af1 else '6v6 • Lower stars gain extra stats. Each challenge has its own 25-shard daily allowance, banking until the weekly reset.')
         em=discord.Embed(title='All For One' if af1 else 'Tiny Titans',description=description,color=PURPLE)
         names=[u['character_id'].replace(' — ',' · ')+' ('+u['lane']+')' for u in r['units']]
         em.add_field(name=f'{self.index+1}. {r["name"]} · {r["tier"]}',value=('**Main:** '+names[0]+'\n**Supports:**\n'+'\n'.join(names[1:])) if af1 else '**Front:**\n'+'\n'.join(names[:3])+'\n**Back:**\n'+'\n'.join(names[3:]),inline=False)
@@ -134,14 +134,18 @@ class EventsCog(commands.Cog):
             if mode=='tiny_titans':
                 name=ITEM_BY_KEY.get(state.get('signature_key'),{}).get('name','Unique Item')
                 em.title=f'Tiny Titans · {outcome} · {state["label"]}'
-                em.add_field(name='Challenge Drop',value=f'1 **{name} Shard**' if earned else 'No drop.',inline=False)
+                em.add_field(name='Challenge Drop',value=f'{earned} **{name} Shard(s)**' if earned else 'No drop.',inline=False)
                 em.set_footer(text='6v6 · Tiny Titans · 50% unique equip shard chance')
                 await send(embed=em,view=view,file=file)
             else:
-                text=f'You: **{result.team_a_hp}/{engine.team_a.max_hp} HP**\nCPU: **{result.team_b_hp}/{engine.team_b.max_hp} HP**\n{result.turns} turns'
-                em=discord.Embed(title=f'{outcome} · {state["label"]}',description=text,color=PURPLE)
+                from ..af1_result import af1_embed
+                from ..battle_render import render_af1_summary
+                a=[(u.card,u.character,u.lane) for u in engine.team_a.units]
+                b=[(u.card,u.character,u.lane) for u in engine.team_b.units]
+                em=af1_embed(result,a,b,ctx.author.display_name,state['label'],earned)
+                file=discord.File(await render_af1_summary(result,a,b,ctx.author.display_name,state['label'],earned),filename='af1_result.png')
                 view=BattleLogLauncher({uid},state['label'],result.log)
-                await send(embed=em,view=view)
+                await send(embed=em,view=view,file=file)
     @commands.hybrid_command(name='tinytitans',aliases=['tt'],description='Play Tiny Titans against boosted 6v6 CPU teams.')
     async def tiny_titans(self,ctx,opponent:int=0):
         if opponent:
