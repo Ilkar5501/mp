@@ -44,7 +44,7 @@ class SakusaEffects:
         # Each initial critical hit gets one roll until a follow-up is earned.
         # Follow-up hits cannot generate another follow-up.
         if attacker is ctx.attacker and critical and not followup and not ctx.temp_flags.get(key):
-            ctx.temp_flags[key]=self.rng.random()<.45
+            ctx.temp_flags[key]=self.rng.random()<.50
         choices=self.dispellable_buffs(ctx,defender)
         if not choices or self.rng.random()>=.5:return
         name=self.rng.choice(choices)

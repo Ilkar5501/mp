@@ -90,12 +90,12 @@ class SakusaTests(unittest.TestCase):
         e.combat(ctx);self.assertEqual(a.attacks_made,1);self.assertEqual(a.crits,1)
         self.assertEqual(e.rng.random.call_count,3)
 
-    def test_each_initial_crit_gets_a_45_percent_roll_until_one_succeeds(self):
+    def test_each_initial_crit_gets_a_50_percent_roll_until_one_succeeds(self):
         for rolls,hits,crits in [
-            ([0,0,.9,0,.44,.99,.99],4,2), # fail first roll; second crit retries
-            ([0,.99,0,.44,.99,.99],4,1),   # only second initial hit crits
-            ([0,0,.44,0,.99,.99],4,2),    # first succeeds; second crit needs no roll
-            ([0,0,.45,0,.99],2,2),        # .45 is outside the success interval
+            ([0,0,.9,0,.49,.99,.99],4,2), # fail first roll; second crit retries
+            ([0,.99,0,.49,.99,.99],4,1),   # only second initial hit crits
+            ([0,0,.49,0,.99,.99],4,2),    # first succeeds; second crit needs no roll
+            ([0,0,.50,0,.99],2,2),        # .50 is outside the success interval
         ]:
             with self.subTest(rolls=rolls):
                 e,a,d,ctx=duel(['Sakusa']);a.base['jmp']=d.base['jmp']+3
@@ -107,7 +107,7 @@ class SakusaTests(unittest.TestCase):
     def test_single_hit_can_earn_single_followup_after_preliminary_failure(self):
         e,a,d,ctx=duel(['Sakusa']);a.base['jmp']=d.base['jmp']+3
         d.add_status('Cannot Counter',False);e.team_b.hp=e.team_b.max_hp=10000
-        e.rng=Mock(random=Mock(side_effect=[.99,0,.44,.99]));e.combat(ctx)
+        e.rng=Mock(random=Mock(side_effect=[.99,0,.49,.99]));e.combat(ctx)
         self.assertFalse(e.attacks_twice(ctx,a));self.assertEqual(a.attacks_made,2)
         self.assertEqual(a.crits,1);self.assertEqual(e.rng.random.call_count,4)
 
