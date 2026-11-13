@@ -11,7 +11,7 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.6 — AF1 rotation and Takeru's challenge team
+## Latest release: v12.1.7 — AF1 rotation and Takeru's challenge team
 
 AF1 now shows each player's next opponent instead of a CPU selector. Victories
 advance through all twelve challenges, looping after the last; losses, draws,
@@ -20,8 +20,8 @@ Pending battles resume their original opponent, and saved AF1 teams are retained
 Winning still advances at the daily Mark cap. Hinata's loss rewards do not advance
 the rotation.
 
-Takeru's Tiny Titans challenge now uses the requested all-+10 roster: Akifumi,
-Oikawa & Kageyama, and Miracle Maker Hinata in front; Takeru, Atsumu, and Daichi
+Takeru's Tiny Titans challenge uses the corrected all-+10 roster: Takeru,
+Daichi, and Oikawa & Kageyama in front; Akifumi, Atsumu, and Miracle Maker Hinata
 in back, with their specified equipment and traits. Zunda Mochi Bento's recipe
 and shard allowance are unchanged. This release includes the earlier v12 updates,
 including SQLite retention and the offline cleanup tool.

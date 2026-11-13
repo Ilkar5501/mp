@@ -109,11 +109,11 @@ class TakeruRosterTests(unittest.TestCase):
         index=next(i for i,r in enumerate(EVENT_TEAMS['tiny_titans']) if r['signature_key']=='takeru_zunda_mochi_bento')
         actual={char.name:(lane,card.merge_level,card.boon_stat,card.bane_stat,card.equipment_key) for card,char,lane in cpu_specs('tiny_titans',index)}
         self.assertEqual(actual,{
-            'Akifumi':('front',10,'spd','hp','rally_footwork'),
+            'Akifumi':('back',10,'spd','hp','rally_footwork'),
             'Oikawa & Kageyama':('front',10,'pow','hp','open_guard'),
-            'Hinata':('front',10,'spd','hp','smelling_salts'),
-            'Takeru':('back',10,'spd','hp','burden_of_expectation'),
+            'Hinata':('back',10,'spd','hp','smelling_salts'),
+            'Takeru':('front',10,'spd','hp','burden_of_expectation'),
             'Atsumu':('back',10,'spd','hp','smelling_salts'),
-            'Daichi':('back',10,'pow','hp','manager_s_good_luck_charm'),
+            'Daichi':('front',10,'pow','hp','manager_s_good_luck_charm'),
         })
         self.assertIn('Hinata — Miracle Maker',{char.id for _,char,_ in cpu_specs('tiny_titans',index)})

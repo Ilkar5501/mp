@@ -226,12 +226,20 @@
       "tier": "Challenge",
       "units": [
         {
-          "character_id": "Akifumi — Supporting Teammate",
+          "character_id": "Takeru — Flashing Salmon",
           "lane": "front",
           "merge": 10,
           "boon": "spd",
           "bane": "hp",
-          "equipment_key": "rally_footwork"
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "manager_s_good_luck_charm"
         },
         {
           "character_id": "Oikawa & Kageyama — Kings of the Playground",
@@ -242,20 +250,12 @@
           "equipment_key": "open_guard"
         },
         {
-          "character_id": "Hinata — Miracle Maker",
-          "lane": "front",
-          "merge": 10,
-          "boon": "spd",
-          "bane": "hp",
-          "equipment_key": "smelling_salts"
-        },
-        {
-          "character_id": "Takeru — Flashing Salmon",
+          "character_id": "Akifumi — Supporting Teammate",
           "lane": "back",
           "merge": 10,
           "boon": "spd",
           "bane": "hp",
-          "equipment_key": "burden_of_expectation"
+          "equipment_key": "rally_footwork"
         },
         {
           "character_id": "Atsumu — Arrogant Genius",
@@ -266,12 +266,12 @@
           "equipment_key": "smelling_salts"
         },
         {
-          "character_id": "Daichi — Steadfast Captain",
+          "character_id": "Hinata — Miracle Maker",
           "lane": "back",
           "merge": 10,
-          "boon": "pow",
+          "boon": "spd",
           "bane": "hp",
-          "equipment_key": "manager_s_good_luck_charm"
+          "equipment_key": "smelling_salts"
         }
       ]
     }
