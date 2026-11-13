@@ -101,7 +101,7 @@ class AF1RotationTests(unittest.IsolatedAsyncioTestCase):
         interaction=SimpleNamespace(response=SimpleNamespace(defer=AsyncMock()),edit_original_response=AsyncMock())
         await next(c for c in view.children if c.label=='Battle').callback(interaction)
         self.assertEqual(view.index,1);interaction.edit_original_response.assert_awaited_once()
-        self.assertEqual(set(EventsCog.all_for_one.clean_params),set())
+        self.assertEqual(set(EventsCog.all_for_one.clean_params),{'slot'})
 
 
 class TakeruRosterTests(unittest.TestCase):

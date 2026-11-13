@@ -79,6 +79,7 @@ class BulkClanShop(OwnedView):
         for kind,label,mult in [('mergecopy','Merge Copy',150),('blessing','Blessing',200),('starpack','Star Pack',100)]:
             for stars in range(1,6):options.append(discord.SelectOption(label=f'{stars}★ {label} — {stars*mult} Clan Dollars',value=f'{kind}|{stars}'))
         options.extend([discord.SelectOption(label='PvP Shield — 750 Clan Dollars',value='pvpshield|1'),discord.SelectOption(label='Shiny Stone — 15,000 Clan Dollars',value='shiny_stone|1')])
+        options.append(discord.SelectOption(label='Duo Blessing — 1,200 Clan Dollars',value='blessing|6'))
         select=discord.ui.Select(placeholder='Choose an item, then enter a quantity',options=options)
         async def choose(i):
             kind,stars=select.values[0].split('|');await i.response.send_modal(QuantityModal(store,uid,kind,int(stars)))

@@ -204,7 +204,7 @@ async def help_cmd(ctx: commands.Context):
             '**Gallery filters:** `;gallery -class support -star 5`, `;gallery -cl sup -st 5`, or `;gallery -eff critical hit`.',
         ]),
         ('HiQ Battler — Battles & Quests', [
-            '**Events:** `;tt` — Tiny Titans unique-shard challenges. `;af1team` / `;af1use slot` — build/select an AF1 team. `;af1` — AF1 PvE. Use `;craft` for unique items; `;eventreset` clears a pending event.',
+            '**Events:** `;tt` — Tiny Titans unique-shard challenges. `;af1team 1–5` — edit five AF1 teams. `;af1 slot` — select that team and immediately battle the next opponent. `;af1` previews; `;af1use slot` selects without battling. `;eventreset` clears a pending event.',
             '`;battle [slot]` — matching-format random CPU. `;pvp [@user] [3v3|6v6]` — shared Elo PvP. Automatic matches avoid both players’ last five rated opponents; only the first targeted match per player/day affects Elo.',
             '`;pvpset` / `;pvps` — choose and lock 3v3 and 6v6 teams. Using normal teams updates unlocked PvP teams; missing or invalid teams are recovered when possible.',
             '`;pvpboard` / `;pvpb` — weekly first-place prizes: week 1, 1★ pack + 400 coins; week 2, 2★ + 300; week 3, 3★ + 200; week 4, 4★ + 100; week 5, 5★. Elo resets after week 5. Weeks end with the Monday training reset.',
@@ -239,7 +239,7 @@ async def help_cmd(ctx: commands.Context):
             '`;clancontest [team slot]` — see today’s featured unit or enter with a 6v6 team; `;contestboard` shows weekly rankings.',
             '`;market [search]` — browse auctions across all servers. `;auction` creates a listing; `;auction <ID>` opens one. `;myauctions` shows your sales. Cards, inventory items, school shards and character shards can be sold for Coins or Clan Dollars; item shards cannot.',
             '`;checkin` — 150 daily Clan Dollars; all five checking in gives everyone another 50.',
-            '`;clanshop`, `;clanbuy mergecopy|blessing|starpack stars` — inventory items. Use `;inv` for IDs.',
+            '`;clanshop`, `;clanbuy mergecopy|blessing|starpack stars` — inventory items. Duo Blessing: 1,200 clan dollars, or `;clanbuy blessing 6`. Apply with `;bless`; find IDs in `;inv`.',
         ]),
     ]
     import math

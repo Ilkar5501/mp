@@ -336,7 +336,7 @@ class CommunityStore(WarActivity):
         return iid
 
     async def buy(self,uid,kind,stars):
-        if kind not in ('mergecopy','blessing','starpack') or stars not in range(1,6):raise ValueError('Choose mergecopy, blessing or starpack with a star rating from 1 to 5.')
+        if kind not in ('mergecopy','blessing','starpack') or (stars not in range(1,6) and not (kind=='blessing' and stars==6)):raise ValueError('Choose a 1–5★ supply, or blessing 6 for a Duo Blessing.')
         cost=stars*{'mergecopy':150,'blessing':200,'starpack':100}[kind]
         async with self.tx() as c:
             if not await self.clan(user_id=uid,conn=c):raise ValueError('Join a clan to use its shop.')

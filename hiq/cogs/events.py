@@ -92,7 +92,7 @@ class EventMenu(OwnedView):
         em=discord.Embed(title='All For One' if af1 else 'Tiny Titans',description=description,color=PURPLE)
         names=[u['character_id'].replace(' — ',' · ')+' ('+u['lane']+')' for u in r['units']]
         em.add_field(name=f'{self.index+1}. {r["name"]} · {r["tier"]}',value=('**Main:** '+names[0]+'\n**Supports:**\n'+'\n'.join(names[1:])) if af1 else '**Front:**\n'+'\n'.join(names[:3])+'\n**Back:**\n'+'\n'.join(names[3:]),inline=False)
-        em.set_footer(text='Main HP ×6 • ;af1team to edit' if af1 else 'Clear: 50% unique shard • Craft with ;craft')
+        em.set_footer(text='Main HP ×6 • ;af1team 1–5 to edit • ;af1 1–5 to select and battle' if af1 else 'Clear: 50% unique shard • Craft with ;craft')
         return em
     def build(self):
         self.clear_items()
@@ -115,14 +115,14 @@ class EventMenu(OwnedView):
 
 class EventsCog(commands.Cog):
     def __init__(self,bot):self.bot=bot;self.store=EventStore(bot.db);self.locks={}
-    async def run_event(self,ctx,mode,index,interaction=None,*,expected_index=None):
+    async def run_event(self,ctx,mode,index,interaction=None,*,expected_index=None,af1_slot=None):
         uid=ctx.author.id
         send=interaction.followup.send if interaction else ctx.send
         lock=self.locks.setdefault(uid,asyncio.Lock())
         if lock.locked():await send('Your event battle is running.');return
         async with lock:
             try:
-                row=await self.store.start(uid,mode,index,expected_index=expected_index);state=row['state']
+                row=await self.store.start(uid,mode,index,expected_index=expected_index,af1_slot=af1_slot);state=row['state']
                 cls=TinyTitansEngine if mode=='tiny_titans' else AllForOneEngine
                 engine=cls(restore_specs(state['a']),restore_specs(state['b']),seed=state['seed'],name_a=ctx.author.display_name,name_b=state['label'],owner_a=uid)
                 file=None
@@ -148,6 +148,7 @@ class EventsCog(commands.Cog):
                 a=[(u.card,u.character,u.lane) for u in engine.team_a.units]
                 b=[(u.card,u.character,u.lane) for u in engine.team_b.units]
                 em=af1_embed(result,a,b,ctx.author.display_name,state['label'],earned)
+                if state.get('af1_slot'):em.add_field(name='Your AF1 Team',value=f'Slot {state["af1_slot"]} · {state["af1_team_name"]}',inline=False)
                 if capped:em.add_field(name='Reward allowance reached',value='You have earned all 25 AF1 Marks available today. No additional Marks awarded.',inline=False)
                 file=discord.File(await render_af1_summary(result,a,b,ctx.author.display_name,state['label'],earned),filename='af1_result.png')
                 view=BattleLogLauncher({uid},state['label'],result.log)
@@ -158,8 +159,10 @@ class EventsCog(commands.Cog):
             await ctx.defer();await self.run_event(ctx,'tiny_titans',opponent-1)
         else:
             view=EventMenu(self,ctx,'tiny_titans');await ctx.send(embed=view.embed(),view=view)
-    @commands.hybrid_command(name='allforone',aliases=['af1'],description='Progress through All For One CPU challenges in order.')
-    async def all_for_one(self,ctx):
+    @commands.hybrid_command(name='allforone',aliases=['af1'],description='View the next AF1 challenge, or select team slot 1–5 and battle.')
+    async def all_for_one(self,ctx,slot:int=None):
+        if slot is not None:
+            await ctx.defer();await self.run_event(ctx,'all_for_one',0,af1_slot=slot);return
         index=await self.store.af1_opponent(ctx.author.id)
         view=EventMenu(self,ctx,'all_for_one',index);await ctx.send(embed=view.embed(),view=view)
     @commands.hybrid_command(name='af1team',description='Create or edit one of five saved AF1 teams.')

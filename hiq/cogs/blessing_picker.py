@@ -18,14 +18,14 @@ class BlessingPicker(SafeView):
         item=next((it for it in self.blessings if it['id']==self.item_id),None)
         return [c for c in self.cards if item and CHAR_BY_ID[c.character_id].rarity==item['stars']]
     def embed(self):
-        e=discord.Embed(title='Blessing — Choose Item & Card',description='Choose a Blessing and a card with the same star rating. Then choose the boon and bane. The Blessing is consumed only when you confirm the new nature.',color=PURPLE)
+        e=discord.Embed(title='Blessing — Choose Item & Card',description='Choose a Blessing and a matching card. Duo Blessings apply to Duo cards; other Blessings match by star rating. Then choose the boon and bane. The Blessing is consumed only when you confirm the new nature.',color=PURPLE)
         if self.item_id:e.add_field(name='Blessing',value=self.item_id)
         if self.card_id:e.add_field(name='Card',value=display_title(CHAR_BY_ID[next(c for c in self.cards if c.instance_id==self.card_id).character_id])+f' • `{self.card_id}`',inline=False)
         return e
     def build(self):
         self.clear_items();ipages=max(1,(len(self.blessings)+24)//25);self.item_page=min(self.item_page,ipages-1)
         items=self.blessings[self.item_page*25:(self.item_page+1)*25]
-        picker=discord.ui.Select(placeholder='Choose a Blessing',options=[discord.SelectOption(label=f'{it["stars"]}★ Blessing',description=it['id'],value=it['id'],default=it['id']==self.item_id) for it in items] or [discord.SelectOption(label='No owned Blessings',value='__none__')],disabled=not bool(items),row=0)
+        picker=discord.ui.Select(placeholder='Choose a Blessing',options=[discord.SelectOption(label='Duo Blessing' if it['stars']==6 else f'{it["stars"]}★ Blessing',description=it['id'],value=it['id'],default=it['id']==self.item_id) for it in items] or [discord.SelectOption(label='No owned Blessings',value='__none__')],disabled=not bool(items),row=0)
         async def item_cb(i):self.item_id=picker.values[0];self.card_id=None;self.card_page=0;self.build();await i.response.edit_message(embed=self.embed(),view=self)
         picker.callback=item_cb;self.add_item(picker)
         cards=self.matching_cards();cpages=max(1,(len(cards)+24)//25);self.card_page=min(self.card_page,cpages-1)

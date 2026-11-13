@@ -80,6 +80,7 @@ class EventStore(CommunityStore):
         return specs
 
     async def use(self,uid,slot):
+        if not 1<=slot<=5:raise ValueError('Choose AF1 slot 1–5.')
         async with self.tx() as c:
             row=self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
             if not row:raise ValueError('Create this team with ;af1team first.')
@@ -96,12 +97,15 @@ class EventStore(CommunityStore):
             row=await self.one(c,'SELECT next_index FROM af1_cursor WHERE owner_id=?',(uid,))
             return (row['next_index'] if row else 0)%len(EVENT_TEAMS['all_for_one'])
 
-    async def start(self,uid,mode,index=0,*,expected_index=None):
+    async def start(self,uid,mode,index=0,*,expected_index=None,af1_slot=None):
+        if af1_slot is not None and (mode!='all_for_one' or not 1<=af1_slot<=5):raise ValueError('Choose AF1 slot 1–5.')
         if mode not in ('tiny_titans','all_for_one') or (mode=='tiny_titans' and not 0<=index<len(EVENT_TEAMS[mode])):raise ValueError('Choose a CPU team from the menu.')
         async with self.tx() as c:
             old=self.unpack(await self.one(c,"SELECT * FROM event_runs WHERE owner_id=? AND status='running'",(uid,)))
             if old:
                 if old['mode']!=mode:raise ValueError('Resume your other event with ;tt or ;af1, or use ;eventreset.')
+                if af1_slot is not None and old['state'].get('af1_slot')!=af1_slot:
+                    raise ValueError('A pending AF1 battle already has its team saved. Resume it with ;af1, or use ;eventreset before switching slots.')
                 return old
             recent=await self.one(c,'SELECT created_at FROM event_runs WHERE owner_id=? AND mode=? ORDER BY created_at DESC LIMIT 1',(uid,mode))
             if recent:
@@ -115,9 +119,11 @@ class EventStore(CommunityStore):
                 index=(cursor['next_index'] if cursor else 0)%len(EVENT_TEAMS[mode])
                 if expected_index is not None and expected_index!=index:raise ValueError('Your AF1 rotation changed. Open ;af1 again to see the next opponent.')
                 pref=await self.one(c,'SELECT af1_slot FROM event_wallets WHERE owner_id=?',(uid,))
-                team=self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,pref['af1_slot'])))
-                if not team:raise ValueError('Create your team with ;af1team first.')
+                selected_slot=pref['af1_slot'] if af1_slot is None else af1_slot
+                team=self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,selected_slot)))
+                if not team:raise ValueError(f'Create AF1 team {selected_slot} with ;af1team {selected_slot} first.')
                 a=await self._specs(c,uid,team['entries'],allow_empty_supports=True);validate_af1(a,complete=True)
+                await c.execute('UPDATE event_wallets SET af1_slot=? WHERE owner_id=?',(selected_slot,uid))
             else:
                 user=await self.one(c,'SELECT active_team_slot FROM users WHERE discord_id=?',(uid,))
                 raw=await self.one(c,'SELECT * FROM saved_teams WHERE owner_id=? AND slot=?',(uid,user['active_team_slot'])) if user else None
@@ -129,6 +135,7 @@ class EventStore(CommunityStore):
             state=dict(a=snapshot_specs(a),b=snapshot_specs(cpu_specs(mode,index)),seed=secrets.randbits(62),opponent=index,
                        label=challenge['name'],reward_policy='signature_drop_v2',signature_key=challenge.get('signature_key'),
                        drop_roll=secrets.randbelow(10000)<int(10000*EVENT_TEAMS.get('signature_drop_chance',.5)))
+            if mode=='all_for_one':state.update(af1_slot=selected_slot,af1_team_name=team['name'])
             sid='event-'+uuid.uuid4().hex[:16]
             await c.execute('INSERT INTO event_runs VALUES (?,?,?,\'running\',?,NULL,0,?)',(sid,uid,mode,json.dumps(state),now()))
             return self.unpack(await self.one(c,'SELECT * FROM event_runs WHERE id=?',(sid,)))

@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS af1_daily(owner_id INTEGER NOT NULL,day TEXT NOT NULL
 class GameplayStore(CommunityStore):
     async def buy_clan_supply(self,uid,kind,stars=1,quantity=1):
         if kind in ('pvpshield','shiny_stone'):return await self.buy_consumable(uid,kind,quantity,clan=True)
-        if kind not in ('mergecopy','blessing','starpack') or not 1<=stars<=5 or not 1<=quantity<=100:raise ValueError('Choose a valid supply and quantity from 1 to 100.')
+        if kind not in ('mergecopy','blessing','starpack') or (not 1<=stars<=5 and not (kind=='blessing' and stars==6)) or not 1<=quantity<=100:raise ValueError('Choose a 1–5★ supply or Duo Blessing, and quantity from 1 to 100.')
         cost=stars*{'mergecopy':150,'blessing':200,'starpack':100}[kind]*quantity
         async with self.tx() as c:
             if not await self.clan(user_id=uid,conn=c):raise ValueError('Join a clan to use its shop.')

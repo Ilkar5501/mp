@@ -11,7 +11,22 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.8 — Pack safety and combat fixes
+## Latest release: v12.1.9 — AF1 team shortcuts and Duo Blessings
+
+Build or edit five saved AF1 teams with `;af1team 1` through `;af1team 5`.
+Use `;af1 1` through `;af1 5` to select that slot and immediately fight the next
+opponent in your existing rotation. Plain `;af1` still opens the preview;
+`;af1use slot` selects without battling. Selection, the battle snapshot, and the
+active slot are saved together. A pending run keeps its original team: resume
+with `;af1`, or abandon it with `;eventreset` before switching slots.
+
+The clan shop now offers a Duo Blessing for 1,200 Clan Dollars, priced as six
+stars. Choose it in `;clanshop` and enter a quantity, or buy one with
+`;clanbuy blessing 6`. It appears as Duo Blessing in inventory and the `;bless`
+picker and applies only to Duo cards. Shiny cards retain their lack of a bane.
+All previous fixes, AF1 rotation, and SQLite retention/cleanup tools are included.
+
+## v12.1.8 — Pack safety and combat fixes
 
 Free daily packs and paid Base, Position, and School packs now commit the claim
 or payment, pity state, serial numbers, and all cards in one transaction. Overlapping
