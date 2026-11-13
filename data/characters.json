@@ -3635,7 +3635,7 @@
       "jmp": 37,
       "bst": 352
     },
-    "ult_cd": 3,
+    "ult_cd": 2,
     "abilities": {
       "U": {
         "name": "Young & Reckless",
@@ -3644,7 +3644,7 @@
       },
       "A": {
         "name": "Relentless Pursuit",
-        "text": "Unit can counterattack regardless of foe's attack type. If foe initiates combat, foe can make a follow-up attack before unit can counterattack; also inflicts Pow/Qik−4 on foe and, if foe can make a follow-up attack, reduces damage from all of foe's attacks by 30%.",
+        "text": "Unit can counterattack regardless of foe's attack type. If foe initiates combat, foe can make a follow-up attack before unit can counterattack; also inflicts Pow/Qik/Def−4 on foe during combat and, if foe can make a follow-up attack, reduces damage from all of foe's attacks by 30%.",
         "timing": "COMBAT_LIVE"
       },
       "B": {

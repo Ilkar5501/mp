@@ -11,7 +11,16 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.9 — AF1 team shortcuts and Duo Blessings
+## Latest release: v12.1.10 — Kings of the Playground buff
+
+The Oikawa & Kageyama Duo's Young & Reckless Ultimate now has cooldown 2, down
+from 3. When the foe initiates combat, Relentless Pursuit inflicts Pow/Qik/Def−4
+on that foe for that combat only. This is an in-combat modifier, not a visible
+penalty that persists afterward. Its counterattack, follow-up order, and damage
+reduction conditions are unchanged. All previous updates and SQLite cleanup
+tools remain included.
+
+## v12.1.9 — AF1 team shortcuts and Duo Blessings
 
 Build or edit five saved AF1 teams with `;af1team 1` through `;af1team 5`.
 Use `;af1 1` through `;af1 5` to select that slot and immediately fight the next

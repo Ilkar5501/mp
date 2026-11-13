@@ -44,7 +44,7 @@ class YouthEffects:
         if 'Demand' in u.statuses:
             for stat in ('pow','def','rec','spd','jmp'):m[stat]+=2
         if foe.title=='Kings of the Playground' and not (ctx.attacker is foe) and self.skill_enabled(foe,'A'):
-            m['pow']-=4;m['qik']-=4
+            m['pow']-=4;m['qik']-=4;m['def']-=4
         for ally in self.team(u).units:
             if ally is u or not self.source_allowed(ctx,ally):continue
             if ally.title=='Old Friend' and self.skill_enabled(ally,'C') and u.character.position in ('OP','WS'):

@@ -30,6 +30,32 @@ def engine(*ids,foe='Kai — Solid Receive'):
 
 
 class YouthCombatTests(unittest.TestCase):
+    def test_duo_ultimate_starts_and_resets_at_two_cooldown(self):
+        e,a,d,ctx=engine(DUO)
+        self.assertEqual((a.character.ult_cd,a.max_cd,a.cd),(2,2,2))
+        a.cd=0
+        self.assertTrue(e.trigger_ultimate(a,ctx,'offense'))
+        self.assertEqual(a.cd,2)
+
+    def test_relentless_pursuit_penalizes_pow_qik_def_only_during_defending_combat(self):
+        e,a,d,ctx=engine(DUO,HINATA)
+        defending=CombatContext(e,d,a,d,a)
+        mods=dict.fromkeys(('pow','qik','def','rec','spd','jmp'),0)
+        e.youth_mods(defending,d,a,d.base,a.base,True,mods)
+        self.assertEqual(mods,dict(pow=-4,qik=-4,**{'def':-4},rec=0,spd=0,jmp=0))
+        active=e.combat_stats(defending)[d.uid]
+        original=e.skill_enabled
+        with patch.object(e,'skill_enabled',side_effect=lambda u,slot:False if u is a and slot=='A' else original(u,slot)):
+            inactive=e.combat_stats(defending)[d.uid]
+        self.assertEqual(active['def'],inactive['def']-4)
+        self.assertFalse(d.visible_debuffs)
+        # Neither the Duo initiating nor an enemy attacking a different ally retains it.
+        for other in (ctx,CombatContext(e,d,e.team_a.units[1],d,e.team_a.units[1])):
+            mods=dict.fromkeys(('pow','qik','def','rec','spd','jmp'),0)
+            foe=a if other is ctx else e.team_a.units[1]
+            e.youth_mods(other,d,foe,d.base,foe.base,other.attacker is d,mods)
+            self.assertEqual((mods['pow'],mods['qik'],mods['def']),(0,0,0))
+
     def test_component_name_searches_include_duo_without_broadening_exact_variant_queries(self):
         from hiq.search import filter_characters,filter_cards,parse_filters
         for name in ('Oikawa','Kageyama'):
