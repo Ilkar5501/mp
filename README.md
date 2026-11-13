@@ -11,7 +11,14 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.10 — Kings of the Playground buff
+## Latest release: v12.1.11 — Rarity embed colors
+
+Owned character cards, in-bot gallery cards, and their skill-note embeds now
+share rarity colors: 1★ dark brown (#5C3317), 2★ red orange (#FF4500), 3★ bronze
+(#CD7F32), 4★ silver (#C0C0C0), 5★ gold (#FFD700), and Duos light cyan (#89DEEF).
+Shiny artwork changes retain the same rarity color. Previous updates remain included.
+
+## v12.1.10 — Kings of the Playground buff
 
 The Oikawa & Kageyama Duo's Young & Reckless Ultimate now has cooldown 2, down
 from 3. When the foe initiates combat, Relentless Pursuit inflicts Pow/Qik/Def−4

@@ -15,6 +15,12 @@ from .items import ITEM_BY_KEY
 DIVIDER = '────────────────────────'
 DUO_EMOJI='<:duo:1570428970460250212>'
 DUO_ICON='https://cdn.discordapp.com/emojis/1570428970460250212.png'
+RARITY_COLORS={1:0x5C3317,2:0xFF4500,3:0xCD7F32,4:0xC0C0C0,5:0xFFD700}
+DUO_COLOR=0x89DEEF
+
+
+def rarity_color(c: CharacterDef) -> discord.Color:
+    return discord.Color(DUO_COLOR if c.is_duo else RARITY_COLORS.get(c.rarity,0x482A73))
 
 
 def rarity_display(c):
@@ -112,7 +118,7 @@ def card_embed(bot: discord.Client, card: CardInstance, *, art_slot=None) -> dis
     embed = discord.Embed(
         title=f'{"Duo" if c.is_duo else str(c.rarity)+"★"}  {title}'+(' ✨' if card.shiny_slots else ''),
         description='\n'.join(body)[:4096],
-        color=discord.Color.from_rgb(72, 42, 115),
+        color=rarity_color(c),
     )
     if c.character_icon:
         embed.set_thumbnail(url=c.character_icon)
@@ -162,7 +168,7 @@ def template_embed(bot: discord.Client, c: CharacterDef, *, art_slot=0) -> disco
     embed = discord.Embed(
         title=f'{"Duo" if c.is_duo else str(c.rarity)+"★"}  {display_title(c)}'+(f' · Shiny {art_slot}' if art_slot else ''),
         description='\n'.join(body)[:4096],
-        color=discord.Color.from_rgb(72, 42, 115),
+        color=rarity_color(c),
     )
     if c.character_icon:
         embed.set_thumbnail(url=c.character_icon)

@@ -2,7 +2,8 @@
 import re
 import discord
 from .data import CHARACTERS
-from .ui import EmbedPager, PURPLE
+from .ui import EmbedPager
+from .cards import rarity_color
 
 
 def explanations(character):
@@ -31,7 +32,7 @@ def add_learn_more(view,character):
     if not notes:return
     button=discord.ui.Button(label='Click to learn more',style=discord.ButtonStyle.secondary,row=2,custom_id='card:learnmore')
     async def show(interaction):
-        pages=[discord.Embed(title=f'{character.name} — {name}',description=text,color=PURPLE) for name,text in notes]
+        pages=[discord.Embed(title=f'{character.name} — {name}',description=text,color=rarity_color(character)) for name,text in notes]
         pager=EmbedPager(pages,interaction.user.id)
         await interaction.response.send_message(embed=pager.embed(),view=pager,ephemeral=True)
     button.callback=show;view.add_item(button)
