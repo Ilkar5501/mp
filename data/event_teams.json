@@ -226,52 +226,52 @@
       "tier": "Challenge",
       "units": [
         {
-          "character_id": "Takeru — Flashing Salmon",
+          "character_id": "Akifumi — Supporting Teammate",
           "lane": "front",
           "merge": 10,
           "boon": "spd",
           "bane": "hp",
-          "equipment_key": "takeru_zunda_mochi_bento"
+          "equipment_key": "rally_footwork"
+        },
+        {
+          "character_id": "Oikawa & Kageyama — Kings of the Playground",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "hp",
+          "equipment_key": "open_guard"
+        },
+        {
+          "character_id": "Hinata — Miracle Maker",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "smelling_salts"
+        },
+        {
+          "character_id": "Takeru — Flashing Salmon",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "burden_of_expectation"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "smelling_salts"
         },
         {
           "character_id": "Daichi — Steadfast Captain",
-          "lane": "front",
+          "lane": "back",
           "merge": 10,
-          "boon": "def",
+          "boon": "pow",
           "bane": "hp",
           "equipment_key": "manager_s_good_luck_charm"
-        },
-        {
-          "character_id": "Kuroo — Black Cat's Gambit",
-          "lane": "front",
-          "merge": 10,
-          "boon": "def",
-          "bane": "hp",
-          "equipment_key": "loaded_reception"
-        },
-        {
-          "character_id": "Suga — Relentless Setter",
-          "lane": "back",
-          "merge": 10,
-          "boon": "spd",
-          "bane": "hp",
-          "equipment_key": "suga_mapo_tofu_bowls"
-        },
-        {
-          "character_id": "Kageyama — Prodigious Talent",
-          "lane": "back",
-          "merge": 10,
-          "boon": "jmp",
-          "bane": "hp",
-          "equipment_key": "loaded_approach"
-        },
-        {
-          "character_id": "Kanbayashi — Emergency Recovery",
-          "lane": "back",
-          "merge": 10,
-          "boon": "rec",
-          "bane": "hp",
-          "equipment_key": "water_bottle"
         }
       ]
     }

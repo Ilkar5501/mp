@@ -84,11 +84,11 @@ class AF1TeamView(OwnedView):
         use.callback=activate;self.add_item(use)
 
 class EventMenu(OwnedView):
-    def __init__(self,cog,ctx,mode):
-        super().__init__(timeout=900);self.cog=cog;self.ctx=ctx;self.uid=ctx.author.id;self.mode=mode;self.index=0;self.build()
+    def __init__(self,cog,ctx,mode,index=0):
+        super().__init__(timeout=900);self.cog=cog;self.ctx=ctx;self.uid=ctx.author.id;self.mode=mode;self.index=index;self.build()
     def embed(self):
         rows=EVENT_TEAMS[self.mode];r=rows[self.index];af1=self.mode=='all_for_one'
-        description=('Choose a CPU team. Your main fights with HP ×6. Earn 1 AF1 Mark per successful run, up to 25/day. Spend Marks with ;fuse.' if af1 else '6v6 • Lower stars gain extra stats. Each challenge has its own 25-shard daily allowance, banking until the weekly reset.')
+        description=('Defeat each CPU team in order to advance. Losses keep the same opponent; the list repeats after the final challenge. Your main fights with HP ×6. Earn 1 AF1 Mark per successful run, up to 25/day. Spend Marks with ;fuse.' if af1 else '6v6 • Lower stars gain extra stats. Each challenge has its own 25-shard daily allowance, banking until the weekly reset.')
         em=discord.Embed(title='All For One' if af1 else 'Tiny Titans',description=description,color=PURPLE)
         names=[u['character_id'].replace(' — ',' · ')+' ('+u['lane']+')' for u in r['units']]
         em.add_field(name=f'{self.index+1}. {r["name"]} · {r["tier"]}',value=('**Main:** '+names[0]+'\n**Supports:**\n'+'\n'.join(names[1:])) if af1 else '**Front:**\n'+'\n'.join(names[:3])+'\n**Back:**\n'+'\n'.join(names[3:]),inline=False)
@@ -96,12 +96,16 @@ class EventMenu(OwnedView):
         return em
     def build(self):
         self.clear_items()
-        select=discord.ui.Select(placeholder='Choose a CPU team',options=[discord.SelectOption(label=f'{j+1}. {r["name"]}',description=r['tier'],value=str(j),default=j==self.index) for j,r in enumerate(EVENT_TEAMS[self.mode])],row=0)
-        async def choose(i):self.index=int(select.values[0]);self.build();await i.response.edit_message(embed=self.embed(),view=self)
-        select.callback=choose;self.add_item(select)
+        if self.mode=='tiny_titans':
+            select=discord.ui.Select(placeholder='Choose a CPU team',options=[discord.SelectOption(label=f'{j+1}. {r["name"]}',description=r['tier'],value=str(j),default=j==self.index) for j,r in enumerate(EVENT_TEAMS[self.mode])],row=0)
+            async def choose(i):self.index=int(select.values[0]);self.build();await i.response.edit_message(embed=self.embed(),view=self)
+            select.callback=choose;self.add_item(select)
         play=discord.ui.Button(label='Battle',style=discord.ButtonStyle.success,row=1)
         async def battle(i):
-            await i.response.defer();await self.cog.run_event(self.ctx,self.mode,self.index,interaction=i)
+            await i.response.defer();await self.cog.run_event(self.ctx,self.mode,self.index,interaction=i,expected_index=self.index if self.mode=='all_for_one' else None)
+            if self.mode=='all_for_one':
+                self.index=await self.cog.store.af1_opponent(self.uid);self.build()
+                await i.edit_original_response(embed=self.embed(),view=self)
         play.callback=battle;self.add_item(play)
         rules=discord.ui.Button(label='Rules',row=1)
         async def explain(i):
@@ -111,14 +115,14 @@ class EventMenu(OwnedView):
 
 class EventsCog(commands.Cog):
     def __init__(self,bot):self.bot=bot;self.store=EventStore(bot.db);self.locks={}
-    async def run_event(self,ctx,mode,index,interaction=None):
+    async def run_event(self,ctx,mode,index,interaction=None,*,expected_index=None):
         uid=ctx.author.id
         send=interaction.followup.send if interaction else ctx.send
         lock=self.locks.setdefault(uid,asyncio.Lock())
         if lock.locked():await send('Your event battle is running.');return
         async with lock:
             try:
-                row=await self.store.start(uid,mode,index);state=row['state']
+                row=await self.store.start(uid,mode,index,expected_index=expected_index);state=row['state']
                 cls=TinyTitansEngine if mode=='tiny_titans' else AllForOneEngine
                 engine=cls(restore_specs(state['a']),restore_specs(state['b']),seed=state['seed'],name_a=ctx.author.display_name,name_b=state['label'],owner_a=uid)
                 file=None
@@ -154,12 +158,10 @@ class EventsCog(commands.Cog):
             await ctx.defer();await self.run_event(ctx,'tiny_titans',opponent-1)
         else:
             view=EventMenu(self,ctx,'tiny_titans');await ctx.send(embed=view.embed(),view=view)
-    @commands.hybrid_command(name='allforone',aliases=['af1'],description='Play All For One against CPU mains and supports.')
-    async def all_for_one(self,ctx,opponent:int=0):
-        if opponent:
-            await ctx.defer();await self.run_event(ctx,'all_for_one',opponent-1)
-        else:
-            view=EventMenu(self,ctx,'all_for_one');await ctx.send(embed=view.embed(),view=view)
+    @commands.hybrid_command(name='allforone',aliases=['af1'],description='Progress through All For One CPU challenges in order.')
+    async def all_for_one(self,ctx):
+        index=await self.store.af1_opponent(ctx.author.id)
+        view=EventMenu(self,ctx,'all_for_one',index);await ctx.send(embed=view.embed(),view=view)
     @commands.hybrid_command(name='af1team',description='Create or edit one of five saved AF1 teams.')
     async def af1team(self,ctx,slot:int=1,*,name:str=''):
         team=await self.store.team(ctx.author.id,slot,name);cards=await self.bot.db.get_cards(ctx.author.id)

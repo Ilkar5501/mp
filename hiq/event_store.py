@@ -9,6 +9,8 @@ from .shard_balances import balance,credit
 from .tournament import snapshot_specs,restore_specs
 
 SCHEMA='''
+CREATE TABLE IF NOT EXISTS af1_cursor (
+ owner_id INTEGER PRIMARY KEY,next_index INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS af1_teams (
  owner_id INTEGER NOT NULL,slot INTEGER NOT NULL CHECK(slot BETWEEN 1 AND 5),
  name TEXT NOT NULL,entries_json TEXT NOT NULL,revision INTEGER NOT NULL DEFAULT 0,
@@ -86,8 +88,16 @@ class EventStore(CommunityStore):
             await c.execute('UPDATE event_wallets SET af1_slot=? WHERE owner_id=?',(slot,uid))
             return row
 
-    async def start(self,uid,mode,index):
-        if mode not in ('tiny_titans','all_for_one') or not 0<=index<len(EVENT_TEAMS[mode]):raise ValueError('Choose a CPU team from the menu.')
+    async def af1_opponent(self,uid):
+        """Preview a pending battle first, otherwise the persistent rotation."""
+        async with self.db.connect() as c:
+            pending=await self.one(c,"SELECT state_json FROM event_runs WHERE owner_id=? AND mode='all_for_one' AND status='running'",(uid,))
+            if pending:return json.loads(pending['state_json']).get('opponent',0)%len(EVENT_TEAMS['all_for_one'])
+            row=await self.one(c,'SELECT next_index FROM af1_cursor WHERE owner_id=?',(uid,))
+            return (row['next_index'] if row else 0)%len(EVENT_TEAMS['all_for_one'])
+
+    async def start(self,uid,mode,index=0,*,expected_index=None):
+        if mode not in ('tiny_titans','all_for_one') or (mode=='tiny_titans' and not 0<=index<len(EVENT_TEAMS[mode])):raise ValueError('Choose a CPU team from the menu.')
         async with self.tx() as c:
             old=self.unpack(await self.one(c,"SELECT * FROM event_runs WHERE owner_id=? AND status='running'",(uid,)))
             if old:
@@ -101,6 +111,9 @@ class EventStore(CommunityStore):
                 if remaining>0:raise ValueError(f'Next event battle in {remaining}s.')
             await c.execute('INSERT OR IGNORE INTO event_wallets(owner_id) VALUES (?)',(uid,))
             if mode=='all_for_one':
+                cursor=await self.one(c,'SELECT next_index FROM af1_cursor WHERE owner_id=?',(uid,))
+                index=(cursor['next_index'] if cursor else 0)%len(EVENT_TEAMS[mode])
+                if expected_index is not None and expected_index!=index:raise ValueError('Your AF1 rotation changed. Open ;af1 again to see the next opponent.')
                 pref=await self.one(c,'SELECT af1_slot FROM event_wallets WHERE owner_id=?',(uid,))
                 team=self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,pref['af1_slot'])))
                 if not team:raise ValueError('Create your team with ;af1team first.')
@@ -153,6 +166,10 @@ class EventStore(CommunityStore):
                     reward=1
                 else:state['reward_status']='capped'
             if reward:state['reward_status']='awarded'
+            if row['mode']=='all_for_one' and result['winner_side']=='A':
+                # Settlement is atomic and repeat-safe, including legacy pending battles.
+                next_index=(state.get('opponent',0)+1)%len(EVENT_TEAMS['all_for_one'])
+                await c.execute('INSERT INTO af1_cursor VALUES (?,?) ON CONFLICT(owner_id) DO UPDATE SET next_index=excluded.next_index',(uid,next_index))
             await c.execute("UPDATE event_runs SET status='done',result_json=?,earned=?,state_json=? WHERE id=?",(json.dumps(result),reward,json.dumps(state),sid))
             return reward
 

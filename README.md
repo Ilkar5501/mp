@@ -11,7 +11,22 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.5 — Daisho, Takeru and Zunda Mochi Bento
+## Latest release: v12.1.6 — AF1 rotation and Takeru's challenge team
+
+AF1 now shows each player's next opponent instead of a CPU selector. Victories
+advance through all twelve challenges, looping after the last; losses, draws,
+and abandoned battles keep the same opponent. Progress survives restarts.
+Pending battles resume their original opponent, and saved AF1 teams are retained.
+Winning still advances at the daily Mark cap. Hinata's loss rewards do not advance
+the rotation.
+
+Takeru's Tiny Titans challenge now uses the requested all-+10 roster: Akifumi,
+Oikawa & Kageyama, and Miracle Maker Hinata in front; Takeru, Atsumu, and Daichi
+in back, with their specified equipment and traits. Zunda Mochi Bento's recipe
+and shard allowance are unchanged. This release includes the earlier v12 updates,
+including SQLite retention and the offline cleanup tool.
+
+## v12.1.5 — Daisho, Takeru and Zunda Mochi Bento
 
 Daisho's Ultimate no longer checks Speed; its guaranteed follow-up requires a
 visible stat penalty when the Ultimate triggers. Takeru retains the original
@@ -97,7 +112,7 @@ See [WISPBYTE-11.7.0.md](WISPBYTE-11.7.0.md) for the shared monthly PvP Elo ladd
 
 See [WISPBYTE-11.6.3.md](WISPBYTE-11.6.3.md) for `;links`, inventory search and 25-entry pages. Sakusa’s per-critical-hit follow-up checks (now 50% in v12) and the website tier maker from v11.6.2 remain included. His 50 Pow, supplied artwork and position-based equipment restrictions from v11.6.1 are retained. The event modes and signatures from [v11.6.0](WISPBYTE-11.6.0.md) remain included. `;tt` opens four Tiny Titans 6v6 CPU challenges. Each clear has a 50% chance to drop one matching signature shard. There is no event shop. `;craft` makes each signature for 25 item shards, 25 matching character shards and 500 coins. `;items` shows all four signatures and their effects.
 
-`;af1team` edits five saved AF1 teams, `;af1use <slot>` selects one, and `;af1` opens twelve CPU opponents. AF1 uses main HP ×6, inactive supports in unrestricted rows, PT self-targeting and two effectless Guiding Break stacks. Fukunaga is banned from AF1 and legal in Tiny Titans. `;eventreset` abandons a pending event without rewards. AF1 currently awards no currency.
+`;af1team` edits five saved AF1 teams, `;af1use <slot>` selects one, and `;af1` shows your next CPU opponent in a persistent twelve-team rotation. Win to advance; losses and abandoned runs keep the same opponent. After the final team, the rotation repeats. AF1 uses main HP ×6, inactive supports in unrestricted rows, PT self-targeting and two effectless Guiding Break stacks. Fukunaga is banned from AF1 and legal in Tiny Titans. `;eventreset` abandons a pending event without rewards. AF1 awards 1 Mark per successful run, up to 25 per day, for Duo fusion.
 
 Sakusa — Coiled Precision and the Suga, Lev, Aran and Tanaka signatures are implemented. Sakusa gains Perfectionism after combat and uses independent preliminary and actual-hit crit rolls. His portrait and icon are included. Ranked PvP now uses the shared monthly ladder described above.
 
