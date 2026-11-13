@@ -225,7 +225,7 @@ class RaidCog(commands.Cog):
         st=row['state'];a,b=restore_specs(st['a']),restore_specs(st['b']);result=restore_result(st['result']);cpu=st.get('opponent_name') or st['b'][0]['card']['original_owner_name']
         e=self.bot.get_cog('BattleCog')._result_embed(result,st['username'],cpu,a,b);e.title=f'Raid • {st["theme"].title()} • {st.get("difficulty","hard").title()} • '+('Victory' if result.winner_side=='A' else 'Draw' if result.winner_side=='draw' else 'Defeat')
         reward=st.get('reward');text='No drop.'
-        if result.winner_side=='A' and not reward:
+        if (result.winner_side=='A' or st.get('reward_attempted')) and not reward:
             check=st.get('reward_check',{})
             if st.get('reward_status')=='all_capped' and check.get('all_capped') is True and check.get('candidates') and all(r.get('remaining')==0 for r in check['candidates']):
                 text='All rewards available in this raid are capped.'

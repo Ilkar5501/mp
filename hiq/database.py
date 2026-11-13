@@ -193,6 +193,8 @@ class Database:
             await db.executescript(GAMEPLAY_SCHEMA)
             from .youth_rewards import SCHEMA as YOUTH_SCHEMA
             await db.executescript(YOUTH_SCHEMA)
+            from .rewards import migrate_tournament_components
+            await migrate_tournament_components(db)
             from .pvp_cycles import SCHEMA as CYCLE_SCHEMA
             await db.executescript(CYCLE_SCHEMA)
 

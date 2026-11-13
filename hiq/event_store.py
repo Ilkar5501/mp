@@ -128,14 +128,16 @@ class EventStore(CommunityStore):
             state=row['state'];key=state.get('signature_key')
             from .youth_rewards import loss_reward,duplicate,seeded
             eligible=result['winner_side']=='A' or (result['winner_side']=='B' and loss_reward(state.get('a'),key=sid))
+            state['reward_attempted']=eligible
+            state['reward_status']='no_drop' if eligible else 'not_eligible'
             reward=int(row['mode']=='tiny_titans' and state.get('reward_policy')=='signature_drop_v2'
                        and eligible and state.get('drop_roll',False) and key in {i['key'] for i in SIGNATURE_ITEMS})
-            if reward:
+            if eligible and row['mode']=='tiny_titans' and key in {i['key'] for i in SIGNATURE_ITEMS}:
                 from .allowances import allowance_days
                 from .economy import local_date_key
                 day=local_date_key();days=await allowance_days(c,uid,day)
                 used=await self.one(c,'SELECT COALESCE(SUM(amount),0) AS n FROM raid_shard_daily WHERE owner_id=? AND reward_key=? AND day_key BETWEEN ? AND ?',(uid,key,days[0],day))
-                reward=int(used['n']<25*len(days))
+                if used['n']>=25*len(days):reward=0;state['reward_status']='capped'
                 if reward:
                     await credit(c,uid,'item_shard',key,1)
                     await c.execute('INSERT INTO raid_shard_daily VALUES(?,?,?,1) ON CONFLICT(owner_id,day_key,reward_key) DO UPDATE SET amount=amount+1',(uid,day,key))
@@ -149,8 +151,15 @@ class EventStore(CommunityStore):
                     await c.execute('INSERT INTO af1_daily VALUES(?,?,1) ON CONFLICT(owner_id,day) DO UPDATE SET marks=marks+1',(uid,day))
                     await c.execute('INSERT INTO event_wallets(owner_id,af1_marks) VALUES (?,1) ON CONFLICT(owner_id) DO UPDATE SET af1_marks=af1_marks+1',(uid,))
                     reward=1
-            await c.execute("UPDATE event_runs SET status='done',result_json=?,earned=? WHERE id=?",(json.dumps(result),reward,sid))
+                else:state['reward_status']='capped'
+            if reward:state['reward_status']='awarded'
+            await c.execute("UPDATE event_runs SET status='done',result_json=?,earned=?,state_json=? WHERE id=?",(json.dumps(result),reward,json.dumps(state),sid))
             return reward
+
+    async def reward_status(self,uid,sid):
+        async with self.db.connect() as c:
+            row=await self.one(c,'SELECT state_json FROM event_runs WHERE owner_id=? AND id=?',(uid,sid))
+            return json.loads(row['state_json']).get('reward_status') if row else None
 
     async def abandon(self,uid):
         async with self.tx() as c:

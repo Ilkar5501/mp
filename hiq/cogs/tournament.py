@@ -190,7 +190,7 @@ class TournamentCog(commands.Cog):
         e=discord.Embed(title=f'🏆 6v6 Tournament — {t["status"].title()}',color=PURPLE)
         names=lambda owner:discord.utils.escape_markdown(entries[owner]['display_name'][:32])
         e.description=(f'**{len(entries)}/8 entrants** • Double elimination • Two losses knock you out.\n'
-            'Champion: **300 coins, plus 150 with at least four human players**.\nOne base reward and one qualifying human bonus unlock per day, shared across both modes. Repeat CPU wins cannot fill the bonus portion. Unused allowance banks until Monday weekly reset. Losses: 0 coins.\n'
+            'Champion: **300 coins**. With at least **four humans**, every human entrant also earns **150 coins**, win or lose. Win rewards and human-participation rewards have separate daily allowances (one each; two with Young Emperor, whose extra rewards are reduced by merge level). Unused allowance banks until Monday. Without four humans, losses pay 0 unless Furious Upstart grants a loss reward.\n'
             'Matches run automatically; human players receive results by DM. CPU builds vary, and CPUs earn no coins.\n')
         if t['status']=='open':e.description+='The host can use **Auto-fill** to fill empty places with CPU teams and start.\n'
         if t['status'] in ('open','cancelled'):e.add_field(name='Entrants',value='\n'.join(names(owner) for owner in entries) or 'No entrants yet.',inline=False)
@@ -213,8 +213,9 @@ class TournamentCog(commands.Cog):
             rewards=await self.store.rewards(t['id'])
             winner=t['champion_id']
             reward_text='CPU team — no coins awarded.' if is_cpu(winner) else f'{rewards[winner]["amount"]} coins awarded (accrued reward allowance applied).'
+            if not is_cpu(winner) and rewards[winner]['kind']=='capped':reward_text='Reward allowances capped — 0 additional coins.'
             e.add_field(name=f'🏆 Champion — {names(winner)}',value=reward_text,inline=False)
-            e.add_field(name='Other participants • 0 coins',value='\n'.join(f'{names(owner)}: {r["amount"]} coins' for owner,r in rewards.items() if owner!=t['champion_id']) or 'No other human participants.',inline=False)
+            e.add_field(name='Other participants',value='\n'.join(f'{names(owner)}: {r["amount"]} coins'+(' · reward allowances capped' if r['kind']=='capped' else '') for owner,r in rewards.items() if owner!=t['champion_id']) or 'No other human participants.',inline=False)
         e.set_footer(text=f'ID {t["id"]} • ;to {t["id"]} reopens results • A losers-bracket finalist win triggers a grand-final reset.')
         return e
 

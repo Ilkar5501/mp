@@ -11,7 +11,16 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.3 — AF1 results and cumulative update
+## Latest release: v12.1.4 — reward fixes
+
+Tournament wins and four-human participation now have independent allowances;
+every human entrant earns eligible participation rewards. Regression checks confirm
+Young Emperor's extra Gauntlet clear includes its fresh-team bonus. Capped
+reward messages also cover Furious Upstart's successful loss-reward rolls, and
+PvP displays those loss rewards. Existing balances and used caps are preserved.
+See V12.1.4-REWARD-FIXES.md.
+
+## Previous release: v12.1.3 — AF1 results and cumulative update
 
 AF1 results now show the two mains' damage dealt, tanked and mitigated, with each
 side's supports in a two-row, three-column grid underneath. Results include the

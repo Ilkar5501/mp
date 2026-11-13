@@ -32,9 +32,13 @@ async def quest_pages(db,uid):
     f=factor('gauntlet_regional')
     coins.append('> **Gauntlets 🥊**\n'+ '\n'.join(f'{label}: Clear Count {min(row(key).get("wins",0),f*(1+extra))} / {f*(1+extra)} | 🪙: {row(key).get("coins",0)} / {(250+int(250*rate))*f}' for key,label in [('gauntlet_regional','Regional'),('gauntlet_national','National')])+'\n-# 200 per clear, plus 50 for a lineup you haven’t cleared with this week. Up to 250 per day for each gauntlet.')
     coins.extend([block('Raids 🏴‍☠️','raid','Drops',3,300,'Up to 100 per Coin drop, 300 daily cap.'),
-                  block('Tournaments 🏆','tournament','Wins',1,450,'300 for a win, plus 150 with at least four humans. Repeat CPU wins cannot fill the bonus portion.'),
+                  block('Tournaments 🏆','tournament','Wins',1,450,'300 per win. Separately, 150 per entry with at least four humans, win or lose.'),
                   block('PvP 🗡️','pvp','PvP Count',4,400,'100 per distinct opponent defeated, 400 daily cap.'),
                   block('Clan Wars 🛡️','war','Wins',1,200,'200 per win, 200 daily cap.')])
+    tournament_human=row('tournament_human');tournament_main=row('tournament')
+    coins[4]=(f'> **Tournaments 🏆**\nWins: {min(tournament_main.get("wins",0),days*(1+extra))} / {days*(1+extra)} | 🪙: {tournament_main.get("coins",0)-tournament_human.get("coins",0)} / {(300+int(300*rate))*days}\n'
+              f'Human entries: {min(tournament_human.get("wins",0),days*(1+extra))} / {days*(1+extra)} | 🪙: {tournament_human.get("coins",0)} / {(150+int(150*rate))*days}\n'
+              '-# Separate allowances: 300 per win; 150 to every human entrant with at least four humans, regardless of outcome.')
     community=CommunityStore(db);clan=await community.progress(uid)
     async with db.connect() as c:
         cur=await c.execute('SELECT checkin_clan FROM clan_daily WHERE user_id=? AND day=?',(uid,today));check=await cur.fetchone()
@@ -62,6 +66,7 @@ async def quest_pages(db,uid):
         'Adds one extra daily reward allowance for Battles, each Gauntlet, Tournaments, PvP, Clan Wars, check-ins, raid Coins and Clan Dollars, and Clan Contest. Training is unchanged. '
         'The extra allowance pays **merge × 5%** of its normal currency reward: +0 pays 0%, +1 pays 5%, and +10 pays 50%. Fractional Coins and Clan Dollars round down. '
         'Normal allowances keep their full rewards. Extra allowances follow each activity’s usual rollover rules.\n\n'
+        'Tournament win rewards (300) and four-human participation rewards (150) have independent allowances. Every human entrant can earn participation rewards, win or lose; a qualifying champion can receive both.\n\n'
         '**3★ Kageyama — King of the Lost Court**\n'
         'Eligible non-currency drops from Raids, AF1 and Tiny Titans have a **merge × 1%** chance to be duplicated: 0% at +0, up to 10% at +10. '
         'This includes eligible item and character shards. The original drop must pass its normal cap; a duplicate is extra and does not consume that cap. '

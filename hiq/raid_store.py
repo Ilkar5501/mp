@@ -240,7 +240,8 @@ class RaidStore(CommunityStore):
             if not row or row['status'] not in ('running','broken'):raise ValueError('That raid is already resolved or closed.')
             uid=row['owner_id'];st=row['state'];reward=None
             from .youth_rewards import loss_reward,duplicate,currency,extra
-            if result['winner_side']=='A' or (result['winner_side']=='B' and loss_reward(st.get('a'),key=sid)):
+            st['reward_attempted']=result['winner_side']=='A' or (result['winner_side']=='B' and loss_reward(st.get('a'),key=sid))
+            if st['reward_attempted']:
                 reward_day=local_date_key();reward_week=week_key_for(datetime.fromisoformat(reward_day))
                 earned=await self.shard_progress(uid,c,day=reward_day,week=reward_week)
                 difficulty=st.get('difficulty','hard')

@@ -123,6 +123,13 @@ class PvPCog(commands.Cog):
         else:embed.add_field(name='Practice · Elo unchanged',value=state['reason'],inline=False)
         reward=settlement['reward']
         if reward:embed.add_field(name='PvP coins',value=f'<@{settlement["winner_id"]}>: **+{reward["coins"]} coins**',inline=False)
+        if reward and not reward.get('duplicate') and reward.get('allowance_day') is None:
+            embed.add_field(name='Reward allowance reached',value='The winner’s PvP reward allowance is capped.',inline=False)
+        consolation=settlement.get('loss_reward')
+        if consolation is not None:
+            loser=row['b_id'] if settlement['winner_id']==row['a_id'] else row['a_id']
+            note='Already rewarded against this opponent today.' if consolation.get('duplicate') else 'PvP reward allowance capped.' if consolation.get('allowance_day') is None else f'+{consolation["coins"]} coins. The loss and Elo result are unchanged.'
+            embed.add_field(name='Never Give Up',value=f'<@{loser}>: {note}',inline=False)
         embed.set_footer(text=f'{row["format"]}v{row["format"]} · One shared five-week ladder · Existing daily coin limits apply')
         view=BattleLogLauncher({row['a_id'],row['b_id']},'PvP Battle Log',result.log)
         try:

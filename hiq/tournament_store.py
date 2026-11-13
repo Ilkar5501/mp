@@ -169,8 +169,8 @@ class TournamentStore:
 
     async def daily(self,owner,day):
         from .rewards import RewardStore
-        row=(await RewardStore(self.db).daily(owner,day)).get('tournament',{})
-        return {'win_coins':row.get('coins',0),'wins':row.get('wins',0),'participation_coins':0}
+        progress=await RewardStore(self.db).daily(owner,day);row=progress.get('tournament',{});human=progress.get('tournament_human',{})
+        return {'win_coins':row.get('coins',0)-human.get('coins',0),'wins':row.get('wins',0),'participation_coins':human.get('coins',0)}
 
     async def rewards(self,tid):
         async with self.db.connect() as db:
@@ -195,8 +195,9 @@ class TournamentStore:
                 from .youth_rewards import loss_reward
                 entry=await (await db.execute('SELECT snapshot_json FROM tournament_entries WHERE tournament_id=? AND owner_id=?',(tid,owner))).fetchone()
                 consolation=owner!=winner and loss_reward(json.loads(entry[0]),key=f'{tid}:{owner}')
-                payout=await award_in(db,owner,'tournament',day=day,human_tournament=sum(not is_cpu(uid) for uid in owners)>=4) if owner==winner or consolation else {'coins':0}
+                payout=await award_in(db,owner,'tournament',day=day,human_tournament=sum(not is_cpu(uid) for uid in owners)>=4,tournament_win=owner==winner or consolation)
                 amount=payout['coins'];kind='win' if owner==winner else 'participation'
-                await db.execute('INSERT INTO tournament_rewards(tournament_id,owner_id,kind,amount,day_key,champion_coins,participation_coins) VALUES (?,?,?,?,?,?,?)',(tid,owner,kind,amount,day,amount,0))
+                if payout['capped'] and (owner==winner or consolation or sum(not is_cpu(uid) for uid in owners)>=4):kind='capped'
+                await db.execute('INSERT INTO tournament_rewards(tournament_id,owner_id,kind,amount,day_key,champion_coins,participation_coins) VALUES (?,?,?,?,?,?,?)',(tid,owner,kind,amount,day,payout['champion_coins'],payout['participation_coins']))
             await db.execute("UPDATE tournaments SET status='complete',champion_id=?,finished_at=? WHERE id=?",(winner,now(),tid));await db.commit()
         return winner

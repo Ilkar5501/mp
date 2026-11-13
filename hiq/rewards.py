@@ -2,9 +2,9 @@
 from .economy import local_date_key
 from .allowances import allowance_days
 
-LIMITS={'battle':9,'tournament':1,'gauntlet_regional':1,'gauntlet_national':1,
+LIMITS={'battle':9,'tournament':1,'tournament_human':1,'gauntlet_regional':1,'gauntlet_national':1,
         'pvp':4,'prefecture':3,'war':1}
-ROLLOVER_MODES={'battle','tournament','gauntlet_regional','gauntlet_national','prefecture','raid'}
+ROLLOVER_MODES={'battle','tournament','tournament_human','gauntlet_regional','gauntlet_national','prefecture','raid'}
 
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS economy_daily (
@@ -39,16 +39,21 @@ async def daily(conn, uid, day=None):
         total=progress.setdefault(key,dict(wins=0,coins=0,clan_coins=0))
         total['wins']+=min(row['wins'],LIMITS.get(key,row['wins'])+(extra_limit if key!='prefecture' else 0)) if key in ROLLOVER_MODES else row['wins']
         total['coins']+=row['coins'];total['clan_coins']+=row['clan_coins']
+    if 'tournament_human' in progress:
+        total=progress.setdefault('tournament',dict(wins=0,coins=0,clan_coins=0))
+        total['coins']+=progress['tournament_human']['coins']
     return progress
 
 
-async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=False,lineup=None):
+async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=False,lineup=None,tournament_win=True):
     """Caller owns the transaction; wallet and cap usage always commit together."""
     day=day or local_date_key()
     from datetime import datetime,timezone
     await conn.execute('INSERT OR IGNORE INTO users(discord_id,created_at) VALUES (?,?)',(uid,datetime.now(timezone.utc).isoformat()))
     if key not in LIMITS:raise ValueError('Unknown reward mode; raid drops must use RaidStore.finish.')
     days=await allowance_days(conn,uid,day) if key in ROLLOVER_MODES else [day]
+    if key=='tournament':
+        return await tournament_award(conn,uid,days,win=tournament_win,human=human_tournament)
     cur=await conn.execute('SELECT * FROM economy_daily WHERE owner_id=? AND reward_key=? AND day_key BETWEEN ? AND ?',(uid,key,days[0],day))
     rows={r['day_key']:dict(r) for r in await cur.fetchall()}
     def wins_on(d):return rows.get(d,{}).get('wins',0)
@@ -102,6 +107,46 @@ async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=
     clan=await currency(conn,uid,clan,clan=True,qualifies=key=='war' and chosen is not None)
     progress=(await daily(conn,uid,day))[key]
     return dict(coins=coins,clan_coins=clan,wins=progress['wins'],duplicate=duplicate,allowance_day=chosen,extra_allowance=extra_award)
+
+
+async def tournament_award(conn,uid,days,*,win,human):
+    from .youth_rewards import extra,currency
+    amounts={};chosen_any=None;claimed=set()
+    for key,base,eligible in [('tournament',300,win),('tournament_human',150,human)]:
+        amounts[key]=0
+        if not eligible:continue
+        rows=await (await conn.execute('SELECT * FROM economy_daily WHERE owner_id=? AND reward_key=? AND day_key BETWEEN ? AND ?',(uid,key,days[0],days[-1]))).fetchall()
+        used={r['day_key']:r['coins'] for r in rows}
+        chosen=next((d for d in days if used.get(d,0)<base),None)
+        amount=max(0,base-used.get(chosen,0)) if chosen else 0
+        if chosen is None:
+            allowance=await extra(conn,uid,key,days)
+            if allowance:chosen,rate=allowance;amount=int(base*rate)
+        if chosen is None:continue
+        chosen_any=chosen
+        claimed.add(key)
+        await conn.execute('INSERT INTO economy_daily VALUES (?,?,?,1,?,0) ON CONFLICT(owner_id,day_key,reward_key) DO UPDATE SET wins=wins+1,coins=coins+excluded.coins',(uid,chosen,key,amount))
+        amounts[key]=amount
+    base_total=sum(amounts.values())
+    paid=await currency(conn,uid,base_total,qualifies=chosen_any is not None)
+    # Attribute the once-per-payout Duo bonus without paying it twice.
+    if paid>base_total:amounts['tournament' if 'tournament' in claimed else 'tournament_human']+=paid-base_total
+    progress=(await daily(conn,uid,days[-1])).get('tournament',{})
+    return dict(coins=paid,clan_coins=0,wins=progress.get('wins',0),duplicate=False,allowance_day=chosen_any,
+                champion_coins=amounts['tournament'],participation_coins=amounts['tournament_human'],capped=chosen_any is None)
+
+
+async def migrate_tournament_components(conn):
+    """Preserve paid rewards/caps when splitting the old combined 450 ledger."""
+    marker='12.1.4-tournament-components'
+    if await (await conn.execute('SELECT 1 FROM economy_migrations WHERE version=?',(marker,))).fetchone():return
+    rows=await (await conn.execute("SELECT owner_id,day_key FROM economy_daily WHERE reward_key='tournament' AND coins>=450")).fetchall()
+    for uid,day in rows:
+        await conn.execute("UPDATE economy_daily SET coins=coins-150 WHERE owner_id=? AND day_key=? AND reward_key='tournament'",(uid,day))
+        await conn.execute("INSERT OR IGNORE INTO economy_daily VALUES (?,?,'tournament_human',1,150,0)",(uid,day))
+        await conn.execute("INSERT OR IGNORE INTO youth_daily SELECT owner_id,day,'tournament_human',claims FROM youth_daily WHERE owner_id=? AND day=? AND reward_key='tournament'",(uid,day))
+    await conn.execute('INSERT INTO economy_migrations VALUES (?)',(marker,))
+    await conn.commit()
 
 
 class RewardStore:

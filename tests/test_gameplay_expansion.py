@@ -11,6 +11,116 @@ from hiq.shard_balances import balance
 
 
 class GameplayTests(unittest.IsolatedAsyncioTestCase):
+    async def test_tournament_win_and_human_allowances_are_independent_for_losers(self):
+        from hiq.rewards import RewardStore
+        r=RewardStore(self.db)
+        self.assertEqual((await r.award(1,'tournament'))['coins'],300)
+        payout=await r.award(1,'tournament',human_tournament=True,tournament_win=False)
+        self.assertEqual((payout['champion_coins'],payout['participation_coins']),(0,150))
+        self.assertEqual((await r.award(1,'tournament',human_tournament=True))['coins'],0)
+
+    async def test_tournament_human_loss_does_not_consume_win_allowance(self):
+        from hiq.rewards import RewardStore
+        r=RewardStore(self.db)
+        self.assertEqual((await r.award(1,'tournament',human_tournament=True,tournament_win=False))['coins'],150)
+        self.assertEqual((await r.award(1,'tournament',human_tournament=False))['coins'],300)
+        self.assertEqual((await r.award(1,'tournament',tournament_win=False))['coins'],0)
+
+    async def test_oikawa_tournament_components_each_get_one_discounted_extra(self):
+        from hiq.rewards import RewardStore
+        await self.ingredient(OIKAWA,10);r=RewardStore(self.db)
+        first=await r.award(1,'tournament',human_tournament=True)
+        second=await r.award(1,'tournament',human_tournament=True)
+        self.assertEqual((first['champion_coins'],first['participation_coins']),(300,150))
+        self.assertEqual((second['champion_coins'],second['participation_coins']),(150,75))
+        self.assertEqual((await r.award(1,'tournament',human_tournament=True))['coins'],0)
+
+    async def test_duo_currency_bonus_is_paid_once_for_combined_tournament_reward(self):
+        from hiq.rewards import RewardStore
+        await self.ingredient(DUO,10)
+        self.assertEqual((await RewardStore(self.db).award(1,'tournament',human_tournament=True))['coins'],461)
+
+    async def test_zero_merge_extra_with_duo_is_attributed_to_actual_component(self):
+        from hiq.rewards import RewardStore
+        await self.ingredient(OIKAWA,0);await self.ingredient(DUO,0)
+        r=RewardStore(self.db)
+        await r.award(1,'tournament')
+        payout=await r.award(1,'tournament')
+        self.assertEqual((payout['coins'],payout['champion_coins'],payout['participation_coins']),(1,1,0))
+
+    async def test_tournament_migration_preserves_balances_and_used_caps(self):
+        from hiq.economy import local_date_key
+        from hiq.rewards import RewardStore
+        day=local_date_key()
+        async with self.store.tx() as c:
+            await c.execute("DELETE FROM economy_migrations WHERE version='12.1.4-tournament-components'")
+            await c.execute("INSERT INTO economy_daily VALUES (1,?,'tournament',1,450,0)",(day,))
+        await self.db.init();await self.db.init()
+        self.assertEqual((await self.db.get_user(1)).coins,20000)
+        r=RewardStore(self.db)
+        self.assertEqual((await r.award(1,'tournament',human_tournament=True))['coins'],0)
+        self.assertEqual((await r.daily(1))['tournament']['coins'],450)
+
+    async def test_fresh_gauntlet_lineup_extra_includes_reduced_fifty_coin_bonus(self):
+        from hiq.rewards import RewardStore
+        await self.ingredient(OIKAWA,10);r=RewardStore(self.db)
+        for key in ('gauntlet_regional','gauntlet_national'):
+            first=await r.award(1,key,lineup=[c.id for c in CHARACTERS[:3]])
+            second=await r.award(1,key,lineup=[c.id for c in CHARACTERS[1:4]])
+            third=await r.award(1,key,lineup=[c.id for c in CHARACTERS[2:5]])
+            self.assertEqual([first['coins'],second['coins'],third['coins']],[250,125,0])
+
+    async def test_zero_merge_oikawa_does_not_remove_unclaimed_normal_lineup_bonus(self):
+        from hiq.rewards import RewardStore
+        await self.ingredient(OIKAWA,0);r=RewardStore(self.db)
+        async with self.store.tx() as c:await c.execute("UPDATE users SET created_at='2026-11-09T12:00:00+00:00' WHERE discord_id=1")
+        same=[c.id for c in CHARACTERS[:3]];fresh=[c.id for c in CHARACTERS[1:4]]
+        self.assertEqual((await r.award(1,'gauntlet_regional',day='2026-11-09',lineup=same))['coins'],250)
+        self.assertEqual((await r.award(1,'gauntlet_regional',day='2026-11-10',lineup=same))['coins'],200)
+        self.assertEqual((await r.award(1,'gauntlet_regional',day='2026-11-10',lineup=fresh))['coins'],50)
+
+    async def test_hinata_event_cap_status_on_wins_and_successful_loss_rolls(self):
+        from hiq.economy import local_date_key
+        events=EventStore(self.db);key=SIGNATURE_ITEMS[0]['key'];day=local_date_key()
+        async with self.store.tx() as c:
+            await c.execute('INSERT INTO raid_shard_daily VALUES (?,?,?,25)',(1,day,key))
+            await c.execute('INSERT INTO af1_daily VALUES (?,?,25)',(1,day))
+        for mode in ('tiny_titans','all_for_one'):
+            for winner in ('A','B'):
+                sid=mode+winner
+                async with self.store.tx() as c:
+                    state=json.dumps(dict(signature_key=key,reward_policy='signature_drop_v2',drop_roll=True))
+                    await c.execute("INSERT INTO event_runs VALUES(?,1,?,'running',?,NULL,0,'2026-11-13')",(sid,mode,state))
+                with patch('hiq.youth_rewards.loss_reward',return_value=True):earned=await events.finish(1,sid,dict(winner_side=winner))
+                self.assertEqual(earned,0);self.assertEqual(await events.reward_status(1,sid),'capped')
+
+    async def test_hinata_capped_raid_loss_records_attempt_without_advancing_rotation(self):
+        from hiq.raid_store import RaidStore
+        raid=RaidStore(self.db)
+        async with self.store.tx() as c:
+            state=json.dumps(dict(theme='tactics',difficulty='easy',format=3,rotation_version=2,a=[]))
+            await c.execute("INSERT INTO raid_runs VALUES('capped-loss',1,1,'running',?,'2026-11-13')",(state,))
+        with patch('hiq.youth_rewards.loss_reward',return_value=True),patch.object(raid,'reward_caps',return_value=[dict(remaining=0)]),patch.object(raid,'reward_pool',return_value=[]):
+            row=await raid.finish('capped-loss',dict(winner_side='B'))
+        self.assertTrue(row['state']['reward_attempted'])
+        self.assertEqual(row['state']['reward_status'],'all_capped')
+        self.assertEqual(await raid.next_index(1,3,'tactics'),0)
+
+    async def test_tournament_finish_pays_all_four_humans_not_cpu_and_is_once_only(self):
+        from hiq.tournament_store import TournamentStore
+        store=TournamentStore(self.db)
+        for uid in (2,3,4):await self.db.ensure_user(uid)
+        async with self.store.tx() as c:
+            await c.execute("INSERT INTO tournaments(id,channel_id,guild_id,creator_id,status,created_at) VALUES('human-test',1,1,1,'running','2026-11-13')")
+            for uid in (1,2,3,4,-1,-2,-3,-4):await c.execute("INSERT INTO tournament_entries VALUES('human-test',?,?,'[]','2026-11-13')",(uid,str(uid)))
+        from hiq.economy import local_date_key
+        with patch('hiq.tournament_store.next_match',return_value=None),patch('hiq.tournament_store.champion',return_value=1):
+            await store.finish('human-test',local_date_key());await store.finish('human-test',local_date_key())
+        rewards=await store.rewards('human-test')
+        self.assertEqual(set(rewards),{1,2,3,4})
+        self.assertEqual(rewards[1]['amount'],450)
+        for uid in (2,3,4):self.assertEqual(rewards[uid]['amount'],150)
+
     async def asyncSetUp(self):
         self.temp=tempfile.TemporaryDirectory();self.db=Database(Path(self.temp.name)/'game.sqlite3')
         await self.db.init();await self.db.ensure_user(1);self.store=GameplayStore(self.db)

@@ -320,6 +320,8 @@ class BattleCog(commands.Cog):
             earned=await RewardStore(self.bot.db).award(ctx.author.id,'battle',record_win=result.winner_side=='A')
             reward=daily=earned['coins']
         e = self._result_embed(result, name_a, name_b, a_specs, b_specs, reward, daily, weekly, bonus)
+        if reward_regular_win and (result.winner_side=='A' or consolation) and earned['allowance_day'] is None:
+            e.add_field(name='Reward allowance reached',value='All accrued Battle rewards are capped. No additional Coins awarded.',inline=False)
         allowed = {ctx.author.id}
         if owner_b:
             allowed.add(owner_b)

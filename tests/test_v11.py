@@ -20,6 +20,12 @@ from hiq.battle.types import CombatContext
 from hiq.models import AbilityDef
 
 
+def legal_six(picks):
+    from itertools import combinations
+    from hiq.lineups import valid_characters
+    return list(next(group for group in combinations(picks,6) if valid_characters([CHAR_BY_ID[cid] for cid in group])))
+
+
 class DatabaseTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.temp=tempfile.TemporaryDirectory();self.db=Database(Path(self.temp.name)/'test.sqlite3')
@@ -214,7 +220,7 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
     async def test_sealed_private_team_revision_and_simultaneous_lock(self):
         store,row=await self.drafted();sid=row['id']
         for uid in row['state']['order']:
-            selected=list({CHAR_BY_ID[cid].name:cid for cid in row['state']['picks'][str(uid)]}.values())
+            selected=legal_six(row['state']['picks'][str(uid)])
             for position,cid in enumerate(selected[:6]):
                 version=row['state']['team_versions'].get(str(uid),0);row=await store.place(sid,uid,position,cid,version)
             version=row['state']['team_versions'][str(uid)];row=await store.submit(sid,uid,version)
@@ -245,7 +251,7 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
     async def test_sealed_real_seven_player_tournament_recovery_and_no_rewards(self):
         store,row=await self.drafted(7);sid=row['id']
         for uid in row['state']['order']:
-            cids=list({CHAR_BY_ID[cid].name:cid for cid in row['state']['picks'][str(uid)]}.values())[:6]
+            cids=legal_six(row['state']['picks'][str(uid)])
             for position,cid in enumerate(cids):
                 row=await store.place(sid,uid,position,cid,row['state']['team_versions'].get(str(uid),0))
             row=await store.submit(sid,uid,row['state']['team_versions'][str(uid)])

@@ -129,12 +129,13 @@ class EventsCog(commands.Cog):
                         ctx,engine,a,b,None,ctx.author.display_name,state['label'],reward_regular_win=False)
                 else:result=await asyncio.to_thread(engine.run)
                 earned=await self.store.finish(uid,row['id'],asdict(result))
+                capped=await self.store.reward_status(uid,row['id'])=='capped'
             except ValueError as error:await send(str(error));return
             outcome={'A':'Win','B':'Loss','draw':'Draw'}[result.winner_side]
             if mode=='tiny_titans':
                 name=ITEM_BY_KEY.get(state.get('signature_key'),{}).get('name','Unique Item')
                 em.title=f'Tiny Titans · {outcome} · {state["label"]}'
-                em.add_field(name='Challenge Drop',value=f'{earned} **{name} Shard(s)**' if earned else 'No drop.',inline=False)
+                em.add_field(name='Challenge Drop',value=f'{earned} **{name} Shard(s)**' if earned else 'This item’s accrued shard allowance is capped. No additional shards awarded.' if capped else 'No drop.',inline=False)
                 em.set_footer(text='6v6 · Tiny Titans · 50% unique equip shard chance')
                 await send(embed=em,view=view,file=file)
             else:
@@ -143,6 +144,7 @@ class EventsCog(commands.Cog):
                 a=[(u.card,u.character,u.lane) for u in engine.team_a.units]
                 b=[(u.card,u.character,u.lane) for u in engine.team_b.units]
                 em=af1_embed(result,a,b,ctx.author.display_name,state['label'],earned)
+                if capped:em.add_field(name='Reward allowance reached',value='You have earned all 25 AF1 Marks available today. No additional Marks awarded.',inline=False)
                 file=discord.File(await render_af1_summary(result,a,b,ctx.author.display_name,state['label'],earned),filename='af1_result.png')
                 view=BattleLogLauncher({uid},state['label'],result.log)
                 await send(embed=em,view=view,file=file)
