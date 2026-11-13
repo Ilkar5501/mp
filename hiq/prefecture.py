@@ -60,10 +60,10 @@ class PodBattleEngine(BattleEngine):
         return self.rng.choices(candidates,weights=[dist[u.uid] for u in candidates],k=1)[0],False
 
     def maybe_save(self,attacker,intended):
-        if has(attacker,'Kiryu') or 'Free Ball' in intended.statuses:return intended,False
+        if has(attacker,'Kiryu','Reluctant Titan') or 'Free Ball' in intended.statuses:return intended,False
         eligible=[u for u in self.team(intended).units if u is not intended and u.cd==0 and 'UltimateDisabled' not in u.statuses and self.attack_target_allowed(u)
                   and (has(u,'Hirugami') or has(u,'Konoha') or (has(u,'Nishinoya') and attacker.offense_key=='qik'))]
-        if not eligible:return intended,False
+        if not eligible:return self.passive_save(attacker,intended)
         local=[u for u in eligible if self.pod_by_uid[u.uid]==self.pod_by_uid[intended.uid]]
         savior=max(local,key=lambda u:u.noncombat_stat('spd')) if local else self.rng.choice(eligible)
         self.trigger_ultimate(savior,None,'save')

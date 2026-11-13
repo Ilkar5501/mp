@@ -1033,7 +1033,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         if self.gear(attacker,'firm_contact') and hit_index==0:bonus+=3
         if off_trigger and self.gear(attacker,'ultimate_impact'):bonus+=attacker.max_cd*4
         if has(attacker,'Kageyama','Prodigious Talent') and len(self.distinct_bonuses(ctx,attacker,stats))>=6: bonus+=5
-        if 'Open Play' in attacker.statuses and attacker.name=='Hinata': bonus+=floori(self.skill_spd(attacker,a)*0.15)
+        if 'Open Play' in attacker.statuses and attacker.name=='Hinata': bonus+=floori(a['spd']*0.15)
         if has(attacker,'Tenma Udai') and self.skill_spd(attacker,a)>self.skill_spd(defender,d): bonus+=5
         if has(attacker,'Kosuke'):
             bonus+=sum(1 for ally in self.team(attacker).units if ally is not attacker and

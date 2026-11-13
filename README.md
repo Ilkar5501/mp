@@ -11,7 +11,22 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.7 — AF1 rotation and Takeru's challenge team
+## Latest release: v12.1.8 — Pack safety and combat fixes
+
+Free daily packs and paid Base, Position, and School packs now commit the claim
+or payment, pity state, serial numbers, and all cards in one transaction. Overlapping
+daily commands cannot award duplicate packs, and interrupted openings roll back
+without consuming coins or pity.
+
+Prefecture now uses passive saves when no Ultimate save is available. Only Kiryu
+— Reluctant Titan blocks saves; Last Hope does not. Local-pod Ultimate save priority
+and Free Ball's save restriction remain in effect. Smelling Salts still grants +7
+Speed for comparisons, but no longer increases Hinata's Open Play damage scaling.
+
+This cumulative release retains AF1 rotations, Takeru's corrected formation, and
+the earlier SQLite retention and offline cleanup tools.
+
+## v12.1.7 — AF1 rotation and Takeru's challenge team
 
 AF1 now shows each player's next opponent instead of a CPU selector. Victories
 advance through all twelve challenges, looping after the last; losses, draws,
