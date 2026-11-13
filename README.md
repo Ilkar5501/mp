@@ -11,7 +11,32 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.11 — Rarity embed colors
+## Latest release: v12.1.12 — Weekly percentile packs and biweekly PvP Elo
+
+PvP now awards weekly packs automatically to inventory at the Monday training
+reset. Eligible players have at least one ranked win, loss, or draw during the
+current two-week season. Brackets are cumulative: top 20% receives one pack of
+each rarity, top 40% receives 1–4★, top 60% receives 1–3★, top 80% receives
+1–2★, and every eligible player receives a 1★ pack. Each bracket rounds up;
+ties use the leaderboard's Elo, wins, losses, then user-ID order. These packs
+replace the first-place-only five-week prizes and their weekly coin payouts.
+Normal per-match coin rewards and collection passives are unchanged.
+
+Elo and ranked records carry across the first weekly reset, then start fresh
+at 1000 Elo after the second. The fortnight alignment starts Monday November 9,
+2026; its first reset is November 23, followed by December 7, and so on at local
+midnight in the configured game timezone. `;pvpboard` shows both upcoming cutoffs.
+The existing maintenance task delivers prizes automatically; startup catches up
+if the bot was offline. Pending pre-cutoff matches finish before prizes settle,
+and new matches wait so later results cannot change the closed week's ranking.
+
+Upgrade migration carries the live pre-update standings and participation into
+the current two-week season once. Paid weeks remain paid, pending matches retain
+their snapshots and Elo, and future seasons do not inherit old participation.
+Prize delivery and once-only records commit together. All prior gameplay updates
+and SQLite retention/cleanup tools remain included.
+
+## v12.1.11 — Rarity embed colors
 
 Owned character cards, in-bot gallery cards, and their skill-note embeds now
 share rarity colors: 1★ dark brown (#5C3317), 2★ red orange (#FF4500), 3★ bronze

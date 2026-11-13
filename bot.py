@@ -207,7 +207,7 @@ async def help_cmd(ctx: commands.Context):
             '**Events:** `;tt` — Tiny Titans unique-shard challenges. `;af1team 1–5` — edit five AF1 teams. `;af1 slot` — select that team and immediately battle the next opponent. `;af1` previews; `;af1use slot` selects without battling. `;eventreset` clears a pending event.',
             '`;battle [slot]` — matching-format random CPU. `;pvp [@user] [3v3|6v6]` — shared Elo PvP. Automatic matches avoid both players’ last five rated opponents; only the first targeted match per player/day affects Elo.',
             '`;pvpset` / `;pvps` — choose and lock 3v3 and 6v6 teams. Using normal teams updates unlocked PvP teams; missing or invalid teams are recovered when possible.',
-            '`;pvpboard` / `;pvpb` — weekly first-place prizes: week 1, 1★ pack + 400 coins; week 2, 2★ + 300; week 3, 3★ + 200; week 4, 4★ + 100; week 5, 5★. Elo resets after week 5. Weeks end with the Monday training reset.',
+            '`;pvpboard` / `;pvpb` — weekly packs: top 20% gets 5★, top 40% 4★, top 60% 3★, top 80% 2★, everyone eligible 1★. Rewards stack and go to ;inv automatically at Monday reset. Play a ranked match during the two-week season to qualify. Elo resets every two weeks.',
             '**PvP Shield:** `;buy pvpshield` or `;clanshop`, then `;use itemID`. Prevents initiating or receiving PvP for 2 hours. Another shield can be used 6 hours after activation.',
             '`;gn r` / `;gn n` — Regional / National Gauntlet. Results use regular 3v3 images/logs with school/game navigation.',
             '`;to` / `;tournament` — 8-player 6v6 double elimination; host Auto-fill supports CPUs.',

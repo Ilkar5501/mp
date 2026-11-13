@@ -27,8 +27,8 @@ class EloTests(unittest.TestCase):
         self.assertLess(elo_delta(1200,800,1),16)
 
     def test_seasons_and_daily_limits_use_game_timezone(self):
-        self.assertEqual(calendar(datetime(2027,1,1,4,59,tzinfo=timezone.utc)),('cycle-2026-12-14','2026-12-31'))
-        self.assertEqual(calendar(datetime(2027,1,1,5,0,tzinfo=timezone.utc)),('cycle-2026-12-14','2027-01-01'))
+        self.assertEqual(calendar(datetime(2027,1,1,4,59,tzinfo=timezone.utc)),('fortnight-2026-12-21','2026-12-31'))
+        self.assertEqual(calendar(datetime(2027,1,1,5,0,tzinfo=timezone.utc)),('fortnight-2026-12-21','2027-01-01'))
 
 
 class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
@@ -192,6 +192,7 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         await self.users(1,2);row=await self.store.start(1,target=2,at=NOW)
         async with self.store.tx() as c:
             await c.execute("DELETE FROM economy_migrations WHERE version='v12-weekly-pvp'")
+            await c.execute("DELETE FROM economy_migrations WHERE version='v12-biweekly-percentile-pvp'")
             await c.execute('DELETE FROM pvp_weeks')
             await c.execute("UPDATE pvp_ratings SET month='2026-11',rating=1200")
             await c.execute("UPDATE pvp_runs SET month='2026-11' WHERE id=?",(row['id'],))
@@ -221,25 +222,26 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         own=(await self.store.board(2,NOW))[2]
         self.assertEqual((own['rating'],own['wins'],own['losses']),(984,0,1))
 
-    async def test_five_week_prizes_are_once_only_and_elo_resets_only_after_week_five(self):
-        for uid in range(1,6):await self.db.ensure_user(uid)
+    async def test_weekly_stacked_prizes_are_once_only_and_elo_resets_after_two_weeks(self):
+        for uid in range(1,7):await self.db.ensure_user(uid)
         cycle=calendar(NOW)[0]
         await self.store.settle(NOW)
         async with self.store.tx() as c:
-            for uid,rating in [(1,1200),(2,1100),(3,1050),(4,999)]:await c.execute('INSERT INTO pvp_ratings(month,owner_id,rating,wins) VALUES (?,?,?,1)',(cycle,uid,rating))
-            await c.execute('INSERT INTO pvp_ratings(month,owner_id,rating) VALUES (?,5,9999)',(cycle,))
+            for uid,rating in [(1,1200),(2,1100),(3,1050),(4,999),(5,900)]:await c.execute('INSERT INTO pvp_ratings(month,owner_id,rating,wins) VALUES (?,?,?,1)',(cycle,uid,rating))
+            await c.execute('INSERT INTO pvp_ratings(month,owner_id,rating) VALUES (?,6,9999)',(cycle,))
         from datetime import timedelta
-        for week in range(1,6):
+        for week in range(1,3):
             at=NOW+timedelta(weeks=week)
             await asyncio.gather(self.store.settle(at),self.store.settle(at));await self.db.init();await self.store.settle(at)
             month,board,own=await self.store.board(1,at)
-            self.assertEqual(own['rating'],1200 if week<5 else 1000)
-        self.assertEqual(sorted(i['stars'] for i in await self.store.items(1)),[1,2,3,4,5])
-        for uid in (2,3,4,5):self.assertEqual(await self.store.items(uid),[])
-        self.assertEqual((await self.db.get_user(1)).coins,1000)
+            self.assertEqual(own['rating'],1200 if week<2 else 1000)
+        for uid in range(1,6):
+            self.assertEqual(sorted(i['stars'] for i in await self.store.items(uid)),sorted(list(range(1,7-uid))*2))
+        self.assertEqual(await self.store.items(6),[])
+        self.assertEqual((await self.db.get_user(1)).coins,0)
         self.assertEqual(board,[])
         async with self.db.connect() as c:
-            self.assertEqual((await self.store.one(c,'SELECT COUNT(*) n FROM pvp_monthly_awards'))['n'],5)
+            self.assertEqual((await self.store.one(c,'SELECT COUNT(*) n FROM pvp_monthly_awards'))['n'],10)
             self.assertEqual((await self.store.one(c,'SELECT rating FROM pvp_ratings WHERE month=? AND owner_id=1',(cycle,)))['rating'],1200)
 
     async def test_late_pending_match_finishes_before_old_month_awards(self):
@@ -247,7 +249,7 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         await self.store.settle(NOW)
         self.assertEqual(await self.store.items(1),[])
         await self.finish(row,at=NOW)
-        self.assertEqual([i['stars'] for i in await self.store.items(1)],[5])
+        self.assertEqual(sorted(i['stars'] for i in await self.store.items(1)),[1,2,3,4,5])
         self.assertEqual((await self.store.board(1,NOW))[2]['rating'],1000)
 
     async def test_shared_rating_and_daily_limit_cross_formats(self):

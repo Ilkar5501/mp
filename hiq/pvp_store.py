@@ -1,4 +1,4 @@
-"""Monthly Elo, persistent PvP teams, reserved opponents and once-only rewards."""
+"""Biweekly Elo, persistent PvP teams, reserved opponents and once-only rewards."""
 import json
 import secrets
 import uuid

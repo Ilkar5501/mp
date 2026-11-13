@@ -1,4 +1,4 @@
-"""Ranked automatic/targeted PvP, protected team slots and monthly standings."""
+"""Ranked PvP, protected teams, biweekly Elo and weekly percentile prizes."""
 import asyncio
 import logging
 from dataclasses import asdict
@@ -119,7 +119,7 @@ class PvPCog(commands.Cog):
         embed=self.bot.get_cog('BattleCog')._result_embed(result,state['name_a'],state['name_b'],a,b)
         embed.title=('Ranked PvP · ' if row['rated'] else 'Practice PvP · ')+embed.title
         if row['rated']:
-            embed.add_field(name='Elo · '+row['month'],value=f'<@{row["a_id"]}>: **{settlement["a_before"]} → {settlement["a_after"]}**\n<@{row["b_id"]}>: **{settlement["b_before"]} → {settlement["b_after"]}**',inline=False)
+            embed.add_field(name='Elo',value=f'<@{row["a_id"]}>: **{settlement["a_before"]} → {settlement["a_after"]}**\n<@{row["b_id"]}>: **{settlement["b_before"]} → {settlement["b_after"]}**',inline=False)
         else:embed.add_field(name='Practice · Elo unchanged',value=state['reason'],inline=False)
         reward=settlement['reward']
         if reward:embed.add_field(name='PvP coins',value=f'<@{settlement["winner_id"]}>: **+{reward["coins"]} coins**',inline=False)
@@ -130,7 +130,7 @@ class PvPCog(commands.Cog):
             loser=row['b_id'] if settlement['winner_id']==row['a_id'] else row['a_id']
             note='Already rewarded against this opponent today.' if consolation.get('duplicate') else 'PvP reward allowance capped.' if consolation.get('allowance_day') is None else f'+{consolation["coins"]} coins. The loss and Elo result are unchanged.'
             embed.add_field(name='Never Give Up',value=f'<@{loser}>: {note}',inline=False)
-        embed.set_footer(text=f'{row["format"]}v{row["format"]} · One shared five-week ladder · Existing daily coin limits apply')
+        embed.set_footer(text=f'{row["format"]}v{row["format"]} · One shared two-week ladder · Existing daily coin limits apply')
         view=BattleLogLauncher({row['a_id'],row['b_id']},'PvP Battle Log',result.log)
         try:
             image=await render_battle_summary(result,a,b,state['name_a'],state['name_b'])
@@ -174,17 +174,17 @@ class PvPCog(commands.Cog):
         view=PvPTeamView(self,ctx.author.id,prefs,await self.bot.db.list_saved_teams(ctx.author.id),await self.bot.db.get_cards(ctx.author.id))
         await ctx.send(embed=view.embed(),view=view)
 
-    @commands.hybrid_command(name='pvpboard',aliases=['pvpb'],description='View the shared five-week PvP Elo leaderboard and weekly prize.')
+    @commands.hybrid_command(name='pvpboard',aliases=['pvpb'],description='View the two-week PvP Elo leaderboard and weekly percentile prizes.')
     async def pvpboard(self,ctx):
         month,rows,own=await self.store.board(ctx.author.id);pages=[]
         for start in range(0,max(1,len(rows)),15):
             lines=[f'**{i}.** <@{r["owner_id"]}> · **{r["rating"]} Elo** · {r["wins"]}W/{r["losses"]}L/{r["draws"]}D' for i,r in enumerate(rows[start:start+15],start+1)]
-            e=discord.Embed(title='PvP Ladder · '+month,description='\n'.join(lines) or 'No ranked matches yet. Use ;pvp to begin.',color=PURPLE)
+            e=discord.Embed(title='PvP Ladder',description='\n'.join(lines) or 'No ranked matches yet. Use ;pvp to begin.',color=PURPLE)
             e.add_field(name='Your Elo',value=str(own['rating']),inline=True)
-            from ..pvp_cycles import cycle_for
+            from ..pvp_cycles import cycle_for,next_elo_reset
             from ..economy import local_date_key,next_week_reset
             _,phase=cycle_for(local_date_key())
-            e.add_field(name=f'Week {phase}/5 · First place',value=f'{phase}★ pack'+(f' + {(5-phase)*100} coins' if phase<5 else '')+f'\nCutoff <t:{int(next_week_reset().timestamp())}:F>. Elo carries until week 5 ends, then resets.',inline=False)
+            e.add_field(name=f'Week {phase}/2 · Weekly pack prizes',value='Top 20%: 5★ · Top 40%: 4★ · Top 60%: 3★ · Top 80%: 2★ · Everyone eligible: 1★.\nRewards stack: top 20% gets one pack of every rarity. Brackets round up. Requires a ranked match this two-week season. Packs are added to ;inv automatically.\n'+f'Weekly cutoff <t:{int(next_week_reset().timestamp())}:F>. Elo resets <t:{int(next_elo_reset(local_date_key()).timestamp())}:F>.',inline=False)
             pages.append(e)
         view=EmbedPager(pages,ctx.author.id);await ctx.send(embed=view.embed(),view=view,allowed_mentions=discord.AllowedMentions.none())
 
