@@ -75,5 +75,27 @@
     "shard_cost": 25,
     "coin_cost": 500,
     "recycle_value": 25
+  },
+  {
+    "key": "takeru_zunda_mochi_bento",
+    "name": "Zunda Mochi Bento",
+    "eligible": "Takeru — Flashing Salmon",
+    "eligible_character_ids": [
+      "Takeru — Flashing Salmon"
+    ],
+    "character_id": "Takeru — Flashing Salmon",
+    "effect": "At start of match, permanently reduces unit's maximum Ultimate cooldown by 1. Grants Qik/Spd+5 during combat. When unit's Ultimate triggers, grants [Inspiration] to unit and all allies through their next action.",
+    "extended": "[Inspiration]: Halves each non-Ultimate percentage damage-reduction effect, including character skills, equipment and named statuses (40% becomes 20%). Does not affect Ultimate-based reduction, flat reduction, barriers or fixed-damage effects. Does not stack.",
+    "aliases": [
+      "zunda",
+      "mochi",
+      "bento",
+      "takeru signature"
+    ],
+    "signature": true,
+    "character_shards": 25,
+    "shard_cost": 25,
+    "coin_cost": 500,
+    "recycle_value": 25
   }
 ]

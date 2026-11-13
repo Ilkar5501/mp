@@ -89,7 +89,7 @@ class EventEngineTests(unittest.TestCase):
         for stat in ('pow','qik','def','rec','spd','jmp'):self.assertEqual(main.visible_bonus(stat),4)
 
     def test_cpu_pools_match_confirmed_challenges_and_main_merges(self):
-        self.assertEqual([r['name'] for r in EVENT_TEAMS['tiny_titans']], ["Suga's Challenge","Lev's Challenge","Aran's Challenge","Tanaka's Challenge"])
+        self.assertEqual([r['name'] for r in EVENT_TEAMS['tiny_titans']], ["Suga's Challenge","Lev's Challenge","Aran's Challenge","Tanaka's Challenge","Takeru's Challenge"])
         for i in range(4):self.assertTrue(all(card.merge_level==10 for card,_,_ in cpu_specs('tiny_titans',i)))
         for i in range(12):self.assertEqual(cpu_specs('all_for_one',i)[0][0].merge_level,10)
 

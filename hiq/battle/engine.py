@@ -196,6 +196,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
 
     # ---------- match / turn lifecycle ----------
     def apply_match_start(self):
+        self.equipment_match_start()
         # Daichi permanently accelerates his own Ultimate.
         for u in self.units:
             if has(u,'Daichi') and self.skill_enabled(u,'B'):
@@ -756,7 +757,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
                 impacts.add((source.uid,'B'))
             if has(source,'Atsumu') and self.skill_enabled(source,'B') and self.named_buff_active(ctx,u,'Excellence') and self.skill_spd(u,stats[u.uid])>self.skill_spd(foe,stats[foe.uid]): impacts.add((source.uid,'B'))
             if has(source,'Iwaizumi') and ctx.temp_flags.get('offensive_crit_uid')==u.uid and not self.crits_disabled(ctx) and not has(foe,'Kanoka'): impacts.add((source.uid,'C'))
-        return {(uid,slot) for uid,slot in impacts if uid in allowed}
+        return {(uid,slot) for uid,slot in impacts if uid in allowed and slot in ('U','A','B','C')}
 
     # ---------- permissions / followups ----------
     def can_counter(self, ctx, defender, attacker, stats=None):
@@ -887,9 +888,6 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         if has(u,'Kageyama') or has(u,'Bokuto') or has(u,'Fukunaga') or has(u,'Tendo'): return False
         if has(u,'Nishinoya') or has(u,'Hirugami') or has(u,'Konoha') or has(u,'Kyotani'): return False
         if has(u,'Hinata','Miracle Maker') or has(u,'Kita') or has(u,'Yaku') or has(u,'Unnan') or has(u,'Yamagata') or has(u,'Kosuke'): return False
-        if has(u,'Daisho'):
-            st=self.combat_stats(ctx)
-            return self.skill_spd(u,st[u.uid])>=self.skill_spd(foe,st[foe.uid])-4
         if has(u,'Takeru'):
             st=self.combat_stats(ctx)
             return self.skill_spd(u,st[u.uid])>=self.skill_spd(foe,st[foe.uid])-4
@@ -955,6 +953,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         off_trigger=False; def_trigger=False
         temp={}
         if self.offensive_ult_ready(attacker,defender,ctx):
+            daisho_penalty=any(mod.value<0 for mod in defender.visible_debuffs.values())
             # Suga's Pow/Jmp+12 is part of the Ultimate payload and therefore affects live checks/crit.
             if has(attacker,'Suga'): temp[attacker.uid]={'pow':12,'jmp':12}
             off_trigger=self.trigger_ultimate(attacker,ctx,'offense')
@@ -963,7 +962,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
                 defender.add_status('Heal Block',False,through_next_action=True)
                 if defender is ctx.original_actor:
                     defender.statuses['Heal Block'].expires_after_action = defender.actions_taken + 2
-            if has(attacker,'Daisho') and off_trigger: ctx.temp_flags[f'{attacker.uid}:daisho_followup']=True
+            if has(attacker,'Daisho') and off_trigger and daisho_penalty: ctx.temp_flags[f'{attacker.uid}:daisho_followup']=True
         if self.defensive_ult_ready(defender,attacker,ctx):
             def_trigger=self.trigger_ultimate(defender,ctx,'defense')
 
@@ -1134,6 +1133,8 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         if item_dr:drs.append(item_dr)
         receiving=self.anchor_receiving(ctx,attacker,defender,stats)
         if receiving and followup:drs.append(.30)
+        if 'Inspiration' in attacker.statuses:
+            drs=[dr if ultimate_start<=index<ultimate_end else dr*.5 for index,dr in enumerate(drs)]
         if 'Perfect Window' in attacker.statuses: drs=drs[ultimate_start:ultimate_end]
         if neutralize_percent_dr: drs=[]
         for dr in drs: damage=floori(damage*(1-dr))
@@ -1438,9 +1439,9 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
                 for f in self.enemy_team(x).units:f.add_status('Free Ball',False,through_next_action=True)
         # Takeru heal / swap when his Ultimate triggered
         if has(a,'Takeru') and a.ult_triggered_this_combat:
-            self.heal_team(a,10); self._swap_enemy_formation(a)
+            self.heal_team(a,20); self._swap_enemy_formation(a)
         if has(d,'Takeru') and d.ult_triggered_this_combat:
-            self.heal_team(d,10); self._swap_enemy_formation(d)
+            self.heal_team(d,20); self._swap_enemy_formation(d)
         # Restoration requires Korai's Ultimate in this combat.
         for k in (a,d):
             if has(k,'Korai') and k.ult_triggered_this_combat:

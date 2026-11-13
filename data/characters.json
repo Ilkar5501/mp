@@ -2012,8 +2012,8 @@
     "abilities": {
       "U": {
         "name": "Venomous Followthrough",
-        "text": "During combat, unit's Ultimate can trigger only if unit's Spd ≥ foe's Spd−4. When unit's Ultimate triggers, deals +15 damage for that attack and grants unit a guaranteed follow-up attack for that combat.",
-        "timing": "COMBAT_LIVE > ULTIMATE_TRIGGER"
+        "text": "When unit's Ultimate triggers, deals +15 damage for that attack and, if foe has any visible penalty at that time, grants unit a guaranteed follow-up attack for that combat.",
+        "timing": "ULTIMATE_TRIGGER"
       },
       "A": {
         "name": "Sudden Lunge",
@@ -2032,7 +2032,7 @@
       }
     },
     "extended": {
-      "U": "",
+      "U": "Checks visible stat penalties when the Ultimate triggers. Negative statuses alone do not qualify. A granted follow-up lasts for that combat, even if the penalty is later removed; normal follow-up denial still applies.",
       "A": "",
       "B": "",
       "C": "[Free Ball]: When unit is selected as a combat target, effects that would allow an ally to enter combat in unit's place are disabled."
@@ -2073,7 +2073,7 @@
       },
       "B": {
         "name": "Rally Surge",
-        "text": "After combat, if unit's Ultimate triggered during that combat, restores 10 HP to team.",
+        "text": "After combat, if unit's Ultimate triggered during that combat, restores 20 HP to team.",
         "timing": "COMBAT_END"
       },
       "C": {

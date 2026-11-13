@@ -11,7 +11,19 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.4 — reward fixes
+## Latest release: v12.1.5 — Daisho, Takeru and Zunda Mochi Bento
+
+Daisho's Ultimate no longer checks Speed; its guaranteed follow-up requires a
+visible stat penalty when the Ultimate triggers. Takeru retains the original
+Spd ≥ foe Spd−4 condition and Rally Surge restores 20 HP. His new exclusive
+Zunda Mochi Bento reduces maximum cooldown once per match, grants Qik/Spd+5,
+and grants Inspiration on an Ultimate trigger. Inspiration halves non-Ultimate
+percentage damage reduction, including equipment/statuses; Ultimate, flat and
+fixed-damage protection remain unchanged. Earn Bento shards in the appended
+Takeru Tiny Titans challenge and craft with the standard signature recipe.
+See V12.1.5-DAISHO-TAKERU.md.
+
+## Previous release: v12.1.4 — reward fixes
 
 Tournament wins and four-human participation now have independent allowances;
 every human entrant earns eligible participation rewards. Regression checks confirm

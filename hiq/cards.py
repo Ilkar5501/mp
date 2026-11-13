@@ -125,6 +125,9 @@ def card_embed(bot: discord.Client, card: CardInstance, *, art_slot=None) -> dis
     role = f' • Class: {c.role_class}' if c.role_class else ''
     item=ITEM_BY_KEY.get(equipment_key(card))
     embed.add_field(name='Equipment',value=(f'**{item["name"]}** • `{card.equipped_item_id}`\n{item["effect"]}' if item else 'Empty'),inline=False)
+    if item and item.get('extended'):
+        field=embed.fields[-1]
+        embed.set_field_at(len(embed.fields)-1,name=field.name,value=field.value+'\n'+item['extended'],inline=False)
     embed.set_footer(text=f'Instance ID: {card.instance_id}{role} • Stats include merges, nature and permanent equipment bonuses.')
     return embed
 

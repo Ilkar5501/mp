@@ -26,6 +26,13 @@ class EquipmentEffects:
     def lev_signature(self,u):return u.character.id=='Lev — Young Lion' and self.gear(u,'lev_rookie_gains')
     def aran_signature(self,u):return u.character.id=='Aran — Thunderous Cannon' and self.gear(u,'aran_out_of_nowhere')
     def tanaka_signature(self,u):return u.character.id=='Tanaka — Unbreakable Wing' and self.gear(u,'tanaka_mountain_chalk')
+    def takeru_signature(self,u):return u.character.id=='Takeru — Flashing Salmon' and self.gear(u,'takeru_zunda_mochi_bento')
+
+    def equipment_match_start(self):
+        for u in self.units:
+            if self.takeru_signature(u) and not self.expansion_memory[u.uid].get('zunda_opening'):
+                u.max_cd=max(0,u.max_cd-1);u.cd=min(u.cd,u.max_cd)
+                self.expansion_memory[u.uid]['zunda_opening']=True
 
     def cardinal_foes(self,u):
         own=self.formation_units(self.team(u));foes=self.formation_units(self.enemy_team(u));index=own.index(u)
@@ -91,6 +98,7 @@ class EquipmentEffects:
 
     def equipment_mods(self,ctx,u,foe,initiated,mods):
         key=equipment_key(u.card) or ''
+        if self.takeru_signature(u):mods['qik']+=5;mods['spd']+=5
         if initiated and self.suga_signature(u):
             mods['spd']+=5
             for stat in ('pow','def','rec'):mods[stat]+=3
@@ -138,6 +146,9 @@ class EquipmentEffects:
         return self.gear(u,'synchronized_attack') and any(a is not u and a.character.school==u.character.school for a in self.team(u).units)
 
     def equipment_ultimate(self,u):
+        if self.takeru_signature(u):
+            for ally in self.effect_recipients(u,include_self=True):
+                ally.add_status('Inspiration',True,through_next_action=True,source=(u.uid,'Item'))
         if self.gear(u,'captain_s_armband'):
             for ally in self.team(u).units:ally.clear_debuffs()
 

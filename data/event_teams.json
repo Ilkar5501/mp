@@ -219,6 +219,61 @@
         }
       ],
       "tier": "Challenge"
+    },
+    {
+      "name": "Takeru's Challenge",
+      "signature_key": "takeru_zunda_mochi_bento",
+      "tier": "Challenge",
+      "units": [
+        {
+          "character_id": "Takeru — Flashing Salmon",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "takeru_zunda_mochi_bento"
+        },
+        {
+          "character_id": "Daichi — Steadfast Captain",
+          "lane": "front",
+          "merge": 10,
+          "boon": "def",
+          "bane": "hp",
+          "equipment_key": "manager_s_good_luck_charm"
+        },
+        {
+          "character_id": "Kuroo — Black Cat's Gambit",
+          "lane": "front",
+          "merge": 10,
+          "boon": "def",
+          "bane": "hp",
+          "equipment_key": "loaded_reception"
+        },
+        {
+          "character_id": "Suga — Relentless Setter",
+          "lane": "back",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "suga_mapo_tofu_bowls"
+        },
+        {
+          "character_id": "Kageyama — Prodigious Talent",
+          "lane": "back",
+          "merge": 10,
+          "boon": "jmp",
+          "bane": "hp",
+          "equipment_key": "loaded_approach"
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "back",
+          "merge": 10,
+          "boon": "rec",
+          "bane": "hp",
+          "equipment_key": "water_bottle"
+        }
+      ]
     }
   ],
   "all_for_one": [
