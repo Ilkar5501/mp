@@ -9,7 +9,7 @@ from ..event_modes import af1_support_slots as support_slots
 from ..event_store import EventStore
 from ..event_modes import EVENT_TEAMS,TinyTitansEngine,AllForOneEngine
 from ..tournament import restore_specs
-from ..ui import SafeView,PURPLE
+from ..ui import SafeView,PURPLE,clear_team_button
 from .battle import BattleLogLauncher
 
 class OwnedView(SafeView):
@@ -78,9 +78,15 @@ class AF1TeamView(OwnedView):
         remove=discord.ui.Button(label='Remove',row=3,disabled=e is None)
         async def delete(i):await self.save(i,None,'front')
         remove.callback=delete;self.add_item(remove)
-        use=discord.ui.Button(label='Use Team',row=3,style=discord.ButtonStyle.success,disabled=self.team['entries'][0] is None)
+        clear=clear_team_button()
+        async def clear_cb(i):
+            self.team=await self.cog.store.clear_team(self.uid,self.team['slot'],self.team['revision'])
+            self.index=0;self.page=0;self.build()
+            await i.response.edit_message(embed=self.embed(),view=self)
+        clear.callback=clear_cb;self.add_item(clear)
+        use=discord.ui.Button(label='Confirm',row=3,style=discord.ButtonStyle.success,disabled=self.team['entries'][0] is None)
         async def activate(i):
-            await self.cog.store.use(self.uid,self.team['slot']);await i.response.send_message(f'Using **{self.team["name"]}** in AF1.',ephemeral=True)
+            await self.cog.store.use(self.uid,self.team['slot']);await i.response.send_message(f'Confirmed **{self.team["name"]}** for AF1.',ephemeral=True)
         use.callback=activate;self.add_item(use)
 
 class EventMenu(OwnedView):

@@ -11,6 +11,7 @@ from ..battle.engine import BattleEngine
 from ..cards import display_title
 from ..data import CHARACTERS, CHAR_BY_ID, character_search_score,match_roster_names
 from ..models import CardInstance
+from ..ui import clear_team_button
 
 def test_positions(size):
     if size==6:
@@ -84,7 +85,7 @@ class BotPlacementView(discord.ui.View):
         if empty is None:
             if len(slots)==1: empty=slots[0]
             else:
-                await interaction.response.edit_message(content='That line is full. Use a specific replacement slot in the builder or reset the team.',view=None); return
+                await interaction.response.edit_message(content='That line is full. Choose a specific replacement slot in the builder or use Clear Team.',view=None); return
         current[empty]=self.character_id
         await save_test_row(self.parent_view.bot.db,self.parent_view.owner_id,current)
         await interaction.response.edit_message(content=f'Added **{display_title(newc)}** to the test team {"Frontline" if lane=="front" else "Backline"}.',view=None)
@@ -135,7 +136,7 @@ class BotSetView(discord.ui.View):
         prev=discord.ui.Button(emoji='◀️',style=discord.ButtonStyle.secondary,row=1,disabled=self.page<=0)
         nxt=discord.ui.Button(emoji='▶️',style=discord.ButtonStyle.secondary,row=1,disabled=self.page>=self.pages-1)
         search=discord.ui.Button(label='Search Name/Title',style=discord.ButtonStyle.primary,row=1)
-        reset=discord.ui.Button(label='Reset',style=discord.ButtonStyle.danger,row=1)
+        reset=clear_team_button()
         async def prev_cb(i): self.page=max(0,self.page-1); self.rebuild(); await i.response.edit_message(embed=await self.embed(),view=self)
         async def next_cb(i): self.page=min(self.pages-1,self.page+1); self.rebuild(); await i.response.edit_message(embed=await self.embed(),view=self)
         async def search_cb(i): await i.response.send_modal(BotSearchModal(self))
@@ -158,6 +159,14 @@ class BotSetView(discord.ui.View):
                 view=TestCustomization(self,k,row)
                 await i.response.send_message(embed=view.embed(),view=view,ephemeral=False)
             button.callback=custom_cb;self.add_item(button)
+        confirm=discord.ui.Button(label='Confirm',style=discord.ButtonStyle.success,row=3)
+        async def confirm_cb(i):
+            row=await self.bot.db.get_test_team(self.owner_id) or {}
+            if not all(row.get(key) for _,key,_ in test_positions(row.get('team_format',3))):
+                await i.response.send_message('Complete the team before confirming.',ephemeral=True);return
+            self.stop()
+            await i.response.edit_message(content='Test team confirmed.',embed=await self.embed(),view=None)
+        confirm.callback=confirm_cb;self.add_item(confirm)
 
 
 class TestingCog(commands.Cog):

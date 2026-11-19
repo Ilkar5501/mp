@@ -69,6 +69,13 @@ class EventStore(CommunityStore):
             await c.execute('UPDATE af1_teams SET entries_json=?,revision=revision+1 WHERE owner_id=? AND slot=?',(json.dumps(entries),uid,slot))
             return self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
 
+    async def clear_team(self,uid,slot,revision):
+        async with self.tx() as c:
+            row=await self.one(c,'SELECT revision FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot))
+            if not row or row['revision']!=revision:raise ValueError('This team changed. Reopen ;af1team.')
+            await c.execute('UPDATE af1_teams SET entries_json=?,revision=revision+1 WHERE owner_id=? AND slot=?',(json.dumps([None]*7),uid,slot))
+            return self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
+
     async def _specs(self,c,uid,entries,*,allow_empty_supports=False):
         if not entries or entries[0] is None or (not allow_empty_supports and any(e is None for e in entries)):raise ValueError('Choose your main first: ;af1team.')
         specs=[]

@@ -6,6 +6,11 @@ import time
 PURPLE=discord.Color.from_rgb(72,42,115)
 
 
+def clear_team_button():
+    # Discord exposes no yellow button style; keep the yellow marker consistent.
+    return discord.ui.Button(label='Clear Team',emoji='🟨',style=discord.ButtonStyle.secondary,row=4)
+
+
 def expire_result_view(view, deadline=None):
     """Absolute lifetime: button activity cannot keep heavy results in RAM forever."""
     view.result_deadline = deadline if deadline is not None else time.monotonic()+1800

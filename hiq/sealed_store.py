@@ -55,10 +55,18 @@ class SealedStore(CommunityStore):
             st['team_versions'][key]=version+1
             await self._save(c,row);return row
 
+    async def clear_team(self,sid,uid,version):
+        async with self.tx() as c:
+            row=await self.current(c,sid,uid,'building');st=row['state'];key=str(uid)
+            if st['team_versions'].get(key,0)!=version:raise ValueError('Your team changed in another menu. Reopen Edit Team.')
+            st['draft_teams'][key]=[None]*6;st['teams'].pop(key,None)
+            st['team_versions'][key]=version+1
+            await self._save(c,row);return row
+
     async def submit(self,sid,uid,version):
         async with self.tx() as c:
             row=await self.current(c,sid,uid,'building');st=row['state'];key=str(uid)
-            if st['team_versions'].get(key,0)!=version:raise ValueError('Your team changed. Reopen Edit Team before submitting.')
+            if st['team_versions'].get(key,0)!=version:raise ValueError('Your team changed. Reopen Edit Team before confirming.')
             cids=st['draft_teams'].get(key,[]);validate_team(st['picks'][key],cids)
             st['teams'][key]=snapshot_specs(team_specs(sid,uid,cids))
             if len(st['teams'])==len(st['order']):

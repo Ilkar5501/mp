@@ -11,7 +11,24 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.16 — Targeted battle trigger logs
+## Latest release: v12.1.17 — Consistent team builder controls
+
+Normal creation/editing, personal test-team, AF1 and Sealed builders now have
+an immediate Clear Team button on its own row, separate from green Confirm.
+Discord has no yellow button style, so Clear Team uses a yellow square marker
+on a neutral button. Team completion controls consistently say Confirm; the
+PvP format selectors also use Confirm 3v3/6v6.
+
+Clear Team empties the normal editor draft; Confirm saves it and Cancel keeps
+the original lineup. Auto-saving builders clear their saved positions directly.
+Clearing AF1 affects only the selected slot and advances its edit revision.
+Clearing Sealed withdraws prior confirmation, keeps drafted cards available,
+and invalidates older editors; it is rejected once the tournament starts.
+Saved-team selectors retain existing ranked PvP lineup protections.
+
+This cumulative release preserves earlier v12 updates and SQLite cleanup tools.
+
+## Previous release: v12.1.16 — Targeted battle trigger logs
 
 Start-of-turn and start-of-action targeted effects now log the ability or item,
 timing, team owner and resolved recipients. Random targets are named after

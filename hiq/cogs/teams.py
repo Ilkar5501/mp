@@ -10,6 +10,7 @@ from ..cards import display_title
 from ..data import CHAR_BY_ID, character_search_score
 from ..models import SavedTeam
 from ..team_render import render_team_image
+from ..ui import clear_team_button
 
 PURPLE = discord.Color.from_rgb(72, 42, 115)
 
@@ -178,7 +179,7 @@ class TeamCreateView(discord.ui.View):
                     current.append(f'**{label}:** —')
             e.add_field(name='Current Team', value='\n'.join(current), inline=False)
         if team.complete:
-            e.add_field(name='Ready', value='This team is complete and is now your **active battle team**.', inline=False)
+            e.add_field(name='Ready', value='This team is complete. **Confirm** finishes the builder.', inline=False)
         e.set_footer(text='Discord select menus cannot show remote character-icon images; icons are rendered in ;teamview instead.')
         return e
 
@@ -206,7 +207,7 @@ class TeamCreateView(discord.ui.View):
         prev = discord.ui.Button(emoji='◀️', style=discord.ButtonStyle.secondary, row=1, disabled=self.page <= 0)
         nxt = discord.ui.Button(emoji='▶️', style=discord.ButtonStyle.secondary, row=1, disabled=self.page >= self.pages - 1)
         search = discord.ui.Button(label='Search by Name/Title', style=discord.ButtonStyle.primary, row=1)
-        reset = discord.ui.Button(label='Reset Team', style=discord.ButtonStyle.danger, row=1)
+        reset = clear_team_button()
         clear_search = discord.ui.Button(label='Clear Search', style=discord.ButtonStyle.secondary, row=2, disabled=not bool(self.search_query))
 
         async def prev_cb(interaction):
@@ -225,6 +226,7 @@ class TeamCreateView(discord.ui.View):
         async def reset_cb(interaction):
             await self.bot.db.clear_saved_team(self.owner_id, self.slot)
             self.selected_names.clear()
+            self.page=0
             self.rebuild()
             await interaction.response.edit_message(embed=await self.build_embed(), view=self)
 
@@ -234,7 +236,7 @@ class TeamCreateView(discord.ui.View):
             self.rebuild()
             await interaction.response.edit_message(embed=await self.build_embed(), view=self)
 
-        toggle = discord.ui.Button(label='Switch to 6v6' if self.team_format==3 else 'Switch to 3v3 (resets team)', row=2, style=discord.ButtonStyle.secondary)
+        toggle = discord.ui.Button(label='Switch to 6v6' if self.team_format==3 else 'Switch to 3v3 (clears team)', row=2, style=discord.ButtonStyle.secondary)
         async def toggle_cb(interaction):
             await interaction.response.defer()
             try:
@@ -251,6 +253,17 @@ class TeamCreateView(discord.ui.View):
         clear_search.callback = clear_cb
         for item in (prev, nxt, search, reset, clear_search):
             self.add_item(item)
+        confirm=discord.ui.Button(label='Confirm',style=discord.ButtonStyle.success,row=3)
+        async def confirm_cb(interaction):
+            team=await self.bot.db.get_saved_team(self.owner_id,self.slot)
+            if not team or not team.complete:
+                await interaction.response.send_message('Complete the team before confirming.',ephemeral=True);return
+            try:await self.bot.db.set_active_team(self.owner_id,self.slot)
+            except ValueError as error:
+                await interaction.response.send_message(str(error),ephemeral=True);return
+            self.stop()
+            await interaction.response.edit_message(content='Team confirmed.',embed=await self.build_embed(),view=None)
+        confirm.callback=confirm_cb;self.add_item(confirm)
 
 
 class EditPositionSelect(discord.ui.Select):
@@ -348,7 +361,7 @@ class TeamEditView(TeamCreateView):
             card=self.by_id.get(iid)
             lines.append(f'**{label}:** '+(f'{display_title(CHAR_BY_ID[card.character_id])} +{card.merge_level} (`{iid}`)' if card else 'Empty'))
         e.description=f'**{self.team_format}v{self.team_format}**\n'+'\n'.join(lines)
-        e.add_field(name='Pending changes',value='Select a position, then a replacement card. Selecting an existing member swaps positions. **Confirm** saves the whole lineup; **Cancel** discards changes.',inline=False)
+        e.add_field(name='Pending changes',value='Select a position, then a replacement card. Selecting an existing member swaps positions. **Clear Team** empties the draft immediately; **Confirm** saves the whole lineup; **Cancel** discards changes.',inline=False)
         e.set_footer(text=f'Page {self.page+1}/{self.pages} • editing '+self.draft_positions[self.position][0])
         return e
 
@@ -364,6 +377,7 @@ class TeamEditView(TeamCreateView):
         nxt=discord.ui.Button(emoji='▶️',row=2,disabled=self.page>=self.pages-1)
         search=discord.ui.Button(label='Search',row=2,style=discord.ButtonStyle.primary)
         reset=discord.ui.Button(label='Reset Changes',row=2)
+        clear=clear_team_button()
         confirm=discord.ui.Button(label='Confirm',row=3,style=discord.ButtonStyle.success)
         cancel=discord.ui.Button(label='Cancel',row=3,style=discord.ButtonStyle.danger)
         async def page_cb(interaction,delta):
@@ -374,6 +388,10 @@ class TeamEditView(TeamCreateView):
         async def search_cb(i): await i.response.send_modal(SearchTeamModal(self))
         async def reset_cb(i):
             self.draft=list(self.original);self.team_format=self.original_format;self.position=0;self.search_query='';self.page=0;self.rebuild()
+            await i.response.edit_message(embed=await self.build_embed(),view=self)
+        async def clear_cb(i):
+            if self.finished or self.saving:return
+            self.draft=[None]*self.team_format;self.position=0;self.page=0;self.rebuild()
             await i.response.edit_message(embed=await self.build_embed(),view=self)
         async def confirm_cb(i):
             if self.finished or self.saving: return
@@ -389,12 +407,12 @@ class TeamEditView(TeamCreateView):
         async def cancel_cb(i):
             self.finished=True;self.stop()
             await i.response.edit_message(content='Team edit cancelled. No changes were saved.',embed=None,view=None)
-        toggle=discord.ui.Button(label='Switch to 6v6' if self.team_format==3 else 'Switch to 3v3 (resets draft)',row=3)
+        toggle=discord.ui.Button(label='Switch to 6v6' if self.team_format==3 else 'Switch to 3v3 (clears draft)',row=3)
         async def toggle_cb(i):
             self.toggle_format(); self.rebuild()
             await i.response.edit_message(embed=await self.build_embed(),view=self)
         toggle.callback=toggle_cb;self.add_item(toggle)
-        for item,callback in ((prev,prev_cb),(nxt,next_cb),(search,search_cb),(reset,reset_cb),(confirm,confirm_cb),(cancel,cancel_cb)):
+        for item,callback in ((prev,prev_cb),(nxt,next_cb),(search,search_cb),(reset,reset_cb),(clear,clear_cb),(confirm,confirm_cb),(cancel,cancel_cb)):
             item.callback=callback;self.add_item(item)
 
 

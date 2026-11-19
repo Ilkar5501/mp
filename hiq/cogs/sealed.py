@@ -71,19 +71,26 @@ class SealedTeamView(SafeView):
             await i.response.edit_message(embed=self.embed(fresh,uid),view=SealedTeamView(cog,fresh,uid,position))
             await cog.update_board(self.sid)
         units.callback=place;self.add_item(units)
-        submit=discord.ui.Button(label='Submit Team',style=discord.ButtonStyle.success,disabled=not all(team),row=2)
+        submit=discord.ui.Button(label='Confirm',style=discord.ButtonStyle.success,disabled=not all(team),row=2)
         async def commit(i):
             await i.response.defer()
             fresh=await cog.store.submit(self.sid,uid,version)
-            await i.edit_original_response(content='Team submitted. '+('All teams locked; the tournament starts now.' if fresh['status']=='running' else 'You may edit it until everyone submits.'),embed=None,view=None)
+            await i.edit_original_response(content='Team confirmed. '+('All teams locked; the tournament starts now.' if fresh['status']=='running' else 'You may edit it until everyone confirms.'),embed=None,view=None)
             await cog.update_board(self.sid)
             if fresh['status']=='running':cog.launch(self.sid)
         submit.callback=commit;self.add_item(submit)
+        from ..ui import clear_team_button
+        clear=clear_team_button()
+        async def clear_cb(i):
+            fresh=await cog.store.clear_team(self.sid,uid,version)
+            await i.response.edit_message(embed=self.embed(fresh,uid),view=SealedTeamView(cog,fresh,uid,0))
+            await cog.update_board(self.sid)
+        clear.callback=clear_cb;self.add_item(clear)
 
     @staticmethod
     def embed(row,uid):
         team=row['state']['draft_teams'].get(str(uid),[None]*6)
-        e=discord.Embed(title='Sealed • Private 6v6 Team',description='Choose a position, then one of your eight drafted characters. One variant per player name; replacing a variant clears that player’s previous slot.\nTeams remain private. Editing a submitted team removes its submitted status until you submit again.',color=PURPLE)
+        e=discord.Embed(title='Sealed • Private 6v6 Team',description='Choose a position, then one of your eight drafted characters. One variant per player name; replacing a variant clears that player’s previous slot.\nTeams remain private. Editing or clearing a confirmed team removes its confirmation until you confirm again.',color=PURPLE)
         for label,slots in (('FRONT ROW',range(3)),('BACK ROW',range(3,6))):
             e.add_field(name=label,value='\n'.join(f'**{POSITIONS[i]}:** {team[i] or "Empty"}' for i in slots),inline=False)
         return e
@@ -152,7 +159,7 @@ class SealedCog(commands.Cog):
         e.description='**Passing order**\n'+' → '.join(f'<@{uid}>' for uid in st['order'])
         if row['status'] in LIVE:e.description+=f'\nExpires <t:{int(st["expires_at"])}:R> • <t:{int(st["expires_at"])}:f>'
         if row['status']=='drafting':e.add_field(name='Draft progress',value='\n'.join(f'<@{uid}> — {len(st["picks"][str(uid)])}/8 picks' for uid in st['order']),inline=False)
-        if row['status']=='building':e.add_field(name='SEALED TEAM SUBMISSIONS',value='\n'.join(f'{"✅" if str(uid) in st["teams"] else "⏳"} <@{uid}> — {"Submitted" if str(uid) in st["teams"] else "Building Team"}' for uid in st['order']),inline=False)
+        if row['status']=='building':e.add_field(name='SEALED TEAM CONFIRMATIONS',value='\n'.join(f'{"✅" if str(uid) in st["teams"] else "⏳"} <@{uid}> — {"Confirmed" if str(uid) in st["teams"] else "Building Team"}' for uid in st['order']),inline=False)
         if row['status']=='complete':e.description+=f'\n🏆 **<@{st["champion"]}> is the Sealed champion!**'
         if row['status']=='broken':e.description+='\nTournament paused. Use ;sealedview to resume.'
         if row['status']=='expired':e.description+='\n'+st.get('expiration_reason','Draft expired.')

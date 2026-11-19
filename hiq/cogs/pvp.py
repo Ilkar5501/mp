@@ -72,7 +72,7 @@ class PvPTeamView(SafeView):
             async def toggle(i,f=fmt,r=revision,value=locked):
                 await self.cog.store.set_lock(self.uid,f,not value,r);await self.refresh(i)
             lock.callback=toggle;self.add_item(lock)
-            default=discord.ui.Button(label=f'Use {fmt}v{fmt}',row=3,style=discord.ButtonStyle.primary if self.prefs['profile']['default_format']==fmt else discord.ButtonStyle.secondary,disabled=not row or not row['valid'])
+            default=discord.ui.Button(label=f'Confirm {fmt}v{fmt}',row=3,style=discord.ButtonStyle.primary if self.prefs['profile']['default_format']==fmt else discord.ButtonStyle.secondary,disabled=not row or not row['valid'])
             async def activate(i,f=fmt):await self.cog.store.set_default(self.uid,f);await self.refresh(i)
             default.callback=activate;self.add_item(default)
 
