@@ -11,7 +11,15 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.14 — Lighter raids and equipment recycling
+## Latest release: v12.1.15 — Unified Blessing shop listing
+
+Clan Shop now lists Duo: 1200 alongside the 1–5★ Blessing prices in one
+Blessing section. The purchase dropdown groups the Duo option with the other
+Blessing rarities. Duo Blessings still cost 1,200 Clan Dollars and work through
+`;bless`; purchase, quantity and rarity-matching behavior are unchanged.
+This release includes all v12.1.14 changes and SQLite cleanup tools.
+
+## Previous release: v12.1.14 — Lighter raids and equipment recycling
 
 Regular raid equipment now costs 2/4/6/8 item shards to craft, accrues enough
 shards for one craft per item per day, and recycles for 8/16/24/32 Clan Dollars

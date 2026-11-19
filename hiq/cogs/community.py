@@ -252,9 +252,10 @@ class CommunityCog(commands.Cog):
         if not await self.store.clan(user_id=ctx.author.id):await ctx.send('Join a clan to use its shop.');return
         e=discord.Embed(title='Clan Shop',description=f'Balance: **{await self.store.wallet(ctx.author.id)} clan coins**',color=PURPLE)
         for kind,mult,desc in [('Merge Copy',150,'Universal +1 merge material for a card of matching rarity. Cannot be a survivor or battle unit.'),('Blessing',200,'Choose a new boon/bane on a matching-rarity card. Same stat = Neutral.'),('Star Pack',100,'One random card of the chosen rarity, with a normal rolled nature.')]:
-            e.add_field(name=kind,value=desc+'\n'+' • '.join(f'{s}★: {s*mult}' for s in range(1,6)),inline=False)
+            prices=' • '.join(f'{s}★: {s*mult}' for s in range(1,6))
+            if kind=='Blessing':prices+=' • Duo: 1200'
+            e.add_field(name=kind,value=desc+'\n'+prices,inline=False)
         e.set_footer(text='All items have unique IDs, are stored in ;inv, and can be traded. Donations/check-ins are separate from the war reward cap.')
-        e.add_field(name='Duo Blessing — 1,200 Clan Dollars',value='Choose a new boon/bane for a Duo card with ;bless. Priced as a 6★ Blessing.',inline=False)
         from .youth_menus import BulkClanShop
         from ..gameplay_store import GameplayStore
         e.add_field(name='Consumables',value='PvP Shield: 750 Clan Dollars · Shiny Stone: 15,000 Clan Dollars. Activate with ;use itemID.',inline=False)
