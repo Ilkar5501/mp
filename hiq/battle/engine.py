@@ -17,6 +17,7 @@ from .expansion import ExpansionEffects
 from .anchor import AnchorEffects
 from .sakusa import SakusaEffects
 from .youth import YouthEffects,YOUTH_TITLES
+from .semi import SemiEffects
 
 STATS = ('pow','qik','def','rec','spd','jmp')
 
@@ -40,7 +41,7 @@ def has(u: BattleUnit, name: str, title: str | None = None) -> bool:
     return u.name == name and (u.title == title if title is not None else u.title not in YOUTH_TITLES)
 
 
-class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
+class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
     """Deterministic-enough 3v3 / 6v6 simulator for the current HiQ Battler rules.
 
     The spreadsheet remains the display/source-of-truth. Character-specific mechanics that cannot
@@ -271,6 +272,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         if not forced: self.equipment_turn_start(u)
         self.expansion_turn_start(u)
         self.youth_turn(u)
+        self.semi_turn_start(u)
         team=self.team(u); enemy=self.enemy_team(u)
         # Kanbayashi supports himself and one randomly selected ally among the
         # lowest current Def+Rec ties. Each buff lasts through its recipient's next action.
@@ -574,6 +576,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         if has(u,'Kita') and ctx and ctx.defender is u: neutral_penalty.update(('def','rec'))
         if has(u,'Asahi') and self.team_hp_pct(u)<=75: neutral_penalty.update(('pow','jmp'))
         if has(u,'Tenma Udai'): neutral_penalty.update(STATS)
+        if has(u,'Unnan') and self.skill_enabled(u,'C'):neutral_penalty.update(STATS)
         if has(u,'Iizuna') and ctx and ctx.attacker is u:
             neutral_penalty.update(('qik','def','rec'))
         if has(u,'Kiryu','Last Hope') and ctx and ctx.attacker is u and u.burden_stacks>=5:
@@ -618,6 +621,10 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
     def _combat_mods(self,ctx,u,foe,us,fs,initiated):
         m=SpeedBonuses() if self.aran_signature(u) else defaultdict(int)
         team=self.team(u)
+        if u.name=='Semi' and initiated and self.skill_enabled(u,'A'):m['qik']+=5;m['spd']+=5
+        for stat,mod in u.next_combat_bonuses.items():
+            m[stat]+=mod.value
+            ctx.temp_flags.setdefault('ally_stat_impacts',{}).setdefault(u.uid,set()).update(mod.sources)
         if has(u,'Sakusa'):
             for stat in ('pow','rec','jmp'):m[stat]+=self.sakusa_stacks(u)
         if has(u,'Iizuna') and initiated:
@@ -943,7 +950,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
 
     def offensive_ult_ready(self,u,foe,ctx):
         if u.cd!=0 or 'UltimateDisabled' in u.statuses or self.ultimates_suppressed(ctx): return False
-        if u.title=='Young Emperor':return False
+        if u.title=='Young Emperor' or u.name=='Semi':return False
         # Postcombat/save/defensive Ultimates do not trigger on own attack.
         if u.name in ('Echigo','Watari','Ezota','Himekawa','Akifumi'): return False
         if has(u,'Kageyama') or has(u,'Bokuto') or has(u,'Fukunaga') or has(u,'Tendo'): return False
@@ -1008,7 +1015,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         # Unnan delays the initiating foe's first ready offensive Ultimate.
         if has(defender,'Unnan') and ctx.defender is defender and attacker.uid not in ctx.first_attack_by:
             st=self.combat_stats(ctx)
-            if st[defender.uid]['def']>=st[attacker.uid]['def']+5 and self.offensive_ult_ready(attacker,defender,ctx):
+            if st[defender.uid]['def']>=st[attacker.uid]['def'] and self.offensive_ult_ready(attacker,defender,ctx):
                 attacker.cd=min(attacker.max_cd,attacker.cd+1)
         ctx.first_attack_by.add(attacker.uid)
         off_trigger=False; def_trigger=False
@@ -1079,7 +1086,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
             if has(attacker,'Kiryu','Reluctant Titan'): penetration=max(penetration,0.50)
             if has(attacker,'Tenma Udai'): penetration=max(penetration,0.30)
             if has(attacker,'Kanoka'): penetration=max(penetration,0.60)
-        if has(attacker,'Goshiki') and self.start_enemy_hp_pct(ctx,attacker)<=75: penetration=max(penetration,0.20)
+        if has(attacker,'Goshiki') and self.start_enemy_hp_pct(ctx,attacker)<=75: penetration=max(penetration,0.25)
         if has(attacker,'Korai') and attacker.lane=='back' and self.skill_spd(attacker,a)>self.skill_spd(defender,d): penetration=max(penetration,0.20)
         if 'Open Play' in attacker.statuses: penetration=max(penetration,0.20)
         if off_trigger and attacker.title in ('Old Friend','Kings of the Playground'):penetration=max(penetration,.30)
@@ -1181,7 +1188,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
             if has(defender,'Hinata','Miracle Maker'): drs.append(0.30)
             if has(defender,'Kita'): drs.append(0.30)
             if has(defender,'Yaku'): drs.append(0.40)
-            if has(defender,'Unnan'): drs.append(0.50)
+            if has(defender,'Unnan'): drs.append(0.55)
             if has(defender,'Takeru'): drs.append(0.40)
             if has(defender,'Kosuke'): drs.append(0.40)
         ultimate_end=len(drs)
@@ -1282,6 +1289,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         # Keep these reactions available even when the last hit depleted a team's HP.
         if ctx.temp_flags.get('new_unit_after_combat_resolved'): return
         ctx.temp_flags['new_unit_after_combat_resolved']=True
+        self.semi_after_combat(ctx)
         self.equipment_after_combat(ctx)
         self.talent_after_combat(ctx)
         self.expansion_after_combat(ctx)
@@ -1327,6 +1335,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
             if has(unit,'Kanoka'):
                 for foe in self.enemy_team(unit).units: foe.cd=min(foe.max_cd,foe.cd+1)
                 self._log(f'{self._unit_label(unit)} C: all foes remaining Ultimate CD +1 (up to maximum).')
+        for unit in (ctx.attacker,ctx.defender):unit.next_combat_bonuses.clear()
 
     def damage_team(self,team,amount,*,source=None):
         team.hp=max(0,team.hp-max(0,amount))
@@ -1363,6 +1372,10 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         initiations[self.turn]=initiations.get(self.turn,0)+1
         ctx.temp_flags['start_hp_pct']={'A':pct(self.team_a.hp,self.team_a.max_hp),'B':pct(self.team_b.hp,self.team_b.max_hp)}
         for u in (a,d): u.ult_triggered_this_combat=False; u.attacks_this_combat=0
+        self.semi_precombat(ctx)
+        if not self.team(a).living() or not self.team(d).living():return
+        ctx.temp_flags['start_team_hp']={team.side:team.hp for team in (self.team_a,self.team_b)}
+        ctx.temp_flags['start_hp_pct']={'A':pct(self.team_a.hp,self.team_a.max_hp),'B':pct(self.team_b.hp,self.team_b.max_hp)}
         self.expansion_combat_start(ctx)
         self.anchor_combat_start(ctx)
         self.sakusa_precheck(ctx)

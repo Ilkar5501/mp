@@ -53,6 +53,7 @@ def character_search_score(c: CharacterDef, query: str) -> float:
     cid = _norm(c.id)
     card = _norm(c.card_id)
     haystacks = [name, title, cid, card, f'{name} {title}'.strip(), f'{title} {name}'.strip()]
+    if c.name=='Semi':haystacks.extend(['eita semi','semi eita'])
     if c.name=='Kosuke' and c.title=='Behind the Iron Wall':
         haystacks.extend(['sakunami','kosuke sakunami','sakunami kosuke'])
     if q == name or q == cid or q == card:
@@ -106,7 +107,7 @@ def match_roster_names(query):
     groups={}
     for c in CHARACTERS:groups.setdefault(norm(c.name),[]).append(c)
     aliases={name:name for name in groups}
-    aliases.update({'sakunami':'kosuke','kosuke sakunami':'kosuke','sakunami kosuke':'kosuke'})
+    aliases.update({'sakunami':'kosuke','kosuke sakunami':'kosuke','sakunami kosuke':'kosuke','eita semi':'semi','semi eita':'semi'})
     if q in aliases:
         name=aliases[q]
         return [c for c in CHARACTERS if norm(c.name)==name or any(norm(component)==name for component in c.components)]

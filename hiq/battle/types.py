@@ -38,6 +38,7 @@ class BattleUnit:
     cd: int
     visible_buffs: dict[str,TimedMod] = field(default_factory=dict)
     visible_debuffs: dict[str,TimedMod] = field(default_factory=dict)
+    next_combat_bonuses: dict[str,TimedMod] = field(default_factory=dict)
     statuses: dict[str,Status] = field(default_factory=dict)
     barrier: int = 0
     barrier_sources: set[tuple[str,str]] = field(default_factory=set)

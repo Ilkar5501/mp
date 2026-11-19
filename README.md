@@ -1,17 +1,39 @@
-# HiQ Battler v12
+# HiQ Battler v13
 
 Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requirements.txt`, set `DISCORD_TOKEN` in the host environment, and start `python bot.py`. Existing database files are upgraded automatically without resetting wallets, collections, equipment IDs, or earned daily caps.
 
 ## Deploying from GitHub to Wispbyte
 
-1. Stop the bot and back up the current SQLite database, then install the v12 runtime or changed-files update.
+1. Stop the bot and back up the current SQLite database, then install the v13 runtime or changed-files update.
 2. Keep the existing `DISCORD_TOKEN`, database, and `HIQ_DB_PATH`. Store the database on persistent host storage, outside any checkout directory that the deployment replaces.
 3. Install `requirements.txt` and restart with `python bot.py`. The existing Dockerfile also supports deployment.
 4. Verify `;questview`, `;raid`, `;clanwar`, and `;sealed` in a test channel. Slash commands synchronize at startup; prefix commands remain available if Discord sync fails.
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.17 — Consistent team builder controls
+## Latest release: v13.0.0
+
+- Added 4-star Semi — Pinch Ace (Setter, Shiratorizawa, Qik DPS): 150 HP,
+  53 Qik, 27 Def, 28 Rec, 36 Spd, 35 Jmp. Lightning Serve (CD 4) deals
+  pre-combat damage to each active foe: floor(max(0, Qik − Rec) × 0.8),
+  contributing to shared team HP. It uses visible pre-combat stats and cannot
+  trigger during a hit or on a counterattack.
+- Talent's Troubles grants initiating Qik/Spd+5. After Lightning Serve triggers,
+  non-Setter allies gain Pow/Qik+4 during their next combat; noncombat actions
+  do not consume it. Setter's Magic reduces remaining cooldown every turn by
+  the number of allied Setters, including Semi, capped at 3. Rightful Rhythm
+  refunds 1 cooldown after a combat in which his Ultimate triggered.
+- Unnan: Pow 49, Jmp 39; the defensive check now requires Def ≥ foe's Def;
+  Ultimate reduction is 55%; C also neutralizes his visible penalties in combat.
+- Ezota: Rec 34. Nozawa: HP 172. Goshiki: Pow 51 and 25% Killer Instinct
+  penetration. Kita: Rec 36. All ten existing Liberos gain 1 base Rec.
+- Suna: HP 156, Qik 51, Def 34, Jmp 35. Hirugami: HP 168, Pow 47, Jmp 34.
+
+Semi is available through the existing 4-star card pipelines. His art and icon
+use the supplied URLs. The gallery includes his Qik/Spd/Jmp boon guidance and
+HP bane recommendation. All previous fixes and SQLite cleanup tools remain.
+
+## Previous release: v12.1.17 — Consistent team builder controls
 
 Normal creation/editing, personal test-team, AF1 and Sealed builders now have
 an immediate Clear Team button on its own row, separate from green Confirm.

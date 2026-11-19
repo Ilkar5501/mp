@@ -163,14 +163,14 @@
     "card_art": "https://i.pinimg.com/1200x/76/10/3e/76103e0efbf39b07c2a481fbbc4aab26.jpg",
     "character_icon": "https://i.pinimg.com/1200x/e5/8d/1f/e58d1f2fd6f54aee57b8bb0db614627d.jpg",
     "stats": {
-      "hp": 164,
-      "pow": 46,
+      "hp": 168,
+      "pow": 47,
       "qik": 0,
       "def": 38,
       "rec": 26,
       "spd": 25,
-      "jmp": 33,
-      "bst": 332
+      "jmp": 34,
+      "bst": 338
     },
     "ult_cd": 2,
     "abilities": {
@@ -473,10 +473,10 @@
       "pow": 0,
       "qik": 44,
       "def": 23,
-      "rec": 37,
+      "rec": 38,
       "spd": 42,
       "jmp": 32,
-      "bst": 328
+      "bst": 329
     },
     "ult_cd": 3,
     "abilities": {
@@ -520,14 +520,14 @@
     "card_art": "https://i.pinimg.com/1200x/7f/22/7e/7f227eedc6187ce4c65668d91bde678c.jpg",
     "character_icon": "https://i.pinimg.com/1200x/df/58/2b/df582bda502789ad90bec6aca35bae96.jpg",
     "stats": {
-      "hp": 152,
+      "hp": 156,
       "pow": 0,
-      "qik": 50,
-      "def": 33,
+      "qik": 51,
+      "def": 34,
       "rec": 26,
       "spd": 36,
-      "jmp": 34,
-      "bst": 331
+      "jmp": 35,
+      "bst": 338
     },
     "ult_cd": 2,
     "abilities": {
@@ -830,10 +830,10 @@
       "pow": 0,
       "qik": 47,
       "def": 26,
-      "rec": 40,
+      "rec": 41,
       "spd": 32,
       "jmp": 35,
-      "bst": 352
+      "bst": 353
     },
     "ult_cd": 2,
     "abilities": {
@@ -1085,10 +1085,10 @@
       "pow": 0,
       "qik": 48,
       "def": 22,
-      "rec": 35,
+      "rec": 36,
       "spd": 30,
       "jmp": 30,
-      "bst": 333
+      "bst": 334
     },
     "ult_cd": 4,
     "abilities": {
@@ -1187,10 +1187,10 @@
       "pow": 0,
       "qik": 48,
       "def": 23,
-      "rec": 33,
+      "rec": 34,
       "spd": 33,
       "jmp": 30,
-      "bst": 319
+      "bst": 320
     },
     "ult_cd": 2,
     "abilities": {
@@ -1439,24 +1439,24 @@
     "character_icon": "https://i.pinimg.com/736x/ac/6d/4c/ac6d4cb940197aff3d3412bf3d94f4e0.jpg",
     "stats": {
       "hp": 160,
-      "pow": 48,
+      "pow": 49,
       "qik": 0,
       "def": 35,
       "rec": 25,
       "spd": 26,
-      "jmp": 38,
-      "bst": 332
+      "jmp": 39,
+      "bst": 334
     },
     "ult_cd": 3,
     "abilities": {
       "U": {
         "name": "Absorb the Blow",
-        "text": "When unit's Ultimate triggers during a Qik-attacker foe's attack, reduces damage from that attack by 50%.",
+        "text": "When unit's Ultimate triggers during a Qik-attacker foe's attack, reduces damage from that attack by 55%.",
         "timing": "ULTIMATE_TRIGGER"
       },
       "A": {
         "name": "Choke the Offense",
-        "text": "During combat, if foe initiated combat, inflicts Pow/Qik−6 on foe. Before foe's first attack, if that attack can trigger foe's Ultimate and unit's Def ≥ foe's Def+5, inflicts Ultimate cooldown count+1 on foe. Cannot exceed foe's maximum Ultimate cooldown.",
+        "text": "During combat, if foe initiated combat, inflicts Pow/Qik−6 on foe. Before foe's first attack, if that attack can trigger foe's Ultimate and unit's Def ≥ foe's Def, inflicts Ultimate cooldown count+1 on foe. Cannot exceed foe's maximum Ultimate cooldown.",
         "timing": "COMBAT_LIVE"
       },
       "B": {
@@ -1466,7 +1466,7 @@
       },
       "C": {
         "name": "Ground their Game",
-        "text": "After unit's combat, inflicts Jmp−3 on all foes through their next actions.",
+        "text": "During combat, neutralizes unit's visible stat penalties. After unit's combat, inflicts Jmp−3 on all foes through their next actions.",
         "timing": "COMBAT_END"
       }
     },
@@ -1595,10 +1595,10 @@
       "pow": 43,
       "qik": 0,
       "def": 24,
-      "rec": 35,
+      "rec": 36,
       "spd": 25,
       "jmp": 27,
-      "bst": 346
+      "bst": 347
     },
     "ult_cd": 2,
     "abilities": {
@@ -1796,13 +1796,13 @@
     "character_icon": "https://i.pinimg.com/736x/c0/8a/22/c08a2237fcc96b60f3aea00f0b03769c.jpg",
     "stats": {
       "hp": 156,
-      "pow": 50,
+      "pow": 51,
       "qik": 0,
       "def": 25,
       "rec": 25,
       "spd": 33,
       "jmp": 31,
-      "bst": 320
+      "bst": 321
     },
     "ult_cd": 2,
     "abilities": {
@@ -1818,7 +1818,7 @@
       },
       "B": {
         "name": "Killer Instinct",
-        "text": "At start of combat, if opposing team's HP ≤75%, treats foe's Def as if reduced by 20% during damage calculation for that combat.",
+        "text": "At start of combat, if opposing team's HP ≤75%, treats foe's Def as if reduced by 25% during damage calculation for that combat.",
         "timing": "COMBAT_START"
       },
       "C": {
@@ -1850,10 +1850,10 @@
       "pow": 0,
       "qik": 49,
       "def": 25,
-      "rec": 34,
+      "rec": 35,
       "spd": 30,
       "jmp": 28,
-      "bst": 326
+      "bst": 327
     },
     "ult_cd": 5,
     "abilities": {
@@ -2462,10 +2462,10 @@
       "pow": 0,
       "qik": 44,
       "def": 27,
-      "rec": 33,
+      "rec": 34,
       "spd": 30,
       "jmp": 33,
-      "bst": 327
+      "bst": 328
     },
     "ult_cd": 3,
     "abilities": {
@@ -2666,10 +2666,10 @@
       "pow": 0,
       "qik": 45,
       "def": 28,
-      "rec": 34,
+      "rec": 35,
       "spd": 31,
       "jmp": 28,
-      "bst": 336
+      "bst": 337
     },
     "ult_cd": 3,
     "abilities": {
@@ -2768,10 +2768,10 @@
       "pow": 0,
       "qik": 44,
       "def": 24,
-      "rec": 26,
+      "rec": 27,
       "spd": 37,
       "jmp": 34,
-      "bst": 321
+      "bst": 322
     },
     "ult_cd": 2,
     "abilities": {
@@ -2815,14 +2815,14 @@
     "card_art": "https://i.pinimg.com/736x/e1/1c/5e/e11c5e030428e1a7fe5050867c02e908.jpg",
     "character_icon": "https://i.pinimg.com/736x/d5/a9/5f/d5a95f4d3d5c8696fa3554fea0df3bcf.jpg",
     "stats": {
-      "hp": 160,
+      "hp": 172,
       "pow": 48,
       "qik": 0,
       "def": 26,
       "rec": 33,
       "spd": 30,
       "jmp": 29,
-      "bst": 326
+      "bst": 338
     },
     "ult_cd": 3,
     "abilities": {
@@ -2921,10 +2921,10 @@
       "pow": 47,
       "qik": 0,
       "def": 26,
-      "rec": 33,
+      "rec": 34,
       "spd": 34,
       "jmp": 30,
-      "bst": 330
+      "bst": 331
     },
     "ult_cd": 2,
     "abilities": {
@@ -3075,10 +3075,10 @@
       "pow": 50,
       "qik": 0,
       "def": 27,
-      "rec": 28,
+      "rec": 29,
       "spd": 37,
       "jmp": 34,
-      "bst": 332
+      "bst": 333
     },
     "ult_cd": 3,
     "abilities": {
@@ -3279,10 +3279,10 @@
       "pow": 0,
       "qik": 49,
       "def": 25,
-      "rec": 27,
+      "rec": 28,
       "spd": 33,
       "jmp": 32,
-      "bst": 324
+      "bst": 325
     },
     "ult_cd": 3,
     "abilities": {
@@ -3675,5 +3675,56 @@
       "Oikawa",
       "Kageyama"
     ]
+  },
+  {
+    "id": "Semi — Pinch Ace",
+    "name": "Semi",
+    "title": "Pinch Ace",
+    "position": "S",
+    "school": "Shiratorizawa",
+    "rarity": 4,
+    "role_class": "DPS",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/semi.png",
+    "character_icon": "https://i.pinimg.com/736x/5d/9e/9f/5d9e9f56a444cc05cdd0da1d5e91e4ab.jpg",
+    "stats": {
+      "hp": 150,
+      "pow": 0,
+      "qik": 53,
+      "rec": 28,
+      "spd": 36,
+      "jmp": 35,
+      "bst": 329,
+      "def": 27
+    },
+    "ult_cd": 4,
+    "abilities": {
+      "U": {
+        "name": "Lightning Serve",
+        "text": "Before unit's initiated combat, if unit's Ultimate is ready, triggers unit's Ultimate. For each foe, deals damage = (unit's pre-combat Qik − that foe's pre-combat Rec) × 0.8 (minimum 0).",
+        "timing": "PRE_COMBAT"
+      },
+      "A": {
+        "name": "Talent's Troubles",
+        "text": "If unit initiates combat, grants Qik/Spd+5 during combat. If unit's Ultimate triggered before combat, grants Pow/Qik+4 to all non-Setter allies during their next combat.",
+        "timing": "PRE_COMBAT > COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Setter's Magic",
+        "text": "At start of turn, reduces unit's remaining Ultimate cooldown count by the number of Setters on unit's team, including unit (max. 3).",
+        "timing": "TURN_START"
+      },
+      "C": {
+        "name": "Rightful Rhythm",
+        "text": "After combat, if unit's Ultimate triggered before or during that combat, grants Ultimate cooldown count−1 to unit.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "Calculates floor(max(0, Qik − Rec) × 0.8) for each foe using stats before combat, including visible bonuses and penalties. In-combat modifiers do not apply. Each result damages the shared team HP pool. Does not trigger on counterattacks. Does not use critical hits or in-combat damage reduction.",
+      "A": "The ally bonus is an in-combat bonus. An action without combat does not consume it. Multiple applications do not stack.",
+      "B": "Reduces remaining cooldown, not maximum cooldown.",
+      "C": "Activates once after a combat in which Lightning Serve triggered; does not grant a refund when no Ultimate triggered."
+    },
+    "clarification_count": 0
   }
 ]
