@@ -106,6 +106,7 @@ class AllForOneEngine(BattleEngine):
     def talent_turn_start(self,u):
         if has(u,'Kageyama','Prodigious Talent') and u.uid not in self.support_ids:
             self.grant_open_play(u,u,'C')
+            self.log_target_effect(u,'C',[u],'grants Open Play through next action')
         else:super().talent_turn_start(u)
 
     def guiding_break_count(self,team):
@@ -153,29 +154,44 @@ class AllForOneEngine(BattleEngine):
         elif name=='Konoha':buffs={'jmp':3}
         elif name=='Koganegawa' and f.character.school=='Date Tech':buffs={'def':4,'rec':4,'jmp':4}
         elif name=='Aone' and f.character.school=='Date Tech':buffs={'pow':4,'qik':4,'spd':4}
-        elif name=='Suwa' and f.lane=='front':f.add_status('Bunch Block',True,source=(source.uid,'C'))
+        elif name=='Suwa' and f.lane=='front':
+            f.add_status('Bunch Block',True,source=(source.uid,'C'))
+            self.log_target_effect(source,'C',[f],'grants Bunch Block')
         elif name=='Washio' and f.lane=='front':buffs={'def':3}
         elif name=='Komi' and f.lane=='back':buffs={'rec':3}
         elif name=='Watari':buffs={'pow':7,'qik':7}
         elif name=='Shirabu':
             buffs={'pow':6,'qik':6}
-            if f.character.school=='Shiratorizawa':f.clear_debuffs()
+            if f.character.school=='Shiratorizawa':
+                f.clear_debuffs()
+                self.log_target_effect(source,'C',[f],'removes visible penalties')
         elif name in ('Usuri','Futakuchi'):
             if name=='Futakuchi':self.damage_team(enemy,20,source=source)
+            affected=[]
             for foe in enemy.units:
+                if any(mod.value>0 for mod in foe.visible_buffs.values()):affected.append(foe)
                 for stat,mod in list(foe.visible_buffs.items()):
                     if mod.value>0:foe.add_debuff(stat,-mod.value);foe.visible_buffs.pop(stat,None)
+            self.log_target_effect(source,'C',enemy.units if name=='Futakuchi' else affected,'20 damage to opposing team; converts visible bonuses to penalties' if name=='Futakuchi' else 'converts visible bonuses to penalties')
         elif name=='Kenma':
             foe=enemy.units[0];foe.add_debuff('jmp',-7)
+            self.log_target_effect(source,'B',[foe],'Jmp−7 through next action')
             if f.lane=='front':buffs={'pow':4,'qik':4}
             if foe.statuses.get('Fatigue') and int(foe.statuses['Fatigue'].payload or 0)>=3:buffs['spd']=3
         elif name=='Yamagata' and self.team_hp_pct(f)<=50:
             f.barrier+=f.base['hp']//10;f.barrier_sources.add((source.uid,'C'))
-        elif name=='Gao' and f.noncombat_stat('def')>f.noncombat_stat('rec'):f.cd=max(0,f.cd-1)
-        elif name=='Maruyama' and f.character.position=='WS' and f.noncombat_stat('rec')>f.noncombat_stat('def'):f.cd=max(0,f.cd-1)
+            self.log_target_effect(source,'C',[f],'grants a barrier equal to 10% of recipient base HP')
+        elif name=='Gao' and f.noncombat_stat('def')>f.noncombat_stat('rec'):
+            f.cd=max(0,f.cd-1)
+            self.log_target_effect(source,'C',[f],'remaining Ultimate CD −1 (minimum 0)')
+        elif name=='Maruyama' and f.character.position=='WS' and f.noncombat_stat('rec')>f.noncombat_stat('def'):
+            f.cd=max(0,f.cd-1)
+            self.log_target_effect(source,'C',[f],'remaining Ultimate CD −1 (minimum 0)')
         elif has(source,'Kageyama','Prodigious Talent') and f.character.position in ('MB','WS','OP'):
             self.grant_open_play(f,source,'C')
+            self.log_target_effect(source,'C',[f],'grants Open Play through next action')
         for stat,value in buffs.items():f.add_buff(stat,value,source=(source.uid,'C'))
+        if buffs:self.log_target_effect(source,'C',[f],'/'.join(stat.title() for stat in buffs)+' bonuses through next action ('+', '.join(f'{stat.title()}+{value}' for stat,value in buffs.items())+')')
 
     def end_turn(self):
         super().end_turn()

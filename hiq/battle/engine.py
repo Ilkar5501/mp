@@ -194,6 +194,27 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
     def _log(self, text: str):
         self.log.append(text)
 
+    def log_target_effect(self, source, slot, targets, effect, *, phase='start of turn', name=None):
+        """Describe resolved recipients; never select targets or change battle state."""
+        targets=list(targets)
+        if not targets:return
+        ids={u.uid for u in targets}
+        team=self.team(source);enemy=self.enemy_team(source)
+        if ids=={u.uid for u in enemy.units}:group='all foes: '
+        elif ids=={u.uid for u in team.units}:group='all allies (including self): '
+        elif ids=={u.uid for u in team.units if u is not source}:group='all other allies: '
+        else:group=''
+        def unit_label(unit):
+            own=self.team(unit).units
+            label=self._unit_label(unit)
+            if sum(a.name==unit.name for a in own)>1:
+                index=next(i for i,a in enumerate(own,1) if a is unit)
+                label+=f' — {unit.title} (slot {index})'
+            return label
+        label=name or source.character.abilities[slot].name or slot
+        recipients=', '.join(unit_label(u) for u in targets)
+        self._log(f'[{self.turn} · {phase}] {unit_label(source)} — {label}: {effect} → {group}{recipients}.')
+
     # ---------- match / turn lifecycle ----------
     def apply_match_start(self):
         self.equipment_match_start()
@@ -216,6 +237,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         self.turn_start_damage = {u.uid: u.damage_dealt for u in self.units}
         self.siphon_used.clear()
         self.turn += 1
+        self._log(f'— Turn {self.turn}: start-of-turn effects —')
         self.crit_reward_used = defaultdict(int)
         for u in self.units:
             u.acted_this_turn = False; u.extra_actions_this_turn = 0
@@ -243,6 +265,7 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
         return order
 
     def _turn_start_owner(self, u: BattleUnit, *, forced=False):
+        if forced:self._log(f'[{self.turn}] Repeating start-of-turn abilities for {self._unit_label(u)}.')
         self.begin_bonus_event()
         self.talent_turn_start(u)
         if not forced: self.equipment_turn_start(u)
@@ -260,14 +283,18 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
                 target=self.rng.choice(tied)
                 for stat in ('def','rec'): target.add_buff(stat,4,source=(u.uid,'A'))
                 target.cd=max(0,target.cd-1)
-                self._log(f'{self._unit_label(u)} A: Def/Rec+4 to self and {target.name}; {target.name} remaining Ultimate CD -1.')
+                self.log_target_effect(u,'A',[u,target],'Def/Rec+4 through next action')
+                self.log_target_effect(u,'A',[target],'remaining Ultimate CD −1')
+            else:self.log_target_effect(u,'A',[u],'Def/Rec+4 through next action')
         if has(u,'Tenma Udai'):
             row_allies=[a for a in team.units if a is not u and a.lane==u.lane]
             for ally in row_allies or [u]:
                 for stat in ('def','rec'): ally.add_buff(stat,4,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',row_allies or [u],'Def/Rec+4 through next action')
         # Ushijima
         if has(u,'Ushijima') and self.turn % 2 == 1:
             for a in team.units: a.add_buff('jmp',6,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',team.units,'Jmp+6 through next action')
         # Shirabu
         if has(u,'Shirabu'):
             allies=[a for a in team.units if a is not u]
@@ -275,58 +302,80 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
                 target=self.rng.choice(allies)
                 for x in (u,target):
                     x.add_buff('pow',6,source=(u.uid,'C')); x.add_buff('qik',6,source=(u.uid,'C'))
+                self.log_target_effect(u,'C',[u,target],'Pow/Qik+6 through next action')
             if self.allied(u,'Ushijima'):
                 for ally in allies:
-                    if has(ally,'Ushijima'): ally.add_buff('pow',6,source=(u.uid,'C'))
-                    if ally.character.school=='Shiratorizawa': ally.clear_debuffs()
+                    if has(ally,'Ushijima'):
+                        ally.add_buff('pow',6,source=(u.uid,'C'))
+                        self.log_target_effect(u,'C',[ally],'Pow+6 through next action')
+                    if ally.character.school=='Shiratorizawa':
+                        ally.clear_debuffs()
+                        self.log_target_effect(u,'C',[ally],'removes visible penalties')
         # Hirugami
         if has(u,'Hirugami') and u.lane=='front':
             for a in team.units:
                 if a is u or a.character.position=='MB': a.add_buff('def',4,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',[a for a in team.units if a is u or a.character.position=='MB'],'Def+4 through next action')
         # Aone
         if has(u,'Aone'):
             for a in team.units:
                 if a is not u and a.character.school=='Date Tech':
                     for s in ('pow','qik','spd'): a.add_buff(s,4,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',[a for a in team.units if a is not u and a.character.school=='Date Tech'],'Pow/Qik/Spd+4 through next action')
         # Lev
         if has(u,'Lev'):
             allies=[a for a in team.units if a is not u]
-            if allies: max(allies,key=lambda x:x.noncombat_stat('rec')).add_buff('rec',6,source=(u.uid,'C'))
+            if allies:
+                target=max(allies,key=lambda x:x.noncombat_stat('rec'));target.add_buff('rec',6,source=(u.uid,'C'))
+                self.log_target_effect(u,'C',[target],'Rec+6 through next action')
         # Suna
         if has(u,'Suna'):
             allies=[a for a in team.units if a is not u]
-            if allies: max(allies,key=lambda x:x.noncombat_stat('spd')).add_buff('spd',6,source=(u.uid,'C'))
+            if allies:
+                target=max(allies,key=lambda x:x.noncombat_stat('spd'));target.add_buff('spd',6,source=(u.uid,'C'))
+                self.log_target_effect(u,'C',[target],'Spd+6 through next action')
         # Washio / Komi
         if has(u,'Washio'):
             for a in team.units:
                 if a is not u and a.lane=='front': a.add_buff('def',3,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',[a for a in team.units if a is not u and a.lane=='front'],'Def+3 through next action')
         if has(u,'Komi'):
             for a in team.units:
                 if a is not u and a.lane=='back': a.add_buff('rec',3,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',[a for a in team.units if a is not u and a.lane=='back'],'Rec+3 through next action')
         # Konoha
         if has(u,'Konoha'):
             for a in team.units:
                 if a is not u: a.add_buff('jmp',3,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',[a for a in team.units if a is not u],'Jmp+3 through next action')
         # Bokuto
         if has(u,'Bokuto') and pct(team.hp,team.max_hp)<=75:
             u.add_debuff('def',-3); u.add_debuff('rec',-3)
+            self.log_target_effect(u,'C',[u],'Def/Rec−3 through next action')
             for a in team.units:
                 if a is not u: a.add_buff('def',3,source=(u.uid,'C')); a.add_buff('rec',3,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',[a for a in team.units if a is not u],'Def/Rec+3 through next action')
         # Usuri converts visible bonuses before foes take their next actions.
         if has(u,'Usuri'):
+            affected=[]
             for f in enemy.units:
+                if any(mod.value>0 for mod in f.visible_buffs.values()):affected.append(f)
                 for stat, mod in list(f.visible_buffs.items()):
                     if mod.value > 0:
                         f.add_debuff(stat, -mod.value)
                         f.visible_buffs.pop(stat, None)
+            self.log_target_effect(u,'C',affected,'converts visible bonuses to penalties')
         # Kenma
         if has(u,'Kenma'):
             target=max(enemy.units,key=lambda x:x.noncombat_stat('jmp'))
             target.add_debuff('jmp',-7)
+            self.log_target_effect(u,'B',[target],'Jmp−7 through next action')
             for a in team.units:
                 if a.lane=='front': a.add_buff('pow',4,source=(u.uid,'C')); a.add_buff('qik',4,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',[a for a in team.units if a.lane=='front'],'Pow/Qik+4 through next action')
             if any(int(x.statuses.get('Fatigue').payload or 0)>=3 for x in enemy.units if x.statuses.get('Fatigue')):
                 for a in team.units: a.add_buff('spd',3,source=(u.uid,'C'))
+                self.log_target_effect(u,'C',team.units,'Spd+3 through next action')
         # Suga's visible opening support.
         if has(u,'Suga'):
             signature=self.suga_signature(u)
@@ -335,10 +384,13 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
                 targets=self.rng.sample(allies,min(2,len(allies))) if signature else [self.rng.choice(allies)]
                 for target in targets:
                     for stat in ('pow','qik','spd'): target.add_buff(stat,6,source=(u.uid,'C'))
+                self.log_target_effect(u,'C',targets,'Pow/Qik/Spd+6 through next action')
         # Aran
         if has(u,'Aran'):
             allies=[a for a in team.units if a is not u]
-            if allies: max(allies,key=lambda x:x.noncombat_stat('pow')).add_buff('pow',6,source=(u.uid,'C'))
+            if allies:
+                target=max(allies,key=lambda x:x.noncombat_stat('pow'));target.add_buff('pow',6,source=(u.uid,'C'))
+                self.log_target_effect(u,'C',[target],'Pow+6 through next action')
         # Tanaka cooldown priming
         if has(u,'Tanaka') and u.cd==u.max_cd: u.cd=max(0,u.cd-1)
         # Yaku turn-1 priming
@@ -348,9 +400,11 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
             for a in team.units:
                 if a is not u and a.character.school=='Date Tech':
                     for s in ('def','rec','jmp'): a.add_buff(s,4,source=(u.uid,'C'))
+            self.log_target_effect(u,'C',[a for a in team.units if a is not u and a.character.school=='Date Tech'],'Def/Rec/Jmp+4 through next action')
         # Futakuchi: chip then convert visible bonuses to penalties.
         if has(u,'Futakuchi'):
             self.damage_team(enemy,20,source=u)
+            self.log_target_effect(u,'C',enemy.units,'20 damage to opposing team; converts visible bonuses to penalties')
             for f in enemy.units:
                 for stat,mod in list(f.visible_buffs.items()):
                     if mod.value>0:
@@ -362,20 +416,25 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
             if ep<=50: u.cd=max(0,u.cd-1)
         # Tendo
         if has(u,'Tendo'):
+            affected=[]
             for f in enemy.units:
                 if f.lane==u.lane and f.base['hp']<=u.base['hp']:
+                    if any(mod.value>0 for mod in f.visible_buffs.values()):affected.append(f)
                     for stat,mod in list(f.visible_buffs.items()):
                         if mod.value>0:
                             f.add_debuff(stat,-mod.value); f.visible_buffs.pop(stat,None)
+            self.log_target_effect(u,'C',affected,'converts visible bonuses to penalties')
         # Yamagata
         if has(u,'Yamagata'):
             if pct(team.hp,team.max_hp)<=75: u.cd=max(0,u.cd-1)
             if pct(team.hp,team.max_hp)<=50:
                 for a in team.units: a.barrier += floori(a.base['hp']*0.10); a.barrier_sources.add((u.uid,'C'))
+                self.log_target_effect(u,'C',team.units,'grants a barrier equal to 10% of recipient base HP')
         # Gao
         if has(u,'Gao'):
             for a in team.units:
                 if a.noncombat_stat('def')>a.noncombat_stat('rec'): a.cd=max(0,a.cd-1)
+            self.log_target_effect(u,'C',[a for a in team.units if a.noncombat_stat('def')>a.noncombat_stat('rec')],'remaining Ultimate CD −1 (minimum 0)')
 
     def action_start(self, actor: BattleUnit):
         # Visible penalties affect the remaining queue after this action resolves.
@@ -385,11 +444,13 @@ class BattleEngine(YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects,
             targets=[self.rng.choice(unacted)] if unacted else foes
             for f in targets:
                 f.add_debuff('spd',-5); f.add_debuff('jmp',-5)
+            self.log_target_effect(actor,'B',targets,'Spd/Jmp−5 through next action',phase='start of action')
         # Akaashi grants charge accel to debuffed allies at the start of their action.
         for a in self.team(actor).units:
             if has(a,'Akaashi') and a is not actor and actor.visible_debuffs:
                 actor.add_status('AkaashiCharge',True,payload=[x.uid for x in self.team(actor).units if has(x,'Akaashi') and x is not actor])
                 actor.statuses['AkaashiCharge'].expires_after_action=actor.actions_taken+1
+                self.log_target_effect(a,'C',[actor],'grants Ultimate cooldown charge +1 when attacking this action',phase='start of action')
 
     def end_turn(self):
         for u in self.units:

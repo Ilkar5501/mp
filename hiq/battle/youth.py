@@ -22,6 +22,7 @@ class YouthEffects:
             for a in daichis:
                 a.add_status('Fun Memory',True,payload=u.uid,source=(u.uid,'B'))
                 for stat in ('pow','def','rec','spd','jmp'):a.add_buff(stat,1,through_next_action=False,source=(u.uid,'B'))
+            self.log_target_effect(u,'B',daichis,'Pow/Def/Rec/Spd/Jmp+1 and Fun Memory until Ikejiri’s next start of turn')
         elif self.turn%2==0:self.heal_team(u,20)
 
     def youth_mods(self,ctx,u,foe,us,fs,initiated,m):

@@ -46,7 +46,7 @@ class ProdigiousTalentEffects:
             self.talent_previous_target[unit.uid] = target.uid
             targets['current'].add(target.uid)
             self.grant_open_play(target, unit, 'C')
-            self._log(f'{self._unit_label(unit)} C: grants Open Play to {target.name} through their next action.')
+            self.log_target_effect(unit,'C',[target],'grants Open Play through next action')
         else:
             self.talent_previous_target[unit.uid] = None
             for stat in ('pow', 'def', 'rec', 'jmp'):

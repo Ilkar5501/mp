@@ -68,17 +68,22 @@ class EquipmentEffects:
             stat='rec' if self.turn%2 else 'def'
             for ally in self.team(u).units:
                 if ally.lane==u.lane:ally.add_buff(stat,6,through_next_action=False,turn=self.turn,source=(u.uid,'Item'))
+            self.log_target_effect(u,'Item',[a for a in self.team(u).units if a.lane==u.lane],f'{stat.title()}+6 this turn',name='Alternating Drills')
         if key=='pressure_board':
+            targets=[]
             for foe in self.cardinal_foes(u):
                 if foe.base['hp']<=u.base['hp']:
+                    if foe.visible_buffs:targets.append(foe)
                     for stat,mod in list(foe.visible_buffs.items()):foe.add_debuff(stat,-mod.value)
                     foe.visible_buffs.clear()
+            self.log_target_effect(u,'Item',targets,'converts visible bonuses to penalties',name='Pressure Board')
         if key=='energy_drink' and self.turn==1:u.cd=max(0,u.cd-1)
         if key=='water_bottle' and self.turn%2==0:self.heal_team(u,20)
         if key=='onset_of_desperation' and self.team_hp_pct(u)<=50:u.add_buff('spd',7,through_next_action=False,turn=self.turn,source=(u.uid,'Item'))
         if key in ('freezing_stare','death_stare'):
             target=max(foes,key=lambda f:f.noncombat_stat('spd' if key=='freezing_stare' else 'jmp'))
             target.add_debuff('spd' if key=='freezing_stare' else 'jmp',-5)
+            self.log_target_effect(u,'Item',[target],('Spd' if key=='freezing_stare' else 'Jmp')+'−5 through next action',name=key.replace('_',' ').title())
         plans={'rock_solid_game_plan':('pow','qik'),'all_out_game_plan':('def',),'tricky_game_plan':('rec',),'tiring_game_plan':('spd',),'wicked_game_plan':('jmp',)}
         if key in plans:
             own=self.team(u).units
@@ -95,6 +100,7 @@ class EquipmentEffects:
             for f in targets:
                 if f.noncombat_stat('rec')<u.noncombat_stat('rec'):
                     for stat in plans[key]:f.add_debuff(stat,-3)
+                    self.log_target_effect(u,'Item',[f],'/'.join(s.title() for s in plans[key])+'−3 through next action',name=key.replace('_',' ').title())
 
     def equipment_mods(self,ctx,u,foe,initiated,mods):
         key=equipment_key(u.card) or ''

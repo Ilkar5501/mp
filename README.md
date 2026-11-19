@@ -11,7 +11,21 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.15 — Unified Blessing shop listing
+## Latest release: v12.1.16 — Targeted battle trigger logs
+
+Start-of-turn and start-of-action targeted effects now log the ability or item,
+timing, team owner and resolved recipients. Random targets are named after
+selection; multi-target effects name each recipient, and teamwide effects say
+all foes/all allies. Same-name units on one team are distinguished by card title
+and team slot. This includes Daisho, Suga's item-modified support, Kenma,
+Himekawa, turn-start equipment and AF1 support effects. Repeated turn-start
+abilities from Watari are identified. A turn-start heading separates opening
+effects from the action queue. Combat targeting, effect resolution and rewards
+are unchanged; logs keep the existing replay retention policy.
+
+This cumulative release includes earlier v12 updates and SQLite cleanup tools.
+
+## Previous release: v12.1.15 — Unified Blessing shop listing
 
 Clan Shop now lists Duo: 1200 alongside the 1–5★ Blessing prices in one
 Blessing section. The purchase dropdown groups the Duo option with the other

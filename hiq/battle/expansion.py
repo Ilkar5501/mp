@@ -60,10 +60,14 @@ class ExpansionEffects:
             for ally in team.units:
                 if ally is unit or ally.character.school=='Nekoma':
                     for stat in LIVE_STATS: ally.add_buff(stat,value,source=(unit.uid,'C'))
+            if value:self.log_target_effect(unit,'C',[a for a in team.units if a is unit or a.character.school=='Nekoma'],f'all combat stats+{value} through next action')
         if unit.name=='Suwa':
+            targets=[]
             for ally in team.units:
                 if (ally is unit or ally.lane=='front') and 'Bunch Block' not in ally.statuses:
                     ally.add_status('Bunch Block',True,source=(unit.uid,'C'))
+                    targets.append(ally)
+            self.log_target_effect(unit,'C',targets,'grants Bunch Block')
         if unit.name=='Echigo':
             if self.turn==1:
                 if not mem.get('opening_cd'):
@@ -75,15 +79,21 @@ class ExpansionEffects:
             if allies:
                 ally=self.rng.choice(allies)
                 for stat in ('pow','qik'): ally.add_buff(stat,7,source=(unit.uid,'C'))
+                self.log_target_effect(unit,'C',[ally],'Pow/Qik+7 through next action')
                 if ally.character.position=='S': unit.add_buff('pow',4,source=(unit.uid,'C'))
         if unit.name=='Maruyama':
+            targets=[]
             for ally in team.units:
                 if ally is unit or (ally.character.position=='WS' and ally.noncombat_stat('rec')>ally.noncombat_stat('def')):
                     ally.cd=max(0,ally.cd-1)
+                    targets.append(ally)
+            self.log_target_effect(unit,'C',targets,'remaining Ultimate CD −1 (minimum 0)')
         if unit.name=='Atema':
             middles=[a for a in self.adjacent_allies(unit) if a.character.position=='MB']
             if middles:
-                for ally in middles: ally.add_buff(self.rng.choice(('pow','def')),6,source=(unit.uid,'C'))
+                for ally in middles:
+                    stat=self.rng.choice(('pow','def'));ally.add_buff(stat,6,source=(unit.uid,'C'))
+                    self.log_target_effect(unit,'C',[ally],f'{stat.title()}+6 through next action')
             else:
                 for stat in ('pow','def'): unit.add_buff(stat,6,source=(unit.uid,'C'))
         if unit.name=='Himekawa':
@@ -91,9 +101,12 @@ class ExpansionEffects:
             mem['previous_tera']=False
             if candidates:
                 negative=self.rng.choice(candidates); negative.add_debuff('spd',-6)
+                self.log_target_effect(unit,'C',[negative],'Spd−6 through next action')
                 others=[a for a in candidates if a is not negative]
                 positive=self.rng.choice(others) if others else None
-                if positive: positive.add_buff('spd',6,source=(unit.uid,'C'))
+                if positive:
+                    positive.add_buff('spd',6,source=(unit.uid,'C'))
+                    self.log_target_effect(unit,'C',[positive],'Spd+6 through next action')
                 mem['previous_tera']=negative.name=='Teradomari' or (positive is not None and positive.name=='Teradomari')
                 if negative.name=='Teradomari': mem['head_assist_turn']=self.turn+1
 
