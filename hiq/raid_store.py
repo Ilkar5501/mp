@@ -189,7 +189,7 @@ class RaidStore(CommunityStore):
             candidates.append(dict(kind=kind,detail=detail,key=key,weight=weight,
                                    cap=cap,earned=used,remaining=remaining,amount=min(amount,remaining)))
         for item in group:
-            add('item_shard',item['key'],int(item['shard_cost'])*2*accrued_days,
+            add('item_shard',item['key'],int(item['daily_cap'])*accrued_days,
                 item_weight*float(item['drop_rate'])/total,1,item['key'])
         add('character_shard','character_shard',50*accrued_days,.50 if difficulty=='easy' else .145,1,
             weekly_remaining=350-int(earned.get('character_shard_weekly',0)))

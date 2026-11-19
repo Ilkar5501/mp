@@ -147,7 +147,7 @@ class RolloverTests(unittest.IsolatedAsyncioTestCase):
             row=await store.finish('raid-item',dict(winner_side='A'))
         self.assertEqual(len(row['state']['rewards']),2)
         self.assertTrue(all(r['detail']==item['key'] for r in row['state']['rewards']))
-        self.assertEqual((await store.shard_progress(1,day=SUN))[item['key']],item['shard_cost']*14)
+        self.assertEqual((await store.shard_progress(1,day=SUN))[item['key']],item['shard_cost']*7)
 
     async def test_raid_character_shard_weekly_cap_stays_350(self):
         await self.cap_all_except('character_shard',20)

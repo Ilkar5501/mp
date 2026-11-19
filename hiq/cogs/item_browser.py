@@ -35,7 +35,7 @@ class ItemBrowser(SafeView):
         blocks=[]
         for it in self.matches[self.page*3:self.page*3+3]:
             cost=it['shard_cost'];days=self.progress.get('_days',1)
-            daily_cap=25 if it.get('signature') else cost*2
+            daily_cap=25 if it.get('signature') else it['daily_cap']
             cap=daily_cap*days;earned=self.progress.get(it['key'],0)
             price=(f"{cost} Item shards + {it['character_shards']} character shards + {it['coin_cost']} coins" if it.get('signature') else str(cost))
             raid_type=('Tiny Titans '+it['eligible'].split(' — ')[0]+' Challenge' if it.get('signature') else it['theme'].title())

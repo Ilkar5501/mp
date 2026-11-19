@@ -11,7 +11,21 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.13 — Reward caps, rematches and merge selection
+## Latest release: v12.1.14 — Lighter raids and equipment recycling
+
+Regular raid equipment now costs 2/4/6/8 item shards to craft, accrues enough
+shards for one craft per item per day, and recycles for 8/16/24/32 Clan Dollars
+(four per crafting shard). Unused daily allowances still bank until weekly
+reset. Capped items leave the raid reward pool sooner; currency and character
+shard limits and drop weights are unchanged. Tiny Titans unique items retain
+their existing recipes, 25-shard daily allowances, and 100-Dollar recycle value.
+
+Existing shard balances, equipment and earned cap progress are preserved.
+Previously earned shards count toward the lower caps immediately; no earned
+shards or currency are removed, and allowances are not reset during upgrade.
+This cumulative release retains v12.1.13 fixes and the SQLite cleanup tools.
+
+## Previous release: v12.1.13 — Reward caps, rematches and merge selection
 
 - Gauntlet clear rewards and fresh-weekly-lineup bonuses now have independent,
   banked allowances. A new lineup can still earn its bonus after clear rewards

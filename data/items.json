@@ -4,52 +4,52 @@
     "name": "Captain's Armband",
     "effect": "After this unit's Ultimate triggers, remove all debuffs from unit and allies.",
     "eligible": "Bokuto, Daichi, Daisho, Futakuchi, Kiryu, Kita, Kuroo, Oikawa, Takeru, Ushijima",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "recovery",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "💧",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "flashy_new_shoes",
     "name": "Flashy New Shoes",
     "effect": "If foe initiates combat and team's HP ≥ 75%, if unit can counterattack, unit makes a guaranteed follow-up attack.",
     "eligible": "Anyone",
-    "shard_cost": 9,
+    "shard_cost": 6,
     "drop_rate": 0.01,
-    "weekly_cap": 126,
+    "weekly_cap": 42,
     "theme": "tempo",
-    "daily_cap": 18,
+    "daily_cap": 6,
     "emoji": "👟",
-    "recycle_value": 20
+    "recycle_value": 24
   },
   {
     "key": "energy_drink",
     "name": "Energy Drink",
     "effect": "At the start of turn 1, reduces unit's current Ultimate cooldown count by 1.",
     "eligible": "Anyone",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "tempo",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "👟",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "rock_solid_game_plan",
     "name": "Rock Solid Game Plan",
     "effect": "At start of turn, inflicts Pow/Qik-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
     "eligible": "Setters (S)",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "tactics",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "📋",
-    "recycle_value": 5,
+    "recycle_value": 8,
     "eligible_positions": [
       "S"
     ]
@@ -59,13 +59,13 @@
     "name": "All Out Game Plan",
     "effect": "At start of turn, inflicts Def-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
     "eligible": "Setters (S)",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "tactics",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "📋",
-    "recycle_value": 5,
+    "recycle_value": 8,
     "eligible_positions": [
       "S"
     ]
@@ -75,13 +75,13 @@
     "name": "Tricky Game Plan",
     "effect": "At start of turn, inflicts Rec-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
     "eligible": "Setters (S)",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "tactics",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "📋",
-    "recycle_value": 5,
+    "recycle_value": 8,
     "eligible_positions": [
       "S"
     ]
@@ -91,13 +91,13 @@
     "name": "Tiring Game Plan",
     "effect": "At start of turn, inflicts Spd-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
     "eligible": "Setters (S)",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "tactics",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "📋",
-    "recycle_value": 5,
+    "recycle_value": 8,
     "eligible_positions": [
       "S"
     ]
@@ -107,13 +107,13 @@
     "name": "Wicked Game Plan",
     "effect": "At start of turn, inflicts Jmp-3 on foes in cardinal directions with Rec < unit's Rec through their next actions.",
     "eligible": "Setters (S)",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "tactics",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "📋",
-    "recycle_value": 5,
+    "recycle_value": 8,
     "eligible_positions": [
       "S"
     ]
@@ -123,156 +123,156 @@
     "name": "Recruit's Compression Sleeve",
     "effect": "If unit is not allied with any units from the same School, grants Pow/Qik+4 during combat.",
     "eligible": "Anyone",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "offense",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "🏐",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "recruit_s_finger_tape",
     "name": "Recruit's Finger Tape",
     "effect": "If unit is not allied with any units from the same School, grants Def/Rec+3 during combat.",
     "eligible": "Anyone",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "defense",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "🛡️",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "recruit_s_shoes",
     "name": "Recruit's Shoes",
     "effect": "If unit is not allied with any units from the same School, grants Spd+4 during combat.",
     "eligible": "Anyone",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "tempo",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "👟",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "recruit_s_knee_pads",
     "name": "Recruit's Knee Pads",
     "effect": "If unit is not allied with any units from the same School, grants Jmp+4 during combat.",
     "eligible": "Anyone",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "tempo",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "👟",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "protein_packed_meal",
     "name": "Protein Packed Meal",
     "effect": "Grants Pow/Qik+1.",
     "eligible": "Anyone",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "offense",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "🏐",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "carb_loaded_meal",
     "name": "Carb Loaded Meal",
     "effect": "Grants Def+2.",
     "eligible": "Anyone",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "defense",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "🛡️",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "electrolyte_rich_meal",
     "name": "Electrolyte Rich Meal",
     "effect": "Grants Rec+2.",
     "eligible": "Anyone",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "defense",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "🛡️",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "light_lean_meal",
     "name": "Light & Lean Meal",
     "effect": "Grants Spd+1.",
     "eligible": "Anyone",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "tempo",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "👟",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "high_energy_meal",
     "name": "High Energy Meal",
     "effect": "Grants Jmp+1.",
     "eligible": "Anyone",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "tempo",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "👟",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "freezing_stare",
     "name": "Freezing Stare",
     "effect": "At start of turn, inflicts Spd-5 on foe on the enemy team with the highest Spd through its next action.",
     "eligible": "Anyone",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "recovery",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "💧",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "death_stare",
     "name": "Death Stare",
     "effect": "At start of turn, inflicts Jmp-5 on the foe with the highest Jmp through its next action.",
     "eligible": "Anyone",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "recovery",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "💧",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "athletic_tape",
     "name": "Athletic Tape",
     "effect": "If foe initiates combat and unit and foe are in the front-line, grants Def/Rec+4 during combat.",
     "eligible": "Middle Blockers (MB)",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "defense",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "🛡️",
-    "recycle_value": 10,
+    "recycle_value": 16,
     "eligible_positions": [
       "MB"
     ]
@@ -282,13 +282,13 @@
     "name": "Padded Arm Sleeves",
     "effect": "If foe initiates combat and unit and foe are in the back-line, grants Def/Rec+4 during combat.",
     "eligible": "Liberos (Li)",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "defense",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "🛡️",
-    "recycle_value": 10,
+    "recycle_value": 16,
     "eligible_positions": [
       "Li"
     ]
@@ -298,130 +298,130 @@
     "name": "Onset of Desperation",
     "effect": "At start of turn, if team's HP ≤ 50%, grants Spd+7 for 1 turn.",
     "eligible": "Anyone",
-    "shard_cost": 6,
+    "shard_cost": 4,
     "drop_rate": 0.02,
-    "weekly_cap": 84,
+    "weekly_cap": 28,
     "theme": "tempo",
-    "daily_cap": 12,
+    "daily_cap": 4,
     "emoji": "👟",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "ten_thousand_reps",
     "name": "Ten Thousand Reps",
     "effect": "If unit receives consecutive attacks and foe is not the same position as unit, reduces damage from foe's second attack onward by 30%.",
     "eligible": "Anyone",
-    "shard_cost": 9,
+    "shard_cost": 6,
     "drop_rate": 0.01,
-    "weekly_cap": 126,
+    "weekly_cap": 42,
     "theme": "defense",
-    "daily_cap": 18,
+    "daily_cap": 6,
     "emoji": "🛡️",
-    "recycle_value": 20
+    "recycle_value": 24
   },
   {
     "key": "heavy_hands",
     "name": "Heavy Hands",
     "effect": "If unit's Pow/Qik ≥ foe's Pow/Qik+5, grants Ultimate cooldown charge+1 whenever unit attacks. Does not stack.",
     "eligible": "Anyone",
-    "shard_cost": 9,
+    "shard_cost": 6,
     "drop_rate": 0.01,
-    "weekly_cap": 126,
+    "weekly_cap": 42,
     "theme": "offense",
-    "daily_cap": 18,
+    "daily_cap": 6,
     "emoji": "🏐",
-    "recycle_value": 20
+    "recycle_value": 24
   },
   {
     "key": "rigorous_film_study",
     "name": "Rigorous Film Study",
     "effect": "Neutralizes effects that guarantee unit's and foe's follow-up attacks.",
     "eligible": "Anyone",
-    "shard_cost": 12,
+    "shard_cost": 8,
     "drop_rate": 0.005,
-    "weekly_cap": 168,
+    "weekly_cap": 56,
     "theme": "tactics",
-    "daily_cap": 24,
+    "daily_cap": 8,
     "emoji": "📋",
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "manager_s_good_luck_charm",
     "name": "Manager's Good Luck Charm",
     "effect": "Restores 10 HP to team after combat.",
     "eligible": "Anyone",
-    "shard_cost": 12,
+    "shard_cost": 8,
     "drop_rate": 0.005,
-    "weekly_cap": 168,
+    "weekly_cap": 56,
     "theme": "recovery",
-    "daily_cap": 24,
+    "daily_cap": 8,
     "emoji": "💧",
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "pre_game_meditation",
     "name": "Pre-Game Meditation",
     "effect": "Grants Def/Rec+6. Inflicts Pow/Qik-3.",
     "eligible": "Anyone",
-    "shard_cost": 9,
+    "shard_cost": 6,
     "drop_rate": 0.01,
-    "weekly_cap": 126,
+    "weekly_cap": 42,
     "theme": "recovery",
-    "daily_cap": 18,
+    "daily_cap": 6,
     "emoji": "💧",
-    "recycle_value": 20
+    "recycle_value": 24
   },
   {
     "key": "burden_of_expectation",
     "name": "Burden of Expectation",
     "effect": "Grants Pow/Qik/Spd+5. Inflicts Def/Rec-5.",
     "eligible": "Anyone",
-    "shard_cost": 12,
+    "shard_cost": 8,
     "drop_rate": 0.005,
-    "weekly_cap": 168,
+    "weekly_cap": 56,
     "theme": "offense",
-    "daily_cap": 24,
+    "daily_cap": 8,
     "emoji": "🏐",
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "worthless_pride",
     "name": "Worthless Pride",
     "effect": "Grants Pow/Qik/Def/Rec/Spd/Jmp+3. After combat, deals 15 damage to unit.",
     "eligible": "Anyone",
-    "shard_cost": 12,
+    "shard_cost": 8,
     "drop_rate": 0.005,
-    "weekly_cap": 168,
+    "weekly_cap": 56,
     "theme": "offense",
-    "daily_cap": 24,
+    "daily_cap": 8,
     "emoji": "🏐",
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "vigilance",
     "name": "Vigilance",
     "effect": "If team's HP ≥75% at combat start, inflicts Ultimate cooldown charge−1 on foe whenever foe attacks or is attacked during that combat. Does not stack.",
     "eligible": "Anyone",
-    "shard_cost": 9,
+    "shard_cost": 6,
     "drop_rate": 0.01,
-    "weekly_cap": 126,
+    "weekly_cap": 42,
     "theme": "defense",
-    "daily_cap": 18,
+    "daily_cap": 6,
     "emoji": "🛡️",
-    "recycle_value": 20
+    "recycle_value": 24
   },
   {
     "key": "synchronized_attack",
     "name": "Synchronized Attack",
     "effect": "If unit is allied with an ally from the same School as unit, calculates damage using the lower of foe's Def or Rec",
     "eligible": "Middle Blockers (MB)",
-    "shard_cost": 12,
+    "shard_cost": 8,
     "drop_rate": 0.005,
-    "weekly_cap": 168,
+    "weekly_cap": 56,
     "theme": "tactics",
-    "daily_cap": 24,
+    "daily_cap": 8,
     "emoji": "🏐",
-    "recycle_value": 25,
+    "recycle_value": 32,
     "eligible_positions": [
       "MB"
     ]
@@ -431,73 +431,73 @@
     "name": "Smelling Salts",
     "effect": "If a skill compares unit's Spd to a foe's or ally's Spd, treats unit's Spd as if granted +7.",
     "eligible": "Anyone",
-    "shard_cost": 12,
+    "shard_cost": 8,
     "drop_rate": 0.005,
-    "weekly_cap": 168,
+    "weekly_cap": 56,
     "theme": "recovery",
-    "daily_cap": 24,
+    "daily_cap": 8,
     "emoji": "🏐",
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "water_bottle",
     "name": "Water Bottle",
     "effect": "At start of even-numbered turns, restores 20 HP.",
     "eligible": "Anyone",
-    "shard_cost": 12,
+    "shard_cost": 8,
     "drop_rate": 0.005,
-    "weekly_cap": 168,
+    "weekly_cap": 56,
     "theme": "recovery",
-    "daily_cap": 24,
+    "daily_cap": 8,
     "emoji": "💧",
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "own_tempo",
     "name": "Own Tempo",
     "effect": "Neutralizes effects that grant \"Ultimate cooldown charge +X\" to foe or inflict \"Ultimate cooldown charge -X\" on unit during combat.",
     "eligible": "Anyone",
-    "shard_cost": 9,
+    "shard_cost": 6,
     "drop_rate": 0.01,
-    "weekly_cap": 126,
+    "weekly_cap": 42,
     "theme": "tactics",
-    "daily_cap": 18,
+    "daily_cap": 6,
     "emoji": "📋",
-    "recycle_value": 20
+    "recycle_value": 24
   },
   {
     "key": "matchbreaker",
     "name": "Matchbreaker",
     "effect": "If a match would end in a tie, you win. If the opponent has this equipped on a unit, you tie instead.",
     "eligible": "Anyone",
-    "shard_cost": 3,
+    "shard_cost": 2,
     "drop_rate": 0.04,
-    "weekly_cap": 42,
+    "weekly_cap": 14,
     "theme": "recovery",
-    "daily_cap": 6,
+    "daily_cap": 2,
     "emoji": "💧",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "second_wind",
     "name": "Second Wind",
     "theme": "tempo",
-    "shard_cost": 12,
-    "weekly_cap": 168,
-    "daily_cap": 24,
+    "shard_cost": 8,
+    "weekly_cap": 56,
+    "daily_cap": 8,
     "drop_rate": 0.005,
     "eligible": "Anyone",
     "effect": "After combat, if unit’s remaining Ultimate cooldown count equals its maximum, reduces it by 1.",
     "emoji": "👟",
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "loaded_approach",
     "name": "Ace's Approach",
     "theme": "offense",
-    "shard_cost": 12,
-    "weekly_cap": 168,
-    "daily_cap": 24,
+    "shard_cost": 8,
+    "weekly_cap": 56,
+    "daily_cap": 8,
     "drop_rate": 0.005,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, grants Pow/Qik during combat equal to unit’s maximum Ultimate cooldown count +2.",
@@ -505,15 +505,15 @@
     "aliases": [
       "Loaded Approach"
     ],
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "loaded_reception",
     "name": "Ace's Defense",
     "theme": "defense",
-    "shard_cost": 12,
-    "weekly_cap": 168,
-    "daily_cap": 24,
+    "shard_cost": 8,
+    "weekly_cap": 56,
+    "daily_cap": 8,
     "drop_rate": 0.005,
     "eligible": "Anyone",
     "effect": "If foe initiates combat, grants Def/Rec during combat equal to unit’s maximum Ultimate cooldown count +2.",
@@ -521,41 +521,41 @@
     "aliases": [
       "Loaded Reception"
     ],
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "weighted_wristbands",
     "name": "Weighted Wristbands",
     "theme": "tempo",
-    "shard_cost": 9,
-    "weekly_cap": 126,
-    "daily_cap": 18,
+    "shard_cost": 6,
+    "weekly_cap": 42,
+    "daily_cap": 6,
     "drop_rate": 0.01,
     "eligible": "Anyone",
     "effect": "Increases maximum Ultimate cooldown count by 1. If foe initiates combat, grants Ultimate cooldown charge+1 whenever unit attacks or is attacked. Does not stack.",
     "emoji": "👟",
-    "recycle_value": 20
+    "recycle_value": 24
   },
   {
     "key": "alternating_drills",
     "name": "Alternating Drills",
     "theme": "recovery",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "At start of odd-numbered turns, grants Rec+6 to unit and allies in the same line for that turn. At start of even-numbered turns, grants Def+6 instead.",
     "emoji": "💧",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "last_rally",
     "name": "Emergency Tape",
     "theme": "tempo",
-    "shard_cost": 9,
-    "weekly_cap": 126,
-    "daily_cap": 18,
+    "shard_cost": 6,
+    "weekly_cap": 42,
+    "daily_cap": 6,
     "drop_rate": 0.01,
     "eligible": "Anyone",
     "effect": "If unit initiates combat against a foe that can counterattack and team’s HP ≤50% at combat start, unit makes a guaranteed follow-up attack.",
@@ -563,15 +563,15 @@
     "aliases": [
       "Last Rally"
     ],
-    "recycle_value": 20
+    "recycle_value": 24
   },
   {
     "key": "pressure_board",
     "name": "Scouting Clipboard",
     "theme": "tactics",
-    "shard_cost": 12,
-    "weekly_cap": 168,
-    "daily_cap": 24,
+    "shard_cost": 8,
+    "weekly_cap": 56,
+    "daily_cap": 8,
     "drop_rate": 0.005,
     "eligible": "Anyone",
     "effect": "At start of turn, converts visible stat bonuses on foes in cardinal directions with maximum HP ≤ unit’s maximum HP into visible penalties through their next actions.",
@@ -579,41 +579,41 @@
     "aliases": [
       "Pressure Board"
     ],
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "block_breaker",
     "name": "Block Breaker",
     "theme": "offense",
-    "shard_cost": 12,
-    "weekly_cap": 168,
-    "daily_cap": 24,
+    "shard_cost": 8,
+    "weekly_cap": 56,
+    "daily_cap": 8,
     "drop_rate": 0.005,
     "eligible": "Anyone",
     "effect": "Effective against MB foes: multiplies damage dealt to MB foes by 1.2.",
     "emoji": "🏐",
-    "recycle_value": 25
+    "recycle_value": 32
   },
   {
     "key": "reading_glasses",
     "name": "Reading Glasses",
     "theme": "tactics",
-    "shard_cost": 3,
-    "weekly_cap": 42,
-    "daily_cap": 6,
+    "shard_cost": 2,
+    "weekly_cap": 14,
+    "daily_cap": 2,
     "drop_rate": 0.04,
     "eligible": "Anyone",
     "effect": "At combat start, if unit’s Spd ≥ foe’s Spd−7, inflicts Pow/Qik/Def penalties during combat equal to 50% of unit’s Rec minus foe’s Rec before combat (rounded down; minimum 0, maximum 7).",
     "emoji": "📋",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "specialist_badge",
     "name": "Signature Move",
     "theme": "offense",
-    "shard_cost": 9,
-    "weekly_cap": 126,
-    "daily_cap": 18,
+    "shard_cost": 6,
+    "weekly_cap": 42,
+    "daily_cap": 6,
     "drop_rate": 0.01,
     "eligible": "Anyone",
     "effect": "If no other ally shares unit’s volleyball position, grants Pow/Qik+6 during combat.",
@@ -621,15 +621,15 @@
     "aliases": [
       "Specialist Badge"
     ],
-    "recycle_value": 20
+    "recycle_value": 24
   },
   {
     "key": "disruptive_whistle",
     "name": "Coach's Whistle",
     "theme": "tactics",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "After combat, inflicts Pow/Qik−4 on foe and foes in same line as foe through their next actions.",
@@ -637,41 +637,41 @@
     "aliases": [
       "Disruptive Whistle"
     ],
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "fresh_legs",
     "name": "Fresh Legs",
     "theme": "offense",
-    "shard_cost": 3,
-    "weekly_cap": 42,
-    "daily_cap": 6,
+    "shard_cost": 2,
+    "weekly_cap": 14,
+    "daily_cap": 2,
     "drop_rate": 0.04,
     "eligible": "Anyone",
     "effect": "At combat start, if unit’s team HP ≥ foe’s team HP+12, grants Pow/Qik+5 during combat.",
     "emoji": "🏐",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "fresh_guard",
     "name": "Fresh Guard",
     "theme": "defense",
-    "shard_cost": 3,
-    "weekly_cap": 42,
-    "daily_cap": 6,
+    "shard_cost": 2,
+    "weekly_cap": 14,
+    "daily_cap": 2,
     "drop_rate": 0.04,
     "eligible": "Anyone",
     "effect": "At combat start, if unit’s team HP ≥ foe’s team HP+12, grants Def+6 during combat.",
     "emoji": "🛡️",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "fresh_focus",
     "name": "Cooling Towel",
     "theme": "defense",
-    "shard_cost": 3,
-    "weekly_cap": 42,
-    "daily_cap": 6,
+    "shard_cost": 2,
+    "weekly_cap": 14,
+    "daily_cap": 2,
     "drop_rate": 0.04,
     "eligible": "Anyone",
     "effect": "At combat start, if unit’s team HP ≥ foe’s team HP+12, grants Rec+6 during combat.",
@@ -679,28 +679,28 @@
     "aliases": [
       "Fresh Focus"
     ],
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "recovery_snack",
     "name": "Recovery Snack",
     "theme": "recovery",
-    "shard_cost": 3,
-    "weekly_cap": 42,
-    "daily_cap": 6,
+    "shard_cost": 2,
+    "weekly_cap": 14,
+    "daily_cap": 2,
     "drop_rate": 0.04,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, restores 12 HP to team after combat.",
     "emoji": "💧",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "seam_finder",
     "name": "Targeting Tape",
     "theme": "offense",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "Inflicts Def/Rec−3 on foe and neutralizes foe’s visible Def/Rec bonuses during combat.",
@@ -708,15 +708,15 @@
     "aliases": [
       "Seam Finder"
     ],
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "pace_disruptor",
     "name": "Weighted Insoles",
     "theme": "tactics",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If foe’s Spd ≥ unit’s Spd, inflicts Pow/Qik−4 on foe during combat.",
@@ -724,15 +724,15 @@
     "aliases": [
       "Pace Disruptor"
     ],
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "rally_momentum",
     "name": "Resistance Bands",
     "theme": "recovery",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, grants Pow/Qik during combat equal to 2 + twice the number of other allies that have already acted this turn (maximum 6).",
@@ -740,15 +740,15 @@
     "aliases": [
       "Rally Momentum"
     ],
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "rally_footwork",
     "name": "Agility Ladder",
     "theme": "tempo",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, grants Spd during combat equal to 2 + twice the number of other allies that have already acted this turn (maximum 6).",
@@ -756,15 +756,15 @@
     "aliases": [
       "Rally Footwork"
     ],
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "rally_elevation",
     "name": "Jump Rope",
     "theme": "tempo",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, grants Jmp during combat equal to 1 + twice the number of other allies that have already acted this turn (maximum 5).",
@@ -772,15 +772,15 @@
     "aliases": [
       "Rally Elevation"
     ],
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "recovery_denial",
     "name": "Conditioning Circuit",
     "theme": "recovery",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "If unit initiates combat, reduces the foe team’s in-combat HP restoration by 50% and prevents that team from restoring HP after that combat.",
@@ -788,58 +788,58 @@
     "aliases": [
       "Recovery Denial"
     ],
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "firm_contact",
     "name": "Firm Contact",
     "theme": "offense",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "Deals +3 damage per unit's attack during combat.",
     "emoji": "🏐",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "bonus_scrutiny",
     "name": "Bonus Scrutiny",
     "theme": "defense",
-    "shard_cost": 6,
-    "weekly_cap": 84,
-    "daily_cap": 12,
+    "shard_cost": 4,
+    "weekly_cap": 28,
+    "daily_cap": 4,
     "drop_rate": 0.02,
     "eligible": "Anyone",
     "effect": "Inflicts Pow/Qik/Spd/Jmp penalties on foe during combat equal to the number of distinct [Bonus] effects active on foe (maximum 5).",
     "emoji": "📋",
-    "recycle_value": 10
+    "recycle_value": 16
   },
   {
     "key": "open_guard",
     "name": "Open Guard",
     "theme": "defense",
-    "shard_cost": 3,
-    "weekly_cap": 42,
-    "daily_cap": 6,
+    "shard_cost": 2,
+    "weekly_cap": 14,
+    "daily_cap": 2,
     "drop_rate": 0.04,
     "eligible": "Anyone",
     "effect": "Grants Def/Rec+7. Foes initiating combat against unit make a guaranteed follow-up attack.",
     "emoji": "🛡️",
-    "recycle_value": 5
+    "recycle_value": 8
   },
   {
     "key": "ultimate_impact",
     "name": "Ultimate Impact",
     "theme": "offense",
-    "shard_cost": 9,
-    "weekly_cap": 126,
-    "daily_cap": 18,
+    "shard_cost": 6,
+    "weekly_cap": 42,
+    "daily_cap": 6,
     "drop_rate": 0.01,
     "eligible": "Anyone",
     "effect": "When unit’s damaging Ultimate triggers from unit’s attack, adds damage equal to unit’s maximum Ultimate cooldown count ×4 for that hit.",
     "emoji": "🏐",
-    "recycle_value": 20
+    "recycle_value": 24
   }
 ]
