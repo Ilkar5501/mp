@@ -13,6 +13,8 @@ No Discord token or production database is included in the repository.
 
 ## Latest release: v13.0.0
 
+[Player release notes](https://ilkar5501.github.io/mpgallery/release-notes.html)
+
 - Added 4-star Semi — Pinch Ace (Setter, Shiratorizawa, Qik DPS): 150 HP,
   53 Qik, 27 Def, 28 Rec, 36 Spd, 35 Jmp. Lightning Serve (CD 4) deals
   pre-combat damage to each active foe: floor(max(0, Qik − Rec) × 0.8),
