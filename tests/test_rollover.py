@@ -38,7 +38,7 @@ class RolloverTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.rewards.award(1,'gauntlet_regional',day=MON,lineup=[c.id for c in CHARACTERS[:3]]))['coins'],250)
         self.assertEqual((await self.rewards.award(1,'gauntlet_regional',day=TUE,lineup=[c.id for c in CHARACTERS[:3]]))['coins'],200)
         rest=[(await self.rewards.award(1,'gauntlet_regional',day=SUN,lineup=[c.id for c in CHARACTERS[i+1:i+4]]))['coins'] for i in range(13)]
-        self.assertEqual(rest,[50]+[250]*5+[0]*7)
+        self.assertEqual(rest,[250]*5+[50]+[0]*7)
 
     async def test_tournament_base_and_human_bonus_bank_separately(self):
         first=[(await self.rewards.award(1,'tournament',day=MON))['coins'] for _ in range(3)]

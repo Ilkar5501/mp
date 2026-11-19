@@ -29,7 +29,7 @@ class MultiMergeView(SafeView):
     def choices(self):
         out=[];base=self.cards.get(self.base);q=self.query.casefold().strip()
         for iid,card in self.cards.items():
-            if iid==self.base or iid in self.materials:continue
+            if iid==self.base:continue
             char=CHAR_BY_ID[card.character_id]
             if base and card.character_id!=base.character_id:continue
             score=character_search_score(char,self.query) if q else 1
@@ -38,7 +38,7 @@ class MultiMergeView(SafeView):
         out.sort(key=lambda r:(-r[3],r[1],r[0]))
         if base:
             stars=CHAR_BY_ID[base.character_id].rarity
-            out += [(iid,f'Merge Copy — {stars}★',f'Universal +1 merge material • {iid}',1) for iid,it in self.items.items() if it['stars']==stars and iid not in self.materials]
+            out += [(iid,f'Merge Copy — {stars}★',f'Universal +1 merge material • {iid}',1) for iid,it in self.items.items() if it['stars']==stars]
         return sorted(out,key=lambda row:(row[1].casefold(),row[0]))
     def level(self):
         if not self.base:return None
@@ -49,7 +49,7 @@ class MultiMergeView(SafeView):
                     and self.materials[0] in self.cards and self.cards[self.materials[0]].merge_level==10)
     def embed(self):
         e=discord.Embed(title='Merge Cards & Materials',color=PURPLE)
-        e.description='Choose the surviving **Card 1**, then select any applicable card copies or Merge Copy items. Each selection adds materials immediately. Confirm consumes all selected materials; Card 1 keeps its nature, ID and history.'
+        e.description='Choose the surviving **Card 1**, then select or unselect card copies and Merge Copy items. Selected materials stay marked across pages and searches. Confirm consumes all selected materials; Card 1 keeps its nature, ID and history.'
         base=self.cards.get(self.base)
         if base:
             e.add_field(name='Card 1 — Survivor',value=f'{display_title(CHAR_BY_ID[base.character_id])} +{base.merge_level}\n{nature_text(base)} • `{base.instance_id}`',inline=False)
@@ -69,12 +69,12 @@ class MultiMergeView(SafeView):
         self.clear_items()
         if self.finished:return
         choices=self.choices();pages=max(1,math.ceil(len(choices)/20));self.page=min(self.page,pages-1);chunk=choices[self.page*20:(self.page+1)*20]
-        select=discord.ui.Select(placeholder='Select materials to add' if self.base else 'Choose the surviving card',options=[discord.SelectOption(label=label[:100],value=iid,description=desc[:100]) for iid,label,desc,_ in chunk] or [discord.SelectOption(label='No matching materials',value='__none__')],max_values=min(10,len(chunk)) if self.base and chunk else 1,disabled=not bool(chunk),row=0)
+        select=discord.ui.Select(placeholder='Select or unselect materials' if self.base else 'Choose the surviving card',options=[discord.SelectOption(label=(('[Selected] ' if self.base and iid in self.materials else '')+label)[:100],value=iid,description=desc[:100],default=iid in self.materials if self.base else iid==self.pending) for iid,label,desc,_ in chunk] or [discord.SelectOption(label='No matching materials',value='__none__')],min_values=0 if self.base else 1,max_values=len(chunk) if self.base and chunk else 1,disabled=not bool(chunk),row=0)
         async def select_cb(i):
             self.max_confirm=False
             if self.base:
-                for iid in select.values:
-                    if iid not in self.materials:self.materials.append(iid)
+                page_ids={row[0] for row in chunk}
+                self.materials=[iid for iid in self.materials if iid not in page_ids]+[iid for iid in select.values if iid in page_ids]
             else:self.pending=select.values[0]
             self.rebuild();await i.response.edit_message(embed=self.embed(),view=self)
         select.callback=select_cb;self.add_item(select)

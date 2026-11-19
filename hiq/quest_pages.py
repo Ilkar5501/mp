@@ -16,6 +16,11 @@ async def quest_pages(db,uid):
         merge=await highest(c,uid,OIKAWA)
         cur=await c.execute('SELECT reward_key,SUM(claims) AS n FROM youth_daily WHERE owner_id=? AND day BETWEEN ? AND ? GROUP BY reward_key',(uid,(await store.days(uid,today))[0],today))
         extras={r['reward_key']:r['n'] for r in await cur.fetchall()}
+        first=(await store.days(uid,today))[0]
+        cur=await c.execute('SELECT kind,SUM(amount) amount,MAX(estimated) estimated FROM raid_currency_extras WHERE owner_id=? AND day_key BETWEEN ? AND ? GROUP BY kind',(uid,first,today))
+        raid_extras={r['kind']:dict(r) for r in await cur.fetchall()}
+        cur=await c.execute('SELECT mode,SUM(clear_coins) clears,SUM(lineup_coins) lineups FROM gauntlet_rewards WHERE owner_id=? AND day_key BETWEEN ? AND ? GROUP BY mode',(uid,first,today))
+        gauntlets={r['mode']:dict(r) for r in await cur.fetchall()}
         cur=await c.execute('SELECT reward_key,claims FROM youth_daily WHERE owner_id=? AND day=?',(uid,today));today_extras={r['reward_key']:r['claims'] for r in await cur.fetchall()}
     extra=int(merge is not None);rate=(merge or 0)*.05
     def factor(key):return days if key in ROLLOVER_MODES else 1
@@ -24,13 +29,19 @@ async def quest_pages(db,uid):
         f=factor(key);r=row(key);amount=r.get(column,0)
         count=(amount+99)//100 if key=='raid' else r.get('wins',0)
         bonus=extra if key!='prefecture' else 0
-        if key=='raid':count+=extras.get('raid_'+('coins' if column=='coins' else 'clancoins'),0)
+        if key=='raid':
+            kind='coins' if column=='coins' else 'clancoins'
+            count+=extras.get('raid_'+kind,0)
+            recorded=raid_extras.get(kind,{})
+            amount+=recorded.get('amount',0)
+            note+=' Includes Young Emperor extra payouts; Duo bonuses are outside the cap.'
+            if recorded.get('estimated'):note+=' Earlier extra payouts are estimated; wallet balances are unchanged.'
         normal={'battle':50,'raid':100,'pvp':100,'war':200,'tournament':450}.get(key,0)
         return f'> **{label}**\n{count_label}: {min(count,(limit+bonus)*f)} / {(limit+bonus)*f} | {currency}: {amount} / {cap*f+int(normal*rate)*bonus*f}\n-# {note}'
     coins=[block('Battles ⚔️','battle','Battle Count',9,450,'50 per win, 450 daily cap.'),
            block('Prefecture Battles','prefecture','Battle Count',3,300,'100 per win, 300 daily cap.')]
     f=factor('gauntlet_regional')
-    coins.append('> **Gauntlets 🥊**\n'+ '\n'.join(f'{label}: Clear Count {min(row(key).get("wins",0),f*(1+extra))} / {f*(1+extra)} | 🪙: {row(key).get("coins",0)} / {(250+int(250*rate))*f}' for key,label in [('gauntlet_regional','Regional'),('gauntlet_national','National')])+'\n-# 200 per clear, plus 50 for a lineup you haven’t cleared with this week. Up to 250 per day for each gauntlet.')
+    coins.append('> **Gauntlets 🥊**\n'+ '\n'.join(f'{label}: Clear Count {min(row(key).get("wins",0),f*(1+extra))} / {f*(1+extra)} | 🪙: {gauntlets.get(key,{}).get("clears",0)} / {(200+int(200*rate)*extra)*f}\nFresh lineups: 🪙 {gauntlets.get(key,{}).get("lineups",0)} / {(50+int(50*rate)*extra)*f}' for key,label in [('gauntlet_regional','Regional'),('gauntlet_national','National')])+'\n-# Separate banked allowances: 200 per clear and 50 for a lineup not cleared this week. Fresh-lineup rewards remain available after clear rewards are capped.')
     coins.extend([block('Raids 🏴‍☠️','raid','Drops',3,300,'Up to 100 per Coin drop, 300 daily cap.'),
                   block('Tournaments 🏆','tournament','Wins',1,450,'300 per win. Separately, 150 per entry with at least four humans, win or lose.'),
                   block('PvP 🗡️','pvp','PvP Count',4,400,'100 per distinct opponent defeated, 400 daily cap.'),
@@ -66,6 +77,7 @@ async def quest_pages(db,uid):
         'Adds one extra daily reward allowance for Battles, each Gauntlet, Tournaments, PvP, Clan Wars, check-ins, raid Coins and Clan Dollars, and Clan Contest. Training is unchanged. '
         'The extra allowance pays **merge × 5%** of its normal currency reward: +0 pays 0%, +1 pays 5%, and +10 pays 50%. Fractional Coins and Clan Dollars round down. '
         'Normal allowances keep their full rewards. Extra allowances follow each activity’s usual rollover rules.\n\n'
+        'Gauntlet clear rewards and fresh-lineup bonuses have separate banked allowances. Each has its own reduced Young Emperor extra reward.\n\n'
         'Tournament win rewards (300) and four-human participation rewards (150) have independent allowances. Every human entrant can earn participation rewards, win or lose; a qualifying champion can receive both.\n\n'
         '**3★ Kageyama — King of the Lost Court**\n'
         'Eligible non-currency drops from Raids, AF1 and Tiny Titans have a **merge × 1%** chance to be duplicated: 0% at +0, up to 10% at +10. '

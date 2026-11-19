@@ -11,7 +11,43 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v12.1.12 — Weekly percentile packs and biweekly PvP Elo
+## Latest release: v12.1.13 — Reward caps, rematches and merge selection
+
+- Gauntlet clear rewards and fresh-weekly-lineup bonuses now have independent,
+  banked allowances. A new lineup can still earn its bonus after clear rewards
+  are exhausted. Normal limits remain 200 + 50 per day per Gauntlet; Young
+  Emperor adds separately reduced extra allowances. Questview and result embeds
+  show both components, and bonus-only payouts do not add a clear count.
+- Raid questview now includes Young Emperor extra Coins and Clan Dollars in its
+  earned totals. New payouts have exact compact daily records, independent of
+  replay retention. Duo currency bonuses remain outside cap progress.
+- Tournament integration regressions confirm that four-human participation
+  rewards still pay every eligible human after win rewards are exhausted,
+  independently of the champion's 300-coin reward. Existing payout logic is kept.
+- Merge selections stay visible and marked, support unselecting materials, and
+  survive paging/searches. Discord controls whether a single-option dropdown
+  renders with a checkbox; its selected label now remains explicit either way.
+- Crafted unique equipment recycles for 100 Clan Dollars per item, including
+  autoclean. Crafting recipes and shard requirements are unchanged.
+- Ranked targeted PvP no longer has a once-per-day rating allowance. The last
+  winner of a pair cannot initiate another match against that opponent until
+  the opponent wins a ranked rematch. Losers can retry immediately. The rule is
+  shared across 3v3/6v6 and automatic matching; draws do not change the last
+  winner. Automatic last-five-opponent avoidance and daily coin limits remain.
+  Pair state survives expired replays and resets with the two-week Elo season.
+
+This is cumulative and includes the previous SQLite replay cleanup tools and
+activity-triggered retention, all five new units, and earlier v12 features.
+Install with the bot stopped and a current database backup. Startup upgrades
+existing databases without changing wallet balances. Historical Gauntlet totals
+are split from the old combined ledger; exact historical splits cannot always
+be recovered after card ownership/merge changes. Old raid extra payouts without
+retained amounts are visibly marked as estimates in questview. Existing ranked
+results still retained at installation seed rematch state; expired replays
+cannot reconstruct earlier pair winners. New pair results remain independent
+of replay deletion. No recurring polling or battle snapshots were added.
+
+## Previous release: v12.1.12 — Weekly percentile packs and biweekly PvP Elo
 
 PvP now awards weekly packs automatically to inventory at the Monday training
 reset. Eligible players have at least one ranked win, loss, or draw during the

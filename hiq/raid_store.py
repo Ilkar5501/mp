@@ -267,12 +267,16 @@ class RaidStore(CommunityStore):
                         if earned.get('coins',0)>=300*earned['_days']:
                             allowance=await extra(c,uid,'raid_coins',await allowance_days(c,uid,reward_day))
                             reward['amount']=int(100*allowance[1]);earned['_extra_coins']-=1
+                            from .reward_components import record_raid_extra
+                            await record_raid_extra(c,uid,allowance[0],'coins',reward['amount'])
                         else:coins+=reward['amount'];earned['coins']=earned.get('coins',0)+reward['amount']
                         reward['amount']=await currency(c,uid,reward['amount'],qualifies=True);paid_coins+=reward['amount']
                     elif kind=='clancoins':
                         if earned.get('clancoins',0)>=300*earned['_days']:
                             allowance=await extra(c,uid,'raid_clancoins',await allowance_days(c,uid,reward_day))
                             reward['amount']=int(100*allowance[1]);earned['_extra_clancoins']-=1
+                            from .reward_components import record_raid_extra
+                            await record_raid_extra(c,uid,allowance[0],'clancoins',reward['amount'])
                         else:clan+=reward['amount'];earned['clancoins']=earned.get('clancoins',0)+reward['amount']
                         reward['amount']=await currency(c,uid,reward['amount'],clan=True,qualifies=True);paid_clan+=reward['amount']
                     else:

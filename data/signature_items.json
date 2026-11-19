@@ -17,7 +17,7 @@
     "character_shards": 25,
     "shard_cost": 25,
     "coin_cost": 500,
-    "recycle_value": 25
+    "recycle_value": 100
   },
   {
     "key": "lev_rookie_gains",
@@ -36,7 +36,7 @@
     "character_shards": 25,
     "shard_cost": 25,
     "coin_cost": 500,
-    "recycle_value": 25
+    "recycle_value": 100
   },
   {
     "key": "aran_out_of_nowhere",
@@ -55,7 +55,7 @@
     "character_shards": 25,
     "shard_cost": 25,
     "coin_cost": 500,
-    "recycle_value": 25
+    "recycle_value": 100
   },
   {
     "key": "tanaka_mountain_chalk",
@@ -74,7 +74,7 @@
     "character_shards": 25,
     "shard_cost": 25,
     "coin_cost": 500,
-    "recycle_value": 25
+    "recycle_value": 100
   },
   {
     "key": "takeru_zunda_mochi_bento",
@@ -96,6 +96,6 @@
     "character_shards": 25,
     "shard_cost": 25,
     "coin_cost": 500,
-    "recycle_value": 25
+    "recycle_value": 100
   }
 ]

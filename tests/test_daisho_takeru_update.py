@@ -142,4 +142,4 @@ class BentoRecipeTests(unittest.IsolatedAsyncioTestCase):
             e=BattleEngine([(equipped,takeru,'front')],[(None,daisho,'front')],seed=1)
             e.apply_match_start();self.assertEqual(e.team_a.units[0].max_cd,2)
             await raid.equip(1,a.instance_id,None)
-            self.assertEqual((await raid.recycle_equipment(1,item_id=iid))['clan_coins'],25)
+            self.assertEqual((await raid.recycle_equipment(1,item_id=iid))['clan_coins'],100)

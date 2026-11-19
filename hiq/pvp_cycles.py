@@ -81,4 +81,5 @@ async def settle(store,c,day):
             await c.execute('INSERT INTO pvp_monthly_awards VALUES (?,?,?,?,?)',('week-'+key,uid,rank,player['rating'],json.dumps(ids)))
         await c.execute('UPDATE pvp_weeks SET closed=1 WHERE week=?',(key,))
         cursor+=timedelta(weeks=1)
+    await c.execute("DELETE FROM pvp_pair_results WHERE season<>? AND NOT EXISTS(SELECT 1 FROM pvp_runs WHERE month=pvp_pair_results.season AND status='running')",(cycle,))
     return cycle,phase

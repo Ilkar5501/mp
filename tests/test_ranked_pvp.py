@@ -82,25 +82,29 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         row=await self.store.start(1,at=NOW);await self.finish(row)
         with self.assertRaisesRegex(ValueError,'five other rated matches'):await self.store.start(1,at=NOW)
 
-    async def test_targeted_rating_limit_applies_to_both_players_not_each_opponent(self):
+    async def test_ranked_rematches_follow_last_winner_without_daily_target_limit(self):
         await self.users(1,2,3,4)
         first=await self.store.start(1,target=2,at=NOW)
-        self.assertTrue(first['rated']);self.assertTrue(first['targeted']);await self.finish(first)
-        repeat=await self.store.start(1,target=3,at=NOW)
-        self.assertFalse(repeat['rated']);settled=await self.finish(repeat)
-        self.assertEqual(settled['settlement']['delta'],0)
-        defender=await self.store.start(2,target=3,at=NOW)
-        self.assertFalse(defender['rated']);await self.finish(defender)
-        # Being in an unrated practice match does not spend player 3's allowance.
-        other=await self.store.start(3,target=4,at=NOW)
+        self.assertTrue(first['rated']);await self.finish(first)
+        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,at=NOW)
+        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,at=NEXT_DAY)
+        other=await self.store.start(1,target=3,at=NOW)
         self.assertTrue(other['rated']);await self.finish(other)
-        tomorrow=await self.store.start(1,target=2,at=NEXT_DAY)
-        self.assertTrue(tomorrow['rated'])
+        retry=await self.store.start(2,target=1,at=NOW)
+        self.assertTrue(retry['rated']);await self.finish(retry,'B')
+        self.assertEqual((await self.db.get_user(1)).coins,200)  # repeat victim never adds coins
+        retry=await self.store.start(2,target=1,at=NOW);await self.finish(retry,'A')
+        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(2,target=1,at=NOW)
+        retry=await self.store.start(1,target=2,at=NOW);await self.finish(retry,'draw')
+        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(2,target=1,at=NOW)
+        self.assertTrue((await self.store.start(1,target=2,at=NOW))['rated'])
 
-    async def test_practice_does_not_change_rating_record_or_repeat_history(self):
+    async def test_legacy_practice_does_not_change_rating_record_or_repeat_history(self):
         await self.users(1,2)
         first=await self.store.start(1,target=2,at=NOW);await self.finish(first)
-        repeat=await self.store.start(1,target=2,at=NOW);await self.finish(repeat,'B')
+        repeat=await self.store.start(2,target=1,at=NOW)
+        async with self.store.tx() as c:await c.execute('UPDATE pvp_runs SET rated=0 WHERE id=?',(repeat['id'],))
+        await self.finish(repeat,'A')
         _,board,own=await self.store.board(1,at=NOW)
         self.assertEqual((own['rating'],own['wins'],own['losses']),(1016,1,0))
         async with self.db.connect() as c:self.assertEqual((await self.store.one(c,'SELECT COUNT(*) n FROM pvp_history'))['n'],1)
@@ -113,6 +117,32 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         _,board,own=await self.store.board(1,at=NOW)
         self.assertEqual(own['rating'],1016);self.assertEqual(own['wins'],1)
         self.assertEqual(sum(r['rating'] for r in board),2000)
+
+    async def test_pair_rule_survives_replay_deletion_and_restart_then_resets_next_season(self):
+        await self.users(1,2)
+        row=await self.store.start(1,target=2,at=NOW);await self.finish(row)
+        async with self.store.tx() as c:await c.execute('DELETE FROM pvp_runs WHERE id=?',(row['id'],))
+        await self.db.init()
+        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,at=NEXT_DAY)
+        next_season=datetime(2026,11,23,17,tzinfo=timezone.utc)
+        self.assertTrue((await self.store.start(1,target=2,at=next_season))['rated'])
+
+    async def test_existing_completed_ranked_results_migrate_once(self):
+        await self.users(1,2)
+        row=await self.store.start(1,target=2,at=NOW);await self.finish(row)
+        async with self.store.tx() as c:
+            await c.execute('DELETE FROM pvp_pair_results')
+            await c.execute("DELETE FROM economy_migrations WHERE version='12.1.13-pvp-rematches'")
+        await self.db.init();await self.db.init()
+        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,at=NOW)
+        self.assertTrue((await self.store.start(2,target=1,at=NOW))['rated'])
+
+    async def test_automatic_match_cannot_bypass_pair_rule_after_recent_window_clears(self):
+        await self.users(1,2)
+        row=await self.store.start(1,at=NOW);await self.finish(row)
+        async with self.store.tx() as c:await c.execute('DELETE FROM pvp_history')
+        with self.assertRaisesRegex(ValueError,'last winner'):await self.store.start(1,at=NOW)
+        self.assertTrue((await self.store.start(2,at=NOW))['rated'])
 
     async def test_draw_updates_both_records_without_coin_reward(self):
         await self.users(1,2);row=await self.store.start(1,at=NOW);await self.finish(row,'draw')
@@ -252,12 +282,13 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sorted(i['stars'] for i in await self.store.items(1)),[1,2,3,4,5])
         self.assertEqual((await self.store.board(1,NOW))[2]['rating'],1000)
 
-    async def test_shared_rating_and_daily_limit_cross_formats(self):
+    async def test_shared_rating_and_rematch_rule_cross_formats(self):
         await self.users(1,2)
         for uid in (1,2):await self.team(uid,2,6)
         row=await self.store.start(1,target=2,fmt=3,at=NOW);await self.finish(row)
-        row=await self.store.start(1,target=2,fmt=6,at=NOW);self.assertFalse(row['rated']);await self.finish(row)
-        self.assertEqual((await self.store.board(1,NOW))[2]['rating'],1016)
+        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,fmt=6,at=NOW)
+        row=await self.store.start(2,target=1,fmt=6,at=NOW);self.assertTrue(row['rated']);await self.finish(row,'B')
+        self.assertGreater((await self.store.board(1,NOW))[2]['rating'],1016)
 
     async def test_team_view_owner_lock_buttons_and_embed_limits(self):
         from hiq.cogs.pvp import PvPTeamView
@@ -284,7 +315,7 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         from hiq.cogs.pvp import PvPCog
         await self.users(1,2,3)
         row=await self.store.start(1,target=2,at=NOW);await self.finish(row)
-        # The targeted daily allowance is used, but a different automatic opponent is rated.
+        # A different automatic opponent remains eligible after a targeted win.
         row=await self.store.start(1,at=NOW);self.assertTrue(row['rated']);self.assertEqual(row['b_id'],3)
         await self.finish(row)
         async with self.store.tx() as c:

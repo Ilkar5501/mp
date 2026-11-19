@@ -54,10 +54,13 @@ async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=
     days=await allowance_days(conn,uid,day) if key in ROLLOVER_MODES else [day]
     if key=='tournament':
         return await tournament_award(conn,uid,days,win=tournament_win,human=human_tournament)
+    if key in ('gauntlet_regional','gauntlet_national'):
+        from .reward_components import gauntlet_award
+        return await gauntlet_award(conn,uid,key,days,lineup)
     cur=await conn.execute('SELECT * FROM economy_daily WHERE owner_id=? AND reward_key=? AND day_key BETWEEN ? AND ?',(uid,key,days[0],day))
     rows={r['day_key']:dict(r) for r in await cur.fetchall()}
     def wins_on(d):return rows.get(d,{}).get('wins',0)
-    coins=clan=0;duplicate=False;chosen=None;unique=False
+    coins=clan=0;duplicate=False;chosen=None
     if key=='pvp':
         if opponent is None or opponent==uid:raise ValueError('Choose another player.')
         cur=await conn.execute('INSERT OR IGNORE INTO economy_pvp_opponents VALUES (?,?,?)',(uid,day,opponent))
@@ -67,26 +70,10 @@ async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=
             return dict(coins=0,clan_coins=0,wins=progress.get('wins',0),duplicate=True,allowance_day=None)
         chosen=day if wins_on(day)<LIMITS['pvp'] else None
         if chosen:coins=min(100,max(0,400-rows.get(day,{}).get('coins',0)))
-    elif key in ('battle','prefecture','tournament') or key.startswith('gauntlet_'):
-        unique=False
-        if key.startswith('gauntlet_'):
-            if lineup is None:raise ValueError('A gauntlet clear needs its three character variants.')
-            import json
-            from .economy import week_key_for
-            from datetime import datetime
-            signature=json.dumps(sorted(lineup),ensure_ascii=False)
-            from .data import CHAR_BY_ID
-            if len(lineup)!=3 or len(set(lineup))!=3 or any(cid not in CHAR_BY_ID for cid in lineup):
-                raise ValueError('A gauntlet lineup needs three distinct character variants.')
-            cur=await conn.execute('INSERT OR IGNORE INTO gauntlet_lineups VALUES (?,?,?,?)',(uid,week_key_for(datetime.fromisoformat(day)),key,signature))
-            unique=bool(cur.rowcount)
-        base={'battle':450,'prefecture':300,'tournament':300}.get(key,200)
-        bonus=150 if key=='tournament' and human_tournament else 50 if unique else 0
-        chosen=next((d for d in days if rows.get(d,{}).get('coins',0)<base+bonus),None)
-        if chosen:
-            used=rows.get(chosen,{}).get('coins',0)
-            if key in ('battle','prefecture'):coins=min(50 if key=='battle' else 100,max(0,base-used))
-            else:coins=max(0,base-used)+min(bonus,max(0,base+bonus-max(base,used)))
+    elif key in ('battle','prefecture'):
+        base=450 if key=='battle' else 300
+        chosen=next((d for d in days if rows.get(d,{}).get('coins',0)<base),None)
+        if chosen:coins=min(50 if key=='battle' else 100,max(0,base-rows.get(chosen,{}).get('coins',0)))
     else:
         chosen=day if wins_on(day)<LIMITS[key] else None
         if chosen and key=='war':coins=clan=200
@@ -96,7 +83,7 @@ async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=
         allowance=await extra(conn,uid,key,days)
         if allowance:
             chosen,rate=allowance;extra_award=True
-            normal={'battle':50,'tournament':450 if human_tournament else 300,'gauntlet_regional':250 if unique else 200,'gauntlet_national':250 if unique else 200,'pvp':100,'war':200}[key]
+            normal={'battle':50,'pvp':100,'war':200}[key]
             coins=int(normal*rate)
             if key=='war':clan=coins
     await conn.execute('''INSERT INTO economy_daily VALUES (?,?,?,?,?,?)

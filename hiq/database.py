@@ -197,6 +197,12 @@ class Database:
             await migrate_tournament_components(db)
             from .pvp_cycles import SCHEMA as CYCLE_SCHEMA
             await db.executescript(CYCLE_SCHEMA)
+            from .reward_components import SCHEMA as COMPONENT_SCHEMA,migrate as migrate_components
+            await db.executescript(COMPONENT_SCHEMA)
+            db.row_factory=aiosqlite.Row
+            await migrate_components(db)
+            from .pvp_store import migrate_pair_results
+            await migrate_pair_results(db)
 
         from .retention import install
         import sqlite3

@@ -293,7 +293,7 @@ class EventStoreTests(unittest.IsolatedAsyncioTestCase):
         browser=ItemBrowser(bot,1,[ITEM_BY_KEY[KEY]],{})
         self.assertIn('Tiny Titans Suga Challenge',browser.embed().description)
         self.assertIn('+25/day',browser.embed().description)
-        self.assertIn('Recycle Value: 25',browser.embed().description)
+        self.assertIn('Recycle Value: 100',browser.embed().description)
         self.assertIn('500 coins',browser.embed().description)
         menu=await CraftMenu.create(bot,1,'Player');menu.owned_only=False;menu.target=KEY;menu.build()
         selected=menu.selected()

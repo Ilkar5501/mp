@@ -40,6 +40,9 @@ CREATE INDEX IF NOT EXISTS pvp_history_a ON pvp_history(a_id,sequence);
 CREATE INDEX IF NOT EXISTS pvp_history_b ON pvp_history(b_id,sequence);
 CREATE TABLE IF NOT EXISTS pvp_targeted_daily (
  day TEXT NOT NULL,owner_id INTEGER NOT NULL,match_id TEXT NOT NULL,PRIMARY KEY(day,owner_id));
+CREATE TABLE IF NOT EXISTS pvp_pair_results (
+ season TEXT NOT NULL,low_id INTEGER NOT NULL,high_id INTEGER NOT NULL,winner_id INTEGER NOT NULL,
+ PRIMARY KEY(season,low_id,high_id));
 CREATE TABLE IF NOT EXISTS pvp_monthly_awards (
  month TEXT NOT NULL,owner_id INTEGER NOT NULL,rank INTEGER NOT NULL,rating INTEGER NOT NULL,
  item_ids_json TEXT NOT NULL,PRIMARY KEY(month,owner_id));
@@ -59,6 +62,18 @@ def calendar(at=None):
 def elo_delta(a,b,score):
     expected=1/(1+10**(max(-4000,min(4000,b-a))/400))
     return round(ELO_K*(score-expected))
+
+
+async def migrate_pair_results(c):
+    marker='12.1.13-pvp-rematches'
+    if await (await c.execute('SELECT 1 FROM economy_migrations WHERE version=?',(marker,))).fetchone():return
+    rows=await (await c.execute("SELECT * FROM pvp_runs WHERE status='done' AND rated=1 AND result_json IS NOT NULL ORDER BY created_at,id")).fetchall()
+    for row in rows:
+        side=json.loads(row['result_json']).get('winner_side')
+        if side not in ('A','B'):continue
+        a,b=row['a_id'],row['b_id']
+        await c.execute('INSERT INTO pvp_pair_results VALUES (?,?,?,?) ON CONFLICT(season,low_id,high_id) DO UPDATE SET winner_id=excluded.winner_id',(row['month'],min(a,b),max(a,b),a if side=='A' else b))
+    await c.execute('INSERT INTO economy_migrations VALUES (?)',(marker,));await c.commit()
 
 
 async def auto_team_tx(conn,uid,team):
@@ -235,9 +250,8 @@ class PvPStore(CommunityStore):
                 try:b=await self.specs_tx(c,target,fmt)
                 except ValueError:
                     raise PvPTeamUnavailable(f'{target_name or "That player"} has no usable {fmt}v{fmt} PvP team. Choose another format or update ;pvpset.') from None
-                used=await self.one(c,'SELECT 1 FROM pvp_targeted_daily WHERE day=? AND owner_id IN (?,?)',(day,uid,target))
-                rated=not bool(used)
-                if not rated:reason='Practice: one player already used their rated targeted match today.'
+                pair=await self.one(c,'SELECT winner_id FROM pvp_pair_results WHERE season=? AND low_id=? AND high_id=?',(month,min(uid,target),max(uid,target)))
+                if pair and pair['winner_id']==uid:raise ValueError('You last defeated this opponent. They must beat you in a ranked rematch before you can challenge them again this season. The losing player can retry immediately.')
             else:
                 recent=await self.recent_tx(c,uid);candidates=[]
                 owners=await self.rows(c,'''SELECT discord_id FROM users WHERE discord_id<>? AND tutorial_started=1
@@ -246,6 +260,8 @@ class PvPStore(CommunityStore):
                     oid=owner['discord_id']
                     if await self.shielded_tx(c,oid):continue
                     if oid in recent:continue
+                    pair=await self.one(c,'SELECT winner_id FROM pvp_pair_results WHERE season=? AND low_id=? AND high_id=?',(month,min(uid,oid),max(uid,oid)))
+                    if pair and pair['winner_id']==uid:continue
                     try:
                         candidate_profile=await self.profile_tx(c,oid)
                         candidate=await self.specs_tx(c,oid,fmt)
@@ -253,7 +269,7 @@ class PvPStore(CommunityStore):
                     if uid in await self.recent_tx(c,oid):continue
                     rating=await self.rating_tx(c,oid,month)
                     candidates.append((abs(rating['rating']-ar['rating']),oid,candidate,candidate_profile))
-                if not candidates:raise ValueError(f'No eligible {fmt}v{fmt} opponent. Recent opponents need five other rated matches, and both teams must be available.')
+                if not candidates:raise ValueError(f'No eligible {fmt}v{fmt} opponent. Recent opponents need five other rated matches; the last winner must wait for a ranked loss to that opponent. Both teams must be available.')
                 closest=min(row[0] for row in candidates)
                 _,target,b,other=secrets.choice([row for row in candidates if row[0]==closest])
             await self.rating_tx(c,target,month)
@@ -262,8 +278,6 @@ class PvPStore(CommunityStore):
                        name_a=name or profile['display_name'] or f'Player {uid}',
                        name_b=target_name or other['display_name'] or f'Player {target}',channel=channel,reason=reason)
             await c.execute("INSERT INTO pvp_runs VALUES (?,?,?,?,?,?,?,'running',?,NULL,NULL,?)",(sid,month,fmt,uid,target,int(rated),int(targeted),json.dumps(state),now()))
-            if targeted and rated:
-                for owner in (uid,target):await c.execute('INSERT INTO pvp_targeted_daily VALUES (?,?,?)',(day,owner,sid))
             for owner in (uid,target):await c.execute('INSERT INTO pvp_busy VALUES (?,?)',(owner,sid))
             return self.unpack(await self.one(c,'SELECT * FROM pvp_runs WHERE id=?',(sid,)))
 
@@ -284,6 +298,8 @@ class PvPStore(CommunityStore):
                 await c.execute('INSERT INTO pvp_history(match_id,a_id,b_id) VALUES (?,?,?)',(sid,a,b))
                 from .retention import PVP_HISTORY_TRIM_SQL
                 await c.execute(PVP_HISTORY_TRIM_SQL)
+                if winner in ('A','B'):
+                    await c.execute('INSERT INTO pvp_pair_results VALUES (?,?,?,?) ON CONFLICT(season,low_id,high_id) DO UPDATE SET winner_id=excluded.winner_id',(month,min(a,b),max(a,b),a if winner=='A' else b))
             reward=None;winner_id=a if winner=='A' else b if winner=='B' else None
             if winner_id:
                 from .rewards import award_in

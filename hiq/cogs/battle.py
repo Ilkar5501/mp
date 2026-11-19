@@ -420,12 +420,12 @@ class BattleCog(commands.Cog):
                 except discord.HTTPException: pass
 
         completed=wins==total and failed_at is None
-        reward=0
+        reward=0;payout={}
         from ..youth_rewards import loss_reward
         consolation=not completed and bool(records) and records[-1]['result'].winner_side=='B' and loss_reward(a_specs)
         if completed or consolation:
             from ..rewards import RewardStore
-            reward=(await RewardStore(self.bot.db).award(ctx.author.id,'gauntlet_'+mode,lineup=[char.id for _,char,_ in a_specs]))['coins']
+            payout=await RewardStore(self.bot.db).award(ctx.author.id,'gauntlet_'+mode,lineup=[char.id for _,char,_ in a_specs]);reward=payout['coins']
 
         color=discord.Color.gold() if completed else discord.Color.red()
         final=discord.Embed(
@@ -440,7 +440,8 @@ class BattleCog(commands.Cog):
             final.add_field(name=school,value=value,inline=True)
         if completed or consolation:
             reset=int(next_daily_at().timestamp())
-            final.add_field(name='Champion Reward',value=(f'🪙 **+{reward} coins**' if reward else 'All accrued rewards claimed • **0 additional coins**') + f'\nYou can replay immediately. Another daily allowance unlocks <t:{reset}:R>; unused allowance banks until weekly reset.',inline=False)
+            breakdown=f'\nClear: +{payout.get("clear_coins",0)} • Fresh lineup: +{payout.get("lineup_coins",0)}'
+            final.add_field(name='Champion Reward',value=(f'🪙 **+{reward} coins**'+breakdown if reward else 'All accrued rewards claimed • **0 additional coins**') + f'\nYou can replay immediately. Another daily allowance unlocks <t:{reset}:R>; unused allowance banks until weekly reset.',inline=False)
         final.set_footer(text='Use the school selector and game arrows below to inspect per-game player performance. Gauntlet opponents are Neutral.')
         view=GauntletPerformanceView(ctx.author.id,records,self,mode_title) if records else None
         try: await status_message.edit(embed=final,view=None)
