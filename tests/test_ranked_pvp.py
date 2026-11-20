@@ -56,7 +56,7 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
     async def finish(self,row,winner='A',at=NOW):return await self.store.finish(row['id'],dict(winner_side=winner),at=at)
 
     async def history(self,a,b):
-        async with self.store.tx() as c:await c.execute('INSERT INTO pvp_history(match_id,a_id,b_id) VALUES (?,?,?)',(uuid.uuid4().hex,a,b))
+        async with self.store.tx() as c:await c.execute('INSERT INTO pvp_history(match_id,a_id,b_id,day) VALUES (?,?,?,?)',(uuid.uuid4().hex,a,b,calendar(NOW)[1]))
 
     async def test_automatic_match_picks_closest_eligible_elo(self):
         await self.users(1,2,3,4)
@@ -136,15 +136,46 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(own['rating'],1016);self.assertEqual(own['wins'],1)
         self.assertEqual(sum(r['rating'] for r in board),2000)
 
-    async def test_pair_rule_survives_replay_deletion_and_restart_then_resets_next_season(self):
+    async def test_pair_rule_survives_replay_deletion_and_restart_then_resets_daily(self):
         await self.users(1,2)
         row=await self.store.start(1,target=2,at=NOW);await self.finish(row)
         async with self.store.tx() as c:await c.execute('DELETE FROM pvp_runs WHERE id=?',(row['id'],))
         await self.db.init()
+        repeat=await self.store.start(1,target=2,at=NOW)
+        self.assertFalse(repeat['rated']);await self.finish(repeat)
         repeat=await self.store.start(1,target=2,at=NEXT_DAY)
-        self.assertFalse(repeat['rated']);await self.finish(repeat,at=NEXT_DAY)
+        self.assertTrue(repeat['rated']);await self.finish(repeat,at=NEXT_DAY)
         next_season=datetime(2026,11,23,17,tzinfo=timezone.utc)
         self.assertTrue((await self.store.start(1,target=2,at=next_season))['rated'])
+
+    async def test_midnight_reopens_ranked_targeted_and_automatic_matching_without_resetting_elo(self):
+        await self.users(1,2)
+        before=datetime(2026,11,13,4,59,tzinfo=timezone.utc)
+        after=datetime(2026,11,13,5,0,tzinfo=timezone.utc)
+        first=await self.store.start(1,target=2,at=before);await self.finish(first,at=before)
+        repeat=await self.store.start(1,target=2,at=before)
+        self.assertFalse(repeat['rated']);await self.finish(repeat,at=before)
+        automatic=await self.store.start(1,at=after)
+        self.assertTrue(automatic['rated'])
+        settled=await self.finish(automatic,at=after)
+        self.assertEqual(settled['settlement']['a_before'],1016)
+        repeat=await self.store.start(1,target=2,at=after)
+        self.assertFalse(repeat['rated']);await self.finish(repeat,at=after)
+
+    async def test_legacy_schema_upgrade_preserves_ratings_and_does_not_keep_season_long_blocks(self):
+        await self.users(1,2)
+        first=await self.store.start(1,target=2,at=NOW);await self.finish(first)
+        async with self.store.tx() as c:
+            await c.execute('DROP TABLE pvp_pair_results')
+            await c.execute('CREATE TABLE pvp_pair_results(season TEXT,low_id INTEGER,high_id INTEGER,winner_id INTEGER,PRIMARY KEY(season,low_id,high_id))')
+            await c.execute('INSERT INTO pvp_pair_results VALUES (?,?,?,?)',(calendar(NOW)[0],1,2,1))
+            await c.execute('DROP TABLE pvp_history')
+            await c.execute('CREATE TABLE pvp_history(sequence INTEGER PRIMARY KEY AUTOINCREMENT,match_id TEXT NOT NULL UNIQUE,a_id INTEGER NOT NULL,b_id INTEGER NOT NULL)')
+        await self.db.init();await self.db.init()
+        next_match=await self.store.start(1,target=2,at=NOW)
+        self.assertTrue(next_match['rated'])
+        result=await self.finish(next_match)
+        self.assertEqual(result['settlement']['a_before'],1016)
 
     async def test_existing_completed_ranked_results_migrate_once(self):
         await self.users(1,2)

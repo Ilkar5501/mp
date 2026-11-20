@@ -35,13 +35,14 @@ CREATE TABLE IF NOT EXISTS pvp_runs (
  result_json TEXT,settlement_json TEXT,created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS pvp_busy (owner_id INTEGER PRIMARY KEY,match_id TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS pvp_history (
- sequence INTEGER PRIMARY KEY AUTOINCREMENT,match_id TEXT NOT NULL UNIQUE,a_id INTEGER NOT NULL,b_id INTEGER NOT NULL);
+ sequence INTEGER PRIMARY KEY AUTOINCREMENT,match_id TEXT NOT NULL UNIQUE,a_id INTEGER NOT NULL,b_id INTEGER NOT NULL,
+ day TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS pvp_history_a ON pvp_history(a_id,sequence);
 CREATE INDEX IF NOT EXISTS pvp_history_b ON pvp_history(b_id,sequence);
 CREATE TABLE IF NOT EXISTS pvp_targeted_daily (
  day TEXT NOT NULL,owner_id INTEGER NOT NULL,match_id TEXT NOT NULL,PRIMARY KEY(day,owner_id));
 CREATE TABLE IF NOT EXISTS pvp_pair_results (
- season TEXT NOT NULL,low_id INTEGER NOT NULL,high_id INTEGER NOT NULL,winner_id INTEGER NOT NULL,
+ season TEXT NOT NULL,low_id INTEGER NOT NULL,high_id INTEGER NOT NULL,winner_id INTEGER NOT NULL,day TEXT NOT NULL DEFAULT '',
  PRIMARY KEY(season,low_id,high_id));
 CREATE INDEX IF NOT EXISTS pvp_pair_results_winner ON pvp_pair_results(season,winner_id);
 CREATE TABLE IF NOT EXISTS pvp_monthly_awards (
@@ -66,6 +67,11 @@ def elo_delta(a,b,score):
 
 
 async def migrate_pair_results(c):
+    for table in ('pvp_pair_results','pvp_history'):
+        columns=await (await c.execute('PRAGMA table_info('+table+')')).fetchall()
+        if 'day' not in {r['name'] for r in columns}:
+            await c.execute("ALTER TABLE "+table+" ADD COLUMN day TEXT NOT NULL DEFAULT ''")
+    await c.commit()
     marker='12.1.13-pvp-rematches'
     if await (await c.execute('SELECT 1 FROM economy_migrations WHERE version=?',(marker,))).fetchone():return
     rows=await (await c.execute("SELECT * FROM pvp_runs WHERE status='done' AND rated=1 AND result_json IS NOT NULL ORDER BY created_at,id")).fetchall()
@@ -73,7 +79,8 @@ async def migrate_pair_results(c):
         side=json.loads(row['result_json']).get('winner_side')
         if side not in ('A','B'):continue
         a,b=row['a_id'],row['b_id']
-        await c.execute('INSERT INTO pvp_pair_results VALUES (?,?,?,?) ON CONFLICT(season,low_id,high_id) DO UPDATE SET winner_id=excluded.winner_id',(row['month'],min(a,b),max(a,b),a if side=='A' else b))
+        day=json.loads(row['state_json']).get('day','')
+        await c.execute('INSERT INTO pvp_pair_results VALUES (?,?,?,?,?) ON CONFLICT(season,low_id,high_id) DO UPDATE SET winner_id=excluded.winner_id,day=excluded.day WHERE excluded.day>=pvp_pair_results.day',(row['month'],min(a,b),max(a,b),a if side=='A' else b,day))
     await c.execute('INSERT INTO economy_migrations VALUES (?)',(marker,));await c.commit()
 
 
@@ -222,8 +229,8 @@ class PvPStore(CommunityStore):
         await c.execute('INSERT OR IGNORE INTO pvp_ratings(month,owner_id) VALUES (?,?)',(month,uid))
         return await self.one(c,'SELECT * FROM pvp_ratings WHERE month=? AND owner_id=?',(month,uid))
 
-    async def recent_tx(self,c,uid):
-        rows=await self.rows(c,'SELECT a_id,b_id FROM pvp_history WHERE a_id=? OR b_id=? ORDER BY sequence DESC LIMIT ?',(uid,uid,REPEAT_WINDOW))
+    async def recent_tx(self,c,uid,day):
+        rows=await self.rows(c,'SELECT a_id,b_id FROM pvp_history WHERE day=? AND (a_id=? OR b_id=?) ORDER BY sequence DESC LIMIT ?',(day,uid,uid,REPEAT_WINDOW))
         return {r['b_id'] if r['a_id']==uid else r['a_id'] for r in rows}
 
     async def start(self,uid,*,target=None,fmt=None,name='',target_name='',channel=0,at=None):
@@ -252,7 +259,7 @@ class PvPStore(CommunityStore):
                 except ValueError:
                     raise PvPTeamUnavailable(f'{target_name or "That player"} has no usable {fmt}v{fmt} PvP team. Choose another format or update ;pvpset.') from None
             else:
-                recent=await self.recent_tx(c,uid);candidates=[]
+                recent=await self.recent_tx(c,uid,day);candidates=[]
                 owners=await self.rows(c,'''SELECT discord_id FROM users WHERE discord_id<>? AND tutorial_started=1
                     AND NOT EXISTS(SELECT 1 FROM pvp_busy WHERE owner_id=discord_id)''',(uid,))
                 for owner in owners:
@@ -263,19 +270,19 @@ class PvPStore(CommunityStore):
                         candidate_profile=await self.profile_tx(c,oid)
                         candidate=await self.specs_tx(c,oid,fmt)
                     except ValueError:continue
-                    if uid in await self.recent_tx(c,oid):continue
+                    if uid in await self.recent_tx(c,oid,day):continue
                     rating=await self.rating_tx(c,oid,month)
                     candidates.append((abs(rating['rating']-ar['rating']),oid,candidate,candidate_profile))
                 if not candidates:raise ValueError(f'No eligible {fmt}v{fmt} opponent. Recent opponents need five other rated matches, and both teams must be available.')
-                previous_wins=await self.rows(c,'SELECT low_id,high_id FROM pvp_pair_results WHERE season=? AND winner_id=?',(month,uid))
+                previous_wins=await self.rows(c,'SELECT low_id,high_id FROM pvp_pair_results WHERE season=? AND day=? AND winner_id=?',(month,day,uid))
                 unrated_targets={r['high_id'] if r['low_id']==uid else r['low_id'] for r in previous_wins}
                 pool=[row for row in candidates if row[1] not in unrated_targets] or candidates
                 closest=min(row[0] for row in pool)
                 _,target,b,other=secrets.choice([row for row in pool if row[0]==closest])
-            pair=await self.one(c,'SELECT winner_id FROM pvp_pair_results WHERE season=? AND low_id=? AND high_id=?',(month,min(uid,target),max(uid,target)))
+            pair=await self.one(c,'SELECT winner_id FROM pvp_pair_results WHERE season=? AND day=? AND low_id=? AND high_id=?',(month,day,min(uid,target),max(uid,target)))
             if pair and pair['winner_id']==uid:
                 rated=False
-                reason='Unrated rematch: you won the last ranked match against this opponent. Elo is unchanged. Your opponent can initiate a ranked rematch immediately.'
+                reason='Unrated rematch: you won the last ranked match against this opponent today. Elo is unchanged. Your opponent can initiate a ranked rematch immediately. Eligibility resets at midnight in the game timezone.'
             await self.rating_tx(c,target,month)
             sid='pvp-'+uuid.uuid4().hex[:16]
             state=dict(a=snapshot_specs(a),b=snapshot_specs(b),seed=secrets.randbits(62),day=day,
@@ -299,11 +306,11 @@ class PvPStore(CommunityStore):
                 score={'A':1,'B':0,'draw':.5}[winner];delta=elo_delta(ar['rating'],br['rating'],score)
                 for owner,change,win,loss in ((a,delta,winner=='A',winner=='B'),(b,-delta,winner=='B',winner=='A')):
                     await c.execute('UPDATE pvp_ratings SET rating=rating+?,wins=wins+?,losses=losses+?,draws=draws+? WHERE month=? AND owner_id=?',(change,int(win),int(loss),int(winner=='draw'),month,owner))
-                await c.execute('INSERT INTO pvp_history(match_id,a_id,b_id) VALUES (?,?,?)',(sid,a,b))
+                await c.execute('INSERT INTO pvp_history(match_id,a_id,b_id,day) VALUES (?,?,?,?)',(sid,a,b,row['state']['day']))
                 from .retention import PVP_HISTORY_TRIM_SQL
                 await c.execute(PVP_HISTORY_TRIM_SQL)
                 if winner in ('A','B'):
-                    await c.execute('INSERT INTO pvp_pair_results VALUES (?,?,?,?) ON CONFLICT(season,low_id,high_id) DO UPDATE SET winner_id=excluded.winner_id',(month,min(a,b),max(a,b),a if winner=='A' else b))
+                    await c.execute('INSERT INTO pvp_pair_results VALUES (?,?,?,?,?) ON CONFLICT(season,low_id,high_id) DO UPDATE SET winner_id=excluded.winner_id,day=excluded.day WHERE excluded.day>=pvp_pair_results.day',(month,min(a,b),max(a,b),a if winner=='A' else b,row['state']['day']))
             reward=None;winner_id=a if winner=='A' else b if winner=='B' else None
             if winner_id:
                 from .rewards import award_in

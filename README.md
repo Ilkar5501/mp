@@ -11,7 +11,20 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v13.0.3 — Manual raid shard reset
+## Latest release: v13.0.4 — Daily PvP rematch eligibility
+
+Ranked rematch eligibility resets at midnight in the game timezone. Beating
+someone makes further challenges you initiate against them practice matches
+for the rest of that day, unless they beat you in a ranked rematch first.
+The losing player can still initiate ranked retries immediately.
+Automatic matchmaking's recent-opponent window also starts fresh each day.
+
+Elo continues across days and resets every two weeks; weekly pack rewards and
+normal daily coin limits are unchanged. Matches use their start date, including
+matches completed after midnight. Installing this update clears the old undated
+season-long restrictions once, without changing Elo or player records.
+
+## Previous release: v13.0.3 — Manual raid shard reset
 
 Removed `;raidcaps`. The bot owner can run `;raidreset all` or
 `;raidreset @player` and confirm the prompt to restore this week's full
