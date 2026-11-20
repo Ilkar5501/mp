@@ -86,28 +86,46 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         await self.users(1,2,3,4)
         first=await self.store.start(1,target=2,at=NOW)
         self.assertTrue(first['rated']);await self.finish(first)
-        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,at=NOW)
-        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,at=NEXT_DAY)
+        repeat=await self.store.start(1,target=2,at=NOW)
+        self.assertFalse(repeat['rated']);self.assertIn('Unrated rematch',repeat['state']['reason'])
+        self.assertEqual((await self.finish(repeat))['settlement']['delta'],0)
         other=await self.store.start(1,target=3,at=NOW)
         self.assertTrue(other['rated']);await self.finish(other)
         retry=await self.store.start(2,target=1,at=NOW)
         self.assertTrue(retry['rated']);await self.finish(retry,'B')
         self.assertEqual((await self.db.get_user(1)).coins,200)  # repeat victim never adds coins
         retry=await self.store.start(2,target=1,at=NOW);await self.finish(retry,'A')
-        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(2,target=1,at=NOW)
+        repeat=await self.store.start(2,target=1,at=NOW);self.assertFalse(repeat['rated']);await self.finish(repeat)
         retry=await self.store.start(1,target=2,at=NOW);await self.finish(retry,'draw')
-        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(2,target=1,at=NOW)
+        repeat=await self.store.start(2,target=1,at=NOW);self.assertFalse(repeat['rated']);await self.finish(repeat,'draw')
         self.assertTrue((await self.store.start(1,target=2,at=NOW))['rated'])
 
-    async def test_legacy_practice_does_not_change_rating_record_or_repeat_history(self):
+    async def test_unrated_rematch_does_not_change_rating_record_or_repeat_history(self):
         await self.users(1,2)
         first=await self.store.start(1,target=2,at=NOW);await self.finish(first)
-        repeat=await self.store.start(2,target=1,at=NOW)
-        async with self.store.tx() as c:await c.execute('UPDATE pvp_runs SET rated=0 WHERE id=?',(repeat['id'],))
-        await self.finish(repeat,'A')
+        repeat=await self.store.start(1,target=2,at=NOW)
+        self.assertFalse(repeat['rated']);await self.finish(repeat,'B')
         _,board,own=await self.store.board(1,at=NOW)
         self.assertEqual((own['rating'],own['wins'],own['losses']),(1016,1,0))
         async with self.db.connect() as c:self.assertEqual((await self.store.one(c,'SELECT COUNT(*) n FROM pvp_history'))['n'],1)
+
+    async def test_repeated_wins_play_without_farming_elo_or_coins_then_ranked_return_win_restores_eligibility(self):
+        await self.users(1,2)
+        first=await self.store.start(1,target=2,at=NOW);await self.finish(first)
+        for _ in range(3):
+            repeat=await self.store.start(1,target=2,at=NOW)
+            self.assertFalse(repeat['rated'])
+            settled=await self.finish(repeat)
+            self.assertEqual(settled['settlement']['delta'],0)
+            self.assertEqual(settled['settlement']['reward']['coins'],0)
+            self.assertEqual((await self.finish(repeat))['settlement'],settled['settlement'])
+        own=(await self.store.board(1,at=NOW))[2]
+        self.assertEqual((own['rating'],own['wins'],own['losses']),(1016,1,0))
+        self.assertEqual((await self.db.get_user(1)).coins,100)
+        comeback=await self.store.start(2,target=1,at=NOW)
+        self.assertTrue(comeback['rated']);settled=await self.finish(comeback)
+        self.assertNotEqual(settled['settlement']['delta'],0)
+        self.assertTrue((await self.store.start(1,target=2,at=NOW))['rated'])
 
     async def test_finish_is_once_only_and_keeps_existing_pvp_coin_rules(self):
         await self.users(1,2);row=await self.store.start(1,at=NOW)
@@ -123,7 +141,8 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         row=await self.store.start(1,target=2,at=NOW);await self.finish(row)
         async with self.store.tx() as c:await c.execute('DELETE FROM pvp_runs WHERE id=?',(row['id'],))
         await self.db.init()
-        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,at=NEXT_DAY)
+        repeat=await self.store.start(1,target=2,at=NEXT_DAY)
+        self.assertFalse(repeat['rated']);await self.finish(repeat,at=NEXT_DAY)
         next_season=datetime(2026,11,23,17,tzinfo=timezone.utc)
         self.assertTrue((await self.store.start(1,target=2,at=next_season))['rated'])
 
@@ -134,15 +153,28 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
             await c.execute('DELETE FROM pvp_pair_results')
             await c.execute("DELETE FROM economy_migrations WHERE version='12.1.13-pvp-rematches'")
         await self.db.init();await self.db.init()
-        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,at=NOW)
+        repeat=await self.store.start(1,target=2,at=NOW)
+        self.assertFalse(repeat['rated']);await self.finish(repeat)
         self.assertTrue((await self.store.start(2,target=1,at=NOW))['rated'])
 
-    async def test_automatic_match_cannot_bypass_pair_rule_after_recent_window_clears(self):
+    async def test_automatic_match_can_run_unrated_after_recent_window_clears(self):
         await self.users(1,2)
         row=await self.store.start(1,at=NOW);await self.finish(row)
         async with self.store.tx() as c:await c.execute('DELETE FROM pvp_history')
-        with self.assertRaisesRegex(ValueError,'last winner'):await self.store.start(1,at=NOW)
+        repeat=await self.store.start(1,at=NOW)
+        self.assertFalse(repeat['rated']);self.assertEqual((await self.finish(repeat))['settlement']['delta'],0)
         self.assertTrue((await self.store.start(2,at=NOW))['rated'])
+
+    async def test_automatic_matching_prefers_ranked_eligible_opponents_before_unrated_fallback(self):
+        await self.users(1,2,3)
+        row=await self.store.start(1,target=2,at=NOW);await self.finish(row)
+        async with self.store.tx() as c:
+            await c.execute('DELETE FROM pvp_history')
+            await self.store.rating_tx(c,3,calendar(NOW)[0])
+            await c.execute('UPDATE pvp_ratings SET rating=1016 WHERE owner_id=2')
+            await c.execute('UPDATE pvp_ratings SET rating=1400 WHERE owner_id=3')
+        row=await self.store.start(1,at=NOW)
+        self.assertEqual(row['b_id'],3);self.assertTrue(row['rated'])
 
     async def test_draw_updates_both_records_without_coin_reward(self):
         await self.users(1,2);row=await self.store.start(1,at=NOW);await self.finish(row,'draw')
@@ -286,7 +318,8 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
         await self.users(1,2)
         for uid in (1,2):await self.team(uid,2,6)
         row=await self.store.start(1,target=2,fmt=3,at=NOW);await self.finish(row)
-        with self.assertRaisesRegex(ValueError,'last defeated'):await self.store.start(1,target=2,fmt=6,at=NOW)
+        repeat=await self.store.start(1,target=2,fmt=6,at=NOW)
+        self.assertFalse(repeat['rated']);await self.finish(repeat)
         row=await self.store.start(2,target=1,fmt=6,at=NOW);self.assertTrue(row['rated']);await self.finish(row,'B')
         self.assertGreater((await self.store.board(1,NOW))[2]['rating'],1016)
 

@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS pvp_targeted_daily (
 CREATE TABLE IF NOT EXISTS pvp_pair_results (
  season TEXT NOT NULL,low_id INTEGER NOT NULL,high_id INTEGER NOT NULL,winner_id INTEGER NOT NULL,
  PRIMARY KEY(season,low_id,high_id));
+CREATE INDEX IF NOT EXISTS pvp_pair_results_winner ON pvp_pair_results(season,winner_id);
 CREATE TABLE IF NOT EXISTS pvp_monthly_awards (
  month TEXT NOT NULL,owner_id INTEGER NOT NULL,rank INTEGER NOT NULL,rating INTEGER NOT NULL,
  item_ids_json TEXT NOT NULL,PRIMARY KEY(month,owner_id));
@@ -250,8 +251,6 @@ class PvPStore(CommunityStore):
                 try:b=await self.specs_tx(c,target,fmt)
                 except ValueError:
                     raise PvPTeamUnavailable(f'{target_name or "That player"} has no usable {fmt}v{fmt} PvP team. Choose another format or update ;pvpset.') from None
-                pair=await self.one(c,'SELECT winner_id FROM pvp_pair_results WHERE season=? AND low_id=? AND high_id=?',(month,min(uid,target),max(uid,target)))
-                if pair and pair['winner_id']==uid:raise ValueError('You last defeated this opponent. They must beat you in a ranked rematch before you can challenge them again this season. The losing player can retry immediately.')
             else:
                 recent=await self.recent_tx(c,uid);candidates=[]
                 owners=await self.rows(c,'''SELECT discord_id FROM users WHERE discord_id<>? AND tutorial_started=1
@@ -260,8 +259,6 @@ class PvPStore(CommunityStore):
                     oid=owner['discord_id']
                     if await self.shielded_tx(c,oid):continue
                     if oid in recent:continue
-                    pair=await self.one(c,'SELECT winner_id FROM pvp_pair_results WHERE season=? AND low_id=? AND high_id=?',(month,min(uid,oid),max(uid,oid)))
-                    if pair and pair['winner_id']==uid:continue
                     try:
                         candidate_profile=await self.profile_tx(c,oid)
                         candidate=await self.specs_tx(c,oid,fmt)
@@ -269,9 +266,16 @@ class PvPStore(CommunityStore):
                     if uid in await self.recent_tx(c,oid):continue
                     rating=await self.rating_tx(c,oid,month)
                     candidates.append((abs(rating['rating']-ar['rating']),oid,candidate,candidate_profile))
-                if not candidates:raise ValueError(f'No eligible {fmt}v{fmt} opponent. Recent opponents need five other rated matches; the last winner must wait for a ranked loss to that opponent. Both teams must be available.')
-                closest=min(row[0] for row in candidates)
-                _,target,b,other=secrets.choice([row for row in candidates if row[0]==closest])
+                if not candidates:raise ValueError(f'No eligible {fmt}v{fmt} opponent. Recent opponents need five other rated matches, and both teams must be available.')
+                previous_wins=await self.rows(c,'SELECT low_id,high_id FROM pvp_pair_results WHERE season=? AND winner_id=?',(month,uid))
+                unrated_targets={r['high_id'] if r['low_id']==uid else r['low_id'] for r in previous_wins}
+                pool=[row for row in candidates if row[1] not in unrated_targets] or candidates
+                closest=min(row[0] for row in pool)
+                _,target,b,other=secrets.choice([row for row in pool if row[0]==closest])
+            pair=await self.one(c,'SELECT winner_id FROM pvp_pair_results WHERE season=? AND low_id=? AND high_id=?',(month,min(uid,target),max(uid,target)))
+            if pair and pair['winner_id']==uid:
+                rated=False
+                reason='Unrated rematch: you won the last ranked match against this opponent. Elo is unchanged. Your opponent can initiate a ranked rematch immediately.'
             await self.rating_tx(c,target,month)
             sid='pvp-'+uuid.uuid4().hex[:16]
             state=dict(a=snapshot_specs(a),b=snapshot_specs(b),seed=secrets.randbits(62),day=day,

@@ -11,7 +11,21 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v13.0.0
+## Latest release: v13.0.1 — PvP rematches
+
+PvP rematches are allowed. The last-ranked-winner rule now controls Elo
+eligibility instead of rejecting the match: a repeat challenge by that winner
+runs as an unrated match. The losing player can immediately initiate a ranked
+rematch; their ranked win restores the other player's Elo eligibility. Unrated
+results do not change Elo, ranked records, pair eligibility or ranked opponent
+history. The rule is shared across 3v3/6v6 and resets with the Elo season.
+
+Daily coin limits, shields, valid-team checks and automatic matching's recent
+opponent avoidance remain in place. Automatic matching prefers Elo-eligible
+opponents, with unrated matches as a fallback. This cumulative update includes Semi, the
+v13 balance changes and the SQLite cleanup tools.
+
+## Previous release: v13.0.0
 
 [Player release notes](https://ilkar5501.github.io/mpgallery/release-notes.html)
 
@@ -107,8 +121,8 @@ This cumulative release retains v12.1.13 fixes and the SQLite cleanup tools.
 - Crafted unique equipment recycles for 100 Clan Dollars per item, including
   autoclean. Crafting recipes and shard requirements are unchanged.
 - Ranked targeted PvP no longer has a once-per-day rating allowance. The last
-  winner of a pair cannot initiate another match against that opponent until
-  the opponent wins a ranked rematch. Losers can retry immediately. The rule is
+  winner of a pair can replay, but that challenge is unrated until the opponent
+  wins a ranked rematch. Losers can initiate ranked retries immediately. The rule is
   shared across 3v3/6v6 and automatic matching; draws do not change the last
   winner. Automatic last-five-opponent avoidance and daily coin limits remain.
   Pair state survives expired replays and resets with the two-week Elo season.
