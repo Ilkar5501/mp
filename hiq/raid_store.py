@@ -203,6 +203,17 @@ class RaidStore(CommunityStore):
         for reward in pool:reward['weight']/=total
         return pool
 
+    async def cap_report(self,uid):
+        """Read the same eligibility checks used at payout, across all themes."""
+        async with self.db.connect() as c:
+            await c.execute('BEGIN')
+            day=local_date_key()
+            progress=await self.shard_progress(uid,c,day=day)
+            latest=await self.one(c,"SELECT id,state_json FROM raid_runs WHERE owner_id=? AND status='complete' ORDER BY created_at DESC,id DESC LIMIT 1",(uid,))
+            return dict(day=day,progress=progress,
+                themes={theme:self.reward_caps(theme,progress) for theme in THEMES},
+                latest=dict(id=latest['id'],state=json.loads(latest['state_json'])) if latest else None)
+
     async def next_index(self,uid,fmt,theme='tactics'):
         from .raids import RAID_POOLS
         if fmt not in (3,6) or theme not in THEMES:raise ValueError('Choose a raid theme and 3v3 or 6v6.')
