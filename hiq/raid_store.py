@@ -203,16 +203,20 @@ class RaidStore(CommunityStore):
         for reward in pool:reward['weight']/=total
         return pool
 
-    async def cap_report(self,uid):
-        """Read the same eligibility checks used at payout, across all themes."""
-        async with self.db.connect() as c:
-            await c.execute('BEGIN')
+    async def reset_item_allowances(self,uid=None):
+        """Explicit administrative reset of this week's regular raid item usage."""
+        if uid is not None and (isinstance(uid,bool) or not isinstance(uid,int) or uid<=0):
+            raise ValueError('Choose a player ID or all.')
+        from .allowances import calendar_days
+        async with self.tx() as c:
             day=local_date_key()
-            progress=await self.shard_progress(uid,c,day=day)
-            latest=await self.one(c,"SELECT id,state_json FROM raid_runs WHERE owner_id=? AND status='complete' ORDER BY created_at DESC,id DESC LIMIT 1",(uid,))
-            return dict(day=day,progress=progress,
-                themes={theme:self.reward_caps(theme,progress) for theme in THEMES},
-                latest=dict(id=latest['id'],state=json.loads(latest['state_json'])) if latest else None)
+            keys=[item['key'] for item in ITEMS]
+            where='day_key BETWEEN ? AND ? AND reward_key IN ('+','.join('?' for _ in keys)+')'
+            args=[calendar_days(day)[0],day,*keys]
+            if uid is not None:where+=' AND owner_id=?';args.append(uid)
+            count=await self.one(c,'SELECT COUNT(*) AS rows,COUNT(DISTINCT owner_id) AS players FROM raid_shard_daily WHERE '+where,args)
+            await c.execute('DELETE FROM raid_shard_daily WHERE '+where,args)
+            return dict(day=day,**count)
 
     async def next_index(self,uid,fmt,theme='tactics'):
         from .raids import RAID_POOLS

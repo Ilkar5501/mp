@@ -16,30 +16,31 @@ from ..ui import SafeView,EmbedPager,PURPLE
 
 log=logging.getLogger(__name__)
 
-def raid_caps_embed(report):
-    e=discord.Embed(title='Raid reward allowances',description=f'As of {report["day"]} · {report["progress"]["_days"]} accrued day(s).\nEach item has its own allowance: one recipe per day, banked until Monday. Crafting or recycling does not restore used allowances.',color=PURPLE)
-    lines=[]
-    for theme,caps in report['themes'].items():
-        items=[r for r in caps if r['kind']=='item_shard']
-        lines.append(f'**{theme.title()}:** {sum(r["remaining"] for r in items)}/{sum(r["cap"] for r in items)} shards left · {sum(r["remaining"]>0 for r in items)}/{len(items)} items available')
-    e.add_field(name='Item shards — separate for every item',value='\n'.join(lines),inline=False)
-    shared=[r for r in report['themes'][THEMES[0]] if r['kind']!='item_shard']
-    labels={'coins':'Coins','clancoins':'Clan Dollars','character_shard':'Character shards'}
-    e.add_field(name='Shared across all raid themes',value='\n'.join(f'**{labels[r["kind"]]}:** {r["remaining"]} left' for r in shared)+'\nReaching these limits does not block eligible item shards in another theme.',inline=False)
-    if report['latest']:
-        latest=report['latest'];st=latest['state'];check=st.get('reward_check')
-        text=f'`{latest["id"]}` · {st.get("theme","unknown").title()} · {st.get("difficulty","hard").title()}'
-        if check and 'candidates' in check:
-            remaining=sum(r['remaining']>0 for r in check['candidates'])
-            text+=f'\nBefore this run paid: {remaining} reward types available. Recorded drops: {len(st.get("rewards",[]))}.'
-            text+=f'\nRecorded cap exhaustion: {"yes" if check.get("all_capped") else "no"}.'
-        elif st.get('reward_attempted') is False:text+='\nNo reward roll was attempted for this result.'
-        else:text+='\nThis older result has no saved allowance check.'
-        e.add_field(name='Last completed raid',value=text,inline=False)
-    from ..config import ROOT
-    version=(ROOT/'VERSION').read_text(encoding='utf-8').strip()
-    e.set_footer(text=f'Bot v{version} · Use ;items for each item’s allowance. No progress was changed.')
-    return e
+class RaidResetConfirm(SafeView):
+    def __init__(self,store,owner_id,target):
+        super().__init__(timeout=120)
+        self.store=store;self.owner_id=owner_id;self.target=target;self.closed=False
+
+    async def interaction_check(self,i):
+        if i.user.id!=self.owner_id:
+            await i.response.send_message('Only the bot owner who opened this reset can confirm it.',ephemeral=True);return False
+        if self.closed:
+            await i.response.send_message('This reset prompt is closed.',ephemeral=True);return False
+        return True
+
+    @discord.ui.button(label='Reset item shard allowances',style=discord.ButtonStyle.danger)
+    async def confirm(self,i,button):
+        if self.closed:return
+        self.closed=True;self.stop()
+        await i.response.defer()
+        result=await self.store.reset_item_allowances(self.target)
+        log.warning('Raid item allowance reset by %s: target=%s players=%s rows=%s',self.owner_id,self.target or 'all',result['players'],result['rows'])
+        await i.edit_original_response(content=f'Reset this week’s regular raid item shard allowances for **{result["players"]} player(s)**. Owned shards, inventory, currency and character-shard allowances are unchanged.',view=None)
+
+    @discord.ui.button(label='Cancel',style=discord.ButtonStyle.secondary)
+    async def cancel(self,i,button):
+        self.closed=True;self.stop()
+        await i.response.edit_message(content='Raid allowance reset cancelled.',view=None)
 
 class EquipmentView(SafeView):
     PAGE_SIZE=10
@@ -195,7 +196,7 @@ class RaidSetupView(SafeView):
         e.add_field(name=f'Next opponent ({1 if self.difficulty=="extreme" else progress+1}/{1 if self.difficulty=="extreme" else 3}): {opponent["name"]}',value='\n'.join(lines),inline=False)
         rewards={'easy':'1 drop always. Character rarity: 40% 1★, 30% 2★, 25% 3★, 4% 4★, 1% 5★.', 'hard':'70% 1 drop / 30% 2 drops. Character rarity: 30% 1★, 25% 2★, 20% 3★, 15% 4★, 10% 5★.', 'extreme':'5% 1 drop / 40% 2 drops / 55% 3 drops. Character rarity: 27% 3★, 40% 4★, 33% 5★.'}[self.difficulty]
         rewards+='\nBase drop types: '+('40% item shards / 50% character shards' if self.difficulty=='easy' else '75.5% item shards / 14.5% character shards')+' / 5% coins / 5% clan coins.'
-        e.add_field(name='Rewards',value=rewards+'\nEvery slot independently rolls an eligible drop; duplicates allowed. Currency drops: 100 coins or 100 clan coins. Each day unlocks 300 of each currency, one recipe’s worth of shards per item, and 50 character shards. Item allowances are separate; currency and character shard limits are shared across themes. Unused allowances bank until Monday 00:00 in the game timezone; character shards retain the 350/week cap.\nUse ;raidcaps to check each theme. Caps are checked after each slot. Remaining odds increase proportionally; empty slots occur only when all rewards in the selected theme are capped.',inline=False)
+        e.add_field(name='Rewards',value=rewards+'\nEvery slot independently rolls an eligible drop; duplicates allowed. Currency drops: 100 coins or 100 clan coins. Each day unlocks 300 of each currency, one recipe’s worth of shards per item, and 50 character shards. Item allowances are separate; currency and character shard limits are shared across themes. Unused allowances bank until Monday 00:00 in the game timezone; character shards retain the 350/week cap.\nUse ;items to check each item’s allowance. Caps are checked after each slot. Remaining odds increase proportionally; empty slots occur only when all rewards in the selected theme are capped.',inline=False)
         e.add_field(name='Rotation',value='One fixed 6v6 team for this theme.' if self.difficulty=='extreme' else ' → '.join(RAID_TEAMS[str(self.fmt)][n]['name'] for n in RAID_POOLS[self.theme][self.fmt])+' → repeat. Easy and Hard share progress; 3v3 and 6v6 progress separately.',inline=False)
         e.add_field(name='Item pool',value=', '.join(it['name'] for it in ITEMS if it['theme']==self.theme),inline=False)
         e.set_footer(text='Use ;items for recipes/effects/eligibility, ;inv for drops, and ;craft name to craft.')
@@ -253,7 +254,7 @@ class RaidCog(commands.Cog):
         if (result.winner_side=='A' or st.get('reward_attempted')) and not reward:
             check=st.get('reward_check',{})
             if st.get('reward_status')=='all_capped' and check.get('all_capped') is True and check.get('candidates') and all(r.get('remaining')==0 for r in check['candidates']):
-                text=f'All rewards available in this {st["theme"].title()} raid are capped. Other themes have separate item allowances; use ;raidcaps to check them.'
+                text=f'All rewards available in this {st["theme"].title()} raid are capped. Other themes have separate item allowances; use ;items to check them.'
             else:
                 text='No reward was recorded for this victory. Cap exhaustion was not verified for this saved run.'
         if reward:
@@ -278,10 +279,16 @@ class RaidCog(commands.Cog):
             await self.show_result(row,channel)
         except asyncio.CancelledError:raise
         except Exception:log.exception('Raid %s paused; ;raidresume can recover it',sid);await self.store.mark_broken(sid)
-    @commands.hybrid_command(name='raidcaps',description='Check remaining item shards in every raid theme and shared reward allowances.')
-    async def raidcaps(self,ctx):
-        report=await self.store.cap_report(ctx.author.id)
-        await ctx.send(embed=raid_caps_embed(report))
+    @commands.command(name='raidreset',hidden=True)
+    @commands.is_owner()
+    async def raidreset(self,ctx,target:str=''):
+        if target.casefold()=='all':uid=None;label='all players'
+        else:
+            raw=target.removeprefix('<@').removeprefix('!').removesuffix('>')
+            if not raw.isdecimal() or int(raw)<=0:
+                await ctx.send('Use ;raidreset all or ;raidreset @player. This resets regular raid item shard allowances only.');return
+            uid=int(raw);label=f'player {uid}'
+        await ctx.send(f'Reset this week’s **regular raid item shard allowances** for **{label}**? This restores the full accrued bank across all five themes, allowing those shards to be earned again. Owned shards, inventory, currencies, character-shard limits and Tiny Titans are unchanged.',view=RaidResetConfirm(self.store,ctx.author.id,uid))
 
     @commands.hybrid_command(name='raid',description='Start a fully specified raid immediately, or open the selection menu.')
     async def raid(self,ctx,theme:str='',format:str='',difficulty:str='',slot:str|None=None):

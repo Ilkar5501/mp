@@ -11,19 +11,17 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v13.0.2 — Raid allowance checks
+## Latest release: v13.0.3 — Manual raid shard reset
 
-Added `;raidcaps` to show remaining item shards in all five themes, shared
-currency/character-shard allowances, and the last raid's saved reward check.
-Corrected the raid menu's old two-recipe wording. Item allowances are separate
-for every item; completing Defense items does not exhaust another theme's items.
-Coins, Clan Dollars and character shards remain shared across themes.
+Removed `;raidcaps`. The bot owner can run `;raidreset all` or
+`;raidreset @player` and confirm the prompt to restore this week's full
+accrued **regular raid item shard allowances** across all five themes.
+This allows players who exceeded the reduced caps to earn shards again.
 
-The reported cross-theme lockout has not been reproduced in the current code.
-Regression tests cover payouts in every other theme after Defense and all shared
-rewards are capped, across all supported formats and difficulties. No balances
-or earned allowances are reset. An affected player should run `;raidcaps` and
-provide its output plus the raid ID so the saved reward check can be compared.
+The reset preserves owned shards, cards, inventory, balances, raid rotations,
+and saved results. Currency limits, character-shard limits and Tiny Titans
+are unchanged. It runs only when explicitly confirmed; deployment and restarts
+do not reset anyone. Normal daily accrual and Monday rollover continue.
 
 ## Previous release: v13.0.1 — PvP rematches
 
@@ -342,7 +340,7 @@ Unused **Raid, Tournament, Regional/National Gauntlet, and Prefecture** reward a
 
 Existing partial completions are deducted from the bank. Each Gauntlet's 150-coin and 50-coin clear allowances accrue separately, with the remaining 150-coin clears used first. Tournament allowance is three paid championship wins per elapsed day across both modes; CPU/human payouts stay 100/150. Prefecture accrues six paid wins (300 coins) per elapsed day. Completing extra unpaid activities does not consume future days' allowances.
 
-Raids accrue 300 coins, 300 clan coins, 50 character shards, and one recipe's worth of shards per item per elapsed day. Each item has its own allowance; coins, clan coins and character shards are shared across raid themes. Each drop rechecks the remaining bank, and character shards retain the independent 350/week cap. Currency and shard awards remain random drops. `;raidcaps`, `;questview` and `;items` show accrued limits and usage. Rewards, item/card IDs and already-earned cap usage are preserved through deployment and restart; no reset migration is needed.
+Raids accrue 300 coins, 300 clan coins, 50 character shards, and one recipe's worth of shards per item per elapsed day. Each item has its own allowance; coins, clan coins and character shards are shared across raid themes. Each drop rechecks the remaining bank, and character shards retain the independent 350/week cap. Currency and shard awards remain random drops. `;questview` and `;items` show accrued limits and usage. Rewards, item/card IDs and already-earned cap usage are preserved through deployment and restart; no reset migration is needed.
 
 Daily packs, donation limits, clan check-ins, normal battle, PvP, and war rewards retain their daily reset behavior. Training's existing weekly rules are unchanged.
 
