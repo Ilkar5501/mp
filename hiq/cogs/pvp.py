@@ -166,7 +166,7 @@ class PvPCog(commands.Cog):
     async def pvp(self,ctx,opponent:discord.Member|None=None,format:str=''):
         await self.play(ctx,opponent,format,self.store)
 
-    @commands.hybrid_command(name='pvpttb',description='Play the independent Tiny Titans PvP ladder with weekly character boosts.')
+    @commands.hybrid_command(name='pvptt',aliases=['pvpttb'],description='Play the independent Tiny Titans PvP ladder with weekly character boosts.')
     @app_commands.choices(format=[app_commands.Choice(name='3v3',value='3v3'),app_commands.Choice(name='6v6',value='6v6')])
     @commands.cooldown(1,5.0,commands.BucketType.user)
     async def pvpttb(self,ctx,opponent:discord.Member|None=None,format:str=''):
@@ -187,22 +187,22 @@ class PvPCog(commands.Cog):
         except ValueError as error:await ctx.send(str(error),allowed_mentions=discord.AllowedMentions.none());return
         await ctx.send(**await self.result_payload(row,result,a,b))
 
-    @commands.hybrid_command(name='ttbboosts',description='View this week’s boosted Tiny Titans PvP characters.')
+    @commands.hybrid_command(name='ttboosts',aliases=['ttbboosts'],description='View this week’s boosted Tiny Titans PvP characters.')
     async def ttbboosts(self,ctx):
         state=await self.ttb_store.boosts()
         embed=discord.Embed(title='Tiny Titans PvP — Weekly boosts',description='Four cards from each rarity 1★–4★ receive the Tiny Titans stat boost this week. 5★ and Duo cards are not boosted. Changes every Monday at the weekly cutoff.',color=PURPLE)
         for rarity,picks in state['picks'].items():embed.add_field(name=f'{rarity}★',value='\n'.join(picks),inline=False)
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='pvpttbboard',aliases=['ttbboard'],description='View the independent Tiny Titans Elo board and weekly Clan Dollar prizes.')
+    @commands.hybrid_command(name='pvpttboard',aliases=['ttboard','pvpttbboard','ttbboard'],description='View the independent Tiny Titans Elo board and weekly Clan Dollar prizes.')
     async def pvpttbboard(self,ctx):
         month,rows,own=await self.ttb_store.board(ctx.author.id)
         pages=[]
         for start in range(0,max(1,len(rows)),15):
             lines=[f'**{i}.** <@{r["owner_id"]}> · **{r["rating"]} Elo** · {r["wins"]}W/{r["losses"]}L/{r["draws"]}D' for i,r in enumerate(rows[start:start+15],start+1)]
-            embed=discord.Embed(title='Tiny Titans PvP Ladder',description='\n'.join(lines) or 'No rated matches yet. Use ;pvpttb to begin.',color=PURPLE)
+            embed=discord.Embed(title='Tiny Titans PvP Ladder',description='\n'.join(lines) or 'No rated matches yet. Use ;pvptt to begin.',color=PURPLE)
             embed.add_field(name='Your Elo',value=str(own['rating']))
-            embed.add_field(name='Weekly Clan Dollars',value='Top 20%: 500 · Top 40%: 400 · Top 60%: 300 · Top 80%: 200 · Everyone eligible: 100.\nRewards stack: top 20% earns 1,500 Clan Dollars. Requires a rated match this two-week season. Weekly rewards are credited automatically. Elo resets every two weeks; ;ttbboosts shows the current weekly picks.',inline=False)
+            embed.add_field(name='Weekly Clan Dollars',value='Top 20%: 500 · Top 40%: 400 · Top 60%: 300 · Top 80%: 200 · Everyone eligible: 100.\nRewards stack: top 20% earns 1,500 Clan Dollars. Requires a rated match this two-week season. Weekly rewards are credited automatically. Elo resets every two weeks; ;ttboosts shows the current weekly picks.',inline=False)
             pages.append(embed)
         view=EmbedPager(pages,ctx.author.id)
         await ctx.send(embed=view.embed(),view=view,allowed_mentions=discord.AllowedMentions.none())

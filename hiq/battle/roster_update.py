@@ -27,18 +27,18 @@ class RosterUpdateEffects:
             power=[a for a in targets if a is u or a.character.position=='MB']
             speed=[a for a in targets if self.wall_member(u,a)]
             for ally in power:
-                for stat in ('pow','qik','def'):ally.add_buff(stat,3,source=(u.uid,'C'))
+                for stat in ('pow','qik','def'):ally.add_buff(stat,2,source=(u.uid,'C'))
             for ally in speed:
-                for stat in ('spd','jmp'):ally.add_buff(stat,3,source=(u.uid,'C'))
-            if power:self.log_target_effect(u,'C',power,'grants Pow/Qik/Def+3 through next action')
-            if speed:self.log_target_effect(u,'C',speed,'grants Spd/Jmp+3 through next action')
+                for stat in ('spd','jmp'):ally.add_buff(stat,2,source=(u.uid,'C'))
+            if power:self.log_target_effect(u,'C',power,'grants Pow/Qik/Def+2 through next action')
+            if speed:self.log_target_effect(u,'C',speed,'grants Spd/Jmp+2 through next action')
 
     def roster_end_turn(self):
         for unit in self.units:
             if unit.char_id!=WALL or not self.skill_enabled(unit,'C'):continue
             count=sum(a.character.position=='MB' for a in self.team(unit).units)
-            size=len(self.team(unit).units);cap=9 if size<=3 else 18 if size<=6 else 27
-            self.heal_team(unit,min(cap,count*3))
+            size=len(self.team(unit).units);cap=6 if size<=3 else 12 if size<=6 else 18
+            self.heal_team(unit,min(cap,count*2))
 
     def roster_combat_start(self,ctx):
         u=ctx.attacker
@@ -57,14 +57,14 @@ class RosterUpdateEffects:
                 mods['spd']-=reserve;mods['jmp']-=reserve
         sources=self.wall_sources(ctx,u,'A',stats)
         if sources:
-            amount=max(0,floor(stats['def']*.2))
+            amount=max(0,floor(stats['def']*.1))
             mods['pow']+=amount;mods['qik']+=amount
             for source in sources:
                 if source is not u:ctx.temp_flags.setdefault('ally_stat_impacts',{}).setdefault(u.uid,set()).add((source.uid,'A'))
 
     def roster_flat_reduction(self,ctx,target,stats,other_flat):
         if not self.wall_sources(ctx,target,'A',stats):return 0
-        return max(0,floor(stats['def']*(.1 if other_flat>0 else .2)))
+        return min(8,max(0,floor(stats['def']*(.1 if other_flat>0 else .2))))
 
     def roster_after_combat(self,ctx):
         for unit in (ctx.attacker,ctx.defender):

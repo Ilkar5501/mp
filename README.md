@@ -11,7 +11,17 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v14.0.0
+## Latest release: v14.0.1
+
+- Tiny Titans PvP commands: `;pvptt`, `;ttboosts`, and `;pvpttboard` / `;ttboard`.
+  Previous spellings remain prefix aliases; ladder data and rewards are preserved.
+- Semi: base Qik 52; Lightning Serve scales at 0.7 instead of 0.8.
+- Great Wall Hirugami: The Gate Holds grants Pow/Qik equal to 10% of Def.
+  Its flat damage reduction is capped at 8, including the reduced 10% branch
+  when another flat reduction applies. Hold the Net grants +2 instead of +3
+  and restores 2 HP per MB, capped at 6/12/18 in 3v3/6v6/9v9.
+
+## Previous release: v14.0.0
 
 - PvP uses a saved shuffled daily queue. Fresh eligible opponents come first;
   already-faced eligible opponents move to the back. After the queue pass,

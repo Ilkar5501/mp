@@ -3689,18 +3689,18 @@
     "stats": {
       "hp": 150,
       "pow": 0,
-      "qik": 53,
+      "qik": 52,
       "rec": 28,
       "spd": 36,
       "jmp": 35,
-      "bst": 329,
+      "bst": 328,
       "def": 27
     },
     "ult_cd": 4,
     "abilities": {
       "U": {
         "name": "Lightning Serve",
-        "text": "Before unit's initiated combat, if unit's Ultimate is ready, triggers unit's Ultimate. For each foe, deals damage = (unit's pre-combat Qik − that foe's pre-combat Rec) × 0.8 (minimum 0).",
+        "text": "Before unit's initiated combat, if unit's Ultimate is ready, triggers unit's Ultimate. For each foe, deals damage = (unit's pre-combat Qik − that foe's pre-combat Rec) × 0.7 (minimum 0).",
         "timing": "PRE_COMBAT"
       },
       "A": {
@@ -3720,7 +3720,7 @@
       }
     },
     "extended": {
-      "U": "Calculates floor(max(0, Qik − Rec) × 0.8) for each foe using stats before combat, including visible bonuses and penalties. In-combat modifiers do not apply. Each result damages the shared team HP pool. Does not trigger on counterattacks. Does not use critical hits or in-combat damage reduction.",
+      "U": "Calculates floor(max(0, Qik − Rec) × 0.7) for each foe using stats before combat, including visible bonuses and penalties. In-combat modifiers do not apply. Each result damages the shared team HP pool. Does not trigger on counterattacks. Does not use critical hits or in-combat damage reduction.",
       "A": "The ally bonus is an in-combat bonus. An action without combat does not consume it. Multiple applications do not stack.",
       "B": "Reduces remaining cooldown, not maximum cooldown.",
       "C": "Activates once after a combat in which Lightning Serve triggered; does not grant a refund when no Ultimate triggered."
@@ -3756,7 +3756,7 @@
       },
       "A": {
         "name": "The Gate Holds",
-        "text": "During combat, Wall allies gain Pow/Qik equal to 20% of their Def. During damage calculation, reduces damage from each foe’s hit by 20% of the Wall ally’s Def. If another flat damage reduction applies to that hit, reduces by 10% of the Wall ally’s Def instead.",
+        "text": "During combat, Wall allies gain Pow/Qik equal to 10% of their Def. During damage calculation, reduces damage from each foe’s hit by 20% of the Wall ally’s Def (max. 8). If another flat damage reduction applies to that hit, reduces by 10% of the Wall ally’s Def instead.",
         "timing": "COMBAT_LIVE"
       },
       "B": {
@@ -3766,13 +3766,13 @@
       },
       "C": {
         "name": "Hold the Net",
-        "text": "At start of turn, grants Pow/Qik/Def+3 to unit and MB allies, and Spd/Jmp+3 to Wall allies, through their next actions. At end of turn, restores 3 team HP for each MB ally, including unit (max. 9 in 3v3, 18 in 6v6, 27 in 9v9).",
+        "text": "At start of turn, grants Pow/Qik/Def+2 to unit and MB allies, and Spd/Jmp+2 to Wall allies, through their next actions. At end of turn, restores 2 team HP for each MB ally, including unit (max. 6 in 3v3, 12 in 6v6, 18 in 9v9).",
         "timing": "TURN_START > TURN_END"
       }
     },
     "extended": {
       "U": "The reflected amount counts damage prevented by Monster Block itself, before later reductions. The cap is 20 per combat.",
-      "A": "Wall allies are unit, MB allies, and allies whose Def is greater than Rec, while in the front-line. Percentages round down. Multiple copies of this skill do not stack.",
+      "A": "Wall allies are unit, MB allies, and allies whose Def is greater than Rec, while in the front-line. Percentages round down. Multiple copies of this skill do not stack. The flat damage reduction is capped at 8 in either case.",
       "B": "The cleanse limit is shared across this unit’s activations in the turn. The Heal Block and 5 damage are not limited by that cleanse allowance.",
       "C": ""
     },

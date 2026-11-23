@@ -20,6 +20,9 @@ async def main():
                 await app.bot.load_extension(extension);print('Loaded',extension,flush=True)
             for name in ('sealed','sealedview','clanwar','inv','links','pvp','pvpset','pvps','pvpboard','pvpb','recycle','allrecycle','allcraft','clancontest','contestboard','contestresume','market','auction','myauctions','dismantle','fuse','autoclean','aclean','use','buy'):
                 assert name in app.bot.all_commands,name
+            for alias,canonical in {'pvpttb':'pvptt','ttbboosts':'ttboosts','ttboard':'pvpttboard','ttbboard':'pvpttboard','pvpttbboard':'pvpttboard'}.items():
+                assert app.bot.get_command(alias) is app.bot.get_command(canonical) and app.bot.get_command(canonical) is not None,(alias,canonical)
+            assert {'pvptt','ttboosts','pvpttboard'} <= {command.name for command in app.bot.tree.get_commands()}
             store=SealedStore(app.bot.db)
             row=await store.create([dict(id=i,name=str(i)) for i in (1,2)],100)
             cog=app.bot.get_cog('SealedCog')

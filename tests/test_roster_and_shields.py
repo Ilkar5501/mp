@@ -12,13 +12,27 @@ def duel(own,foe='Kai',*,item=None,foe_item=None):
     return engine,a,d,ctx
 
 class RosterAndShieldTests(unittest.TestCase):
+    def test_great_wall_a_grants_ten_percent_and_caps_both_flat_reduction_branches(self):
+        e,a,d,ctx=duel('Aran',WALL)
+        mods={'pow':0,'qik':0}
+        e.roster_mods(ctx,d,{'def':50,'rec':25},mods)
+        self.assertEqual(mods,{'pow':5,'qik':5})
+        for other in (0,5):self.assertEqual(e.roster_flat_reduction(ctx,d,{'def':100,'rec':25},other),8)
+
+    def test_great_wall_c_heals_two_per_mb_in_three_six_and_nine_unit_teams(self):
+        from hiq.data import CHARACTERS,CHAR_BY_ID
+        middle=[c for c in CHARACTERS if c.position=='MB' and c.id!=WALL]
+        for size,amount in ((3,6),(6,12),(9,18)):
+            own=[(None,CHAR_BY_ID[WALL],'front')]+[(None,c,'front') for c in middle[:size-1]]
+            e=BattleEngine(own,specs(['Kai']),seed=1);e.team_a.hp=1
+            e.roster_end_turn();self.assertEqual(e.team_a.hp,1+amount)
     def test_great_wall_af1_support_uses_new_c_instead_of_old_hirugami_c(self):
         from hiq.event_modes import AllForOneEngine
         e=AllForOneEngine(specs(['Lev',WALL]),specs(['Kai']),seed=1)
         main,wall=e.team_a.units;e.turn=1;e.support_turn(wall)
-        self.assertEqual(main.visible_bonus('qik'),3)
-        self.assertEqual(main.visible_bonus('def'),3)
-        self.assertEqual(main.visible_bonus('spd'),3)
+        self.assertEqual(main.visible_bonus('qik'),2)
+        self.assertEqual(main.visible_bonus('def'),2)
+        self.assertEqual(main.visible_bonus('spd'),2)
     def test_kunimi_lazy_tip_adds_ten_after_the_fifty_percent_multiplier(self):
         for full,expected in ((False,150),(True,160)):
             e,a,d,ctx=duel(KUNIMI,'Ikejiri — Old Friend');a.cd=0;d.cd=99
@@ -32,10 +46,10 @@ class RosterAndShieldTests(unittest.TestCase):
         e=BattleEngine(specs([WALL,'Aran','Lev']),specs(['Kai']),seed=1)
         wall,aran,lev=e.team_a.units;aran.lane='front';aran.base.update({'def':40,'rec':20})
         e.turn=1;e.roster_turn_start(wall)
-        self.assertEqual(aran.visible_bonus('spd'),3);self.assertEqual(aran.visible_bonus('pow'),0)
-        self.assertEqual(lev.visible_bonus('pow'),3);self.assertEqual(lev.visible_bonus('def'),3)
+        self.assertEqual(aran.visible_bonus('spd'),2);self.assertEqual(aran.visible_bonus('pow'),0)
+        self.assertEqual(lev.visible_bonus('pow'),2);self.assertEqual(lev.visible_bonus('def'),2)
         before=e.team_a.hp=e.team_a.max_hp-30;e.roster_end_turn()
-        self.assertEqual(e.team_a.hp,before+6)
+        self.assertEqual(e.team_a.hp,before+4)
 
     def test_kunimi_buffs_aoba_allies_instead_of_refunding_cooldown(self):
         e=BattleEngine(specs([KUNIMI,'Oikawa']),specs(['Kai']),seed=1)

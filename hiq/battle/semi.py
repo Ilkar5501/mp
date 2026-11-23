@@ -16,11 +16,11 @@ class SemiEffects:
         foes=list(self.enemy_team(unit).units)
         # Snapshot before Ultimate reactions can cleanse penalties or grant buffs.
         qik=unit.noncombat_stat('qik')
-        amounts=[max(0,qik-foe.noncombat_stat('rec'))*4//5 for foe in foes]
+        amounts=[max(0,qik-foe.noncombat_stat('rec'))*7//10 for foe in foes]
         if not self.trigger_ultimate(unit,ctx,'precombat'):return
         ctx.temp_flags['semi_ultimate']=unit.uid
         ctx.temp_flags['initiator_ultimate']=unit.uid
-        self.log_target_effect(unit,'U',foes,'pre-combat Qik−Rec damage ×0.8 (minimum 0)',phase='before combat')
+        self.log_target_effect(unit,'U',foes,'pre-combat Qik−Rec damage ×0.7 (minimum 0)',phase='before combat')
         for foe,amount in zip(foes,amounts):
             if not self.team(foe).living():break
             self.damage_team(self.team(foe),amount)

@@ -26,7 +26,7 @@ class SemiTests(unittest.TestCase):
     def test_semi_stats_names_art_and_search(self):
         c=CHAR_BY_ID[SEMI]
         self.assertEqual((c.rarity,c.position,c.school,c.role_class),(4,'S','Shiratorizawa','DPS'))
-        self.assertEqual(tuple(c.stats[s] for s in ('hp','qik','spd','jmp','def','rec')),(150,53,36,35,27,28))
+        self.assertEqual(tuple(c.stats[s] for s in ('hp','qik','spd','jmp','def','rec')),(150,52,36,35,27,28))
         self.assertEqual([c.abilities[k].name for k in ('U','A','B','C')],['Lightning Serve',"Talent's Troubles","Setter's Magic",'Rightful Rhythm'])
         self.assertEqual(find_character('Eita Semi')[0].id,SEMI)
         self.assertTrue(c.card_art.endswith('/semi.png'));self.assertIn('5d9e9f56a444cc05cdd0da1d5e91e4ab',c.character_icon)
@@ -43,8 +43,8 @@ class SemiTests(unittest.TestCase):
         for u,rec in zip(e.team_b.units,(30,54,52)):u.base['rec']=rec
         e.team_b.units[0].add_buff('rec',2)
         before=e.team_b.hp;e.semi_precombat(ctx)
-        self.assertEqual([u.damage_taken for u in e.team_b.units],[16,0,0])
-        self.assertEqual(before-e.team_b.hp,16);self.assertEqual(a.damage_dealt,16)
+        self.assertEqual([u.damage_taken for u in e.team_b.units],[14,0,0])
+        self.assertEqual(before-e.team_b.hp,14);self.assertEqual(a.damage_dealt,14)
         self.assertEqual(a.cd,4);self.assertTrue(a.ult_triggered_this_combat)
         self.assertTrue(any('all foes:' in s and 'Lightning Serve' in s for s in e.log))
 
@@ -52,7 +52,7 @@ class SemiTests(unittest.TestCase):
         e,a,d,ctx=self.engine(foes=('Kita',));a.cd=0;a.base['qik']=50;d.base['rec']=30
         d.cd=0;before=e.team_b.hp
         e.semi_precombat(ctx)
-        self.assertEqual(before-e.team_b.hp,16)  # excludes Semi's combat Qik+5 and Kita's combat Rec bonuses/DR
+        self.assertEqual(before-e.team_b.hp,14)  # excludes Semi's combat Qik+5 and Kita's combat Rec bonuses/DR
         self.assertEqual(d.cd,0)
 
     def test_trigger_is_precombat_only_once_and_ultimate_suppression_is_respected(self):
