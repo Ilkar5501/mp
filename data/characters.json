@@ -3756,7 +3756,7 @@
       },
       "A": {
         "name": "The Gate Holds",
-        "text": "During combat, Wall allies gain Pow/Qik equal to 10% of their Def. During damage calculation, reduces damage from each foe’s hit by 20% of the Wall ally’s Def (max. 8). If another flat damage reduction applies to that hit, reduces by 10% of the Wall ally’s Def instead.",
+        "text": "During combat, Wall allies gain Pow/Qik equal to 10% of their Def. During damage calculation, reduces damage from each foe’s hit by 15% of the Wall ally’s Def (max. 8). If another flat damage reduction applies to that hit, reduces by 7.5% of the Wall ally’s Def instead.",
         "timing": "COMBAT_LIVE"
       },
       "B": {
@@ -3772,7 +3772,7 @@
     },
     "extended": {
       "U": "The reflected amount counts damage prevented by Monster Block itself, before later reductions. The cap is 20 per combat.",
-      "A": "Wall allies are unit, MB allies, and allies whose Def is greater than Rec, while in the front-line. Percentages round down. Multiple copies of this skill do not stack. The flat damage reduction is capped at 8 in either case.",
+      "A": "Wall allies are front-line MBs and front-line allies whose Def is at least 5 higher than Rec. Percentages round down. Multiple copies of this skill do not stack. Flat damage reduction is capped at 8 in either case: 15% reaches the cap at 54 Def; 7.5% reaches it at 107 Def.",
       "B": "The cleanse limit is shared across this unit’s activations in the turn. The Heal Block and 5 damage are not limited by that cleanse allowance.",
       "C": ""
     },

@@ -11,7 +11,16 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v14.0.1
+## Latest release: v14.0.2
+
+- Wall allies are front-line MBs or front-line allies with Def at least 5 above Rec.
+  For example, 29 Rec requires at least 34 Def. Back-line units do not qualify.
+- Great Wall Hirugami’s A-slot flat reduction is now 15% of Def, or 7.5% when
+  another flat reduction applies, capped at 8 in both cases. The existing
+  round-down rule reaches the cap at 54 Def or 107 Def respectively.
+- Includes all v14.0.1 command names and Semi/Hirugami balance changes.
+
+## Previous release: v14.0.1
 
 - Tiny Titans PvP commands: `;pvptt`, `;ttboosts`, and `;pvpttboard` / `;ttboard`.
   Previous spellings remain prefix aliases; ladder data and rewards are preserved.

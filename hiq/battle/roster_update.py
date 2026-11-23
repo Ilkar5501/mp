@@ -8,7 +8,7 @@ class RosterUpdateEffects:
     def wall_member(self,source,target,stats=None):
         if target.side!=source.side or target.lane!='front':return False
         values=stats or {s:target.noncombat_stat(s) for s in ('def','rec')}
-        return target is source or target.character.position=='MB' or values['def']>values['rec']
+        return target.character.position=='MB' or values['def']>=values['rec']+5
 
     def wall_sources(self,ctx,target,slot,stats=None):
         return [u for u in self.team(target).units if u.char_id==WALL and self.skill_enabled(u,slot)
@@ -64,7 +64,7 @@ class RosterUpdateEffects:
 
     def roster_flat_reduction(self,ctx,target,stats,other_flat):
         if not self.wall_sources(ctx,target,'A',stats):return 0
-        return min(8,max(0,floor(stats['def']*(.1 if other_flat>0 else .2))))
+        return min(8,max(0,stats['def']*3//(40 if other_flat>0 else 20)))
 
     def roster_after_combat(self,ctx):
         for unit in (ctx.attacker,ctx.defender):

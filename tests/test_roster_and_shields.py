@@ -12,12 +12,43 @@ def duel(own,foe='Kai',*,item=None,foe_item=None):
     return engine,a,d,ctx
 
 class RosterAndShieldTests(unittest.TestCase):
+    def test_wall_requires_frontline_mb_or_at_least_five_more_def_than_rec(self):
+        e=BattleEngine(specs([WALL,'Aran','Lev']),specs(['Kai']),seed=1)
+        wall,ally,mb=e.team_a.units
+        ally.lane='front';ally.base.update({'def':33,'rec':29})
+        self.assertFalse(e.wall_member(wall,ally))
+        ally.base['def']=34;self.assertTrue(e.wall_member(wall,ally))
+        ally.lane='back';self.assertFalse(e.wall_member(wall,ally))
+        mb.lane='front';mb.base.update({'def':1,'rec':99})
+        self.assertTrue(e.wall_member(wall,mb))
+        mb.lane='back';self.assertFalse(e.wall_member(wall,mb))
+        self.assertFalse(e.wall_member(wall,e.team_b.units[0],{'def':100,'rec':0}))
+
+    def test_great_wall_flat_reduction_uses_consistent_rounding_at_cap_boundaries(self):
+        e,a,d,ctx=duel('Aran',WALL)
+        for defense,other,expected in ((53,0,7),(54,0,8),(106,5,7),(107,5,8)):
+            self.assertEqual(e.roster_flat_reduction(ctx,d,{'def':defense,'rec':25},other),expected)
+
+    def test_wall_stat_gap_controls_both_ally_combat_support_and_turn_bonuses(self):
+        e=BattleEngine(specs([WALL,'Aran']),specs(['Kai']),seed=1)
+        wall,ally=e.team_a.units;foe=e.team_b.units[0]
+        ally.lane='front';ally.base.update({'def':33,'rec':29})
+        ctx=CombatContext(e,ally,foe,ally,foe);mods={'pow':0,'qik':0}
+        e.roster_mods(ctx,ally,{'def':33,'rec':29},mods)
+        self.assertEqual(mods,{'pow':0,'qik':0})
+        e.turn=1;e.roster_turn_start(wall);self.assertEqual(ally.visible_bonus('spd'),0)
+        ally.base['def']=34;e.roster_turn_start(wall)
+        self.assertEqual(ally.visible_bonus('spd'),2)
+        e.roster_mods(ctx,ally,{'def':34,'rec':29},mods)
+        self.assertEqual(mods,{'pow':3,'qik':3})
     def test_great_wall_a_grants_ten_percent_and_caps_both_flat_reduction_branches(self):
         e,a,d,ctx=duel('Aran',WALL)
         mods={'pow':0,'qik':0}
         e.roster_mods(ctx,d,{'def':50,'rec':25},mods)
         self.assertEqual(mods,{'pow':5,'qik':5})
-        for other in (0,5):self.assertEqual(e.roster_flat_reduction(ctx,d,{'def':100,'rec':25},other),8)
+        self.assertEqual(e.roster_flat_reduction(ctx,d,{'def':100,'rec':25},0),8)
+        self.assertEqual(e.roster_flat_reduction(ctx,d,{'def':100,'rec':25},5),7)
+        self.assertEqual(e.roster_flat_reduction(ctx,d,{'def':107,'rec':25},5),8)
 
     def test_great_wall_c_heals_two_per_mb_in_three_six_and_nine_unit_teams(self):
         from hiq.data import CHARACTERS,CHAR_BY_ID
@@ -82,7 +113,7 @@ class RosterAndShieldTests(unittest.TestCase):
         a.cd=99;d.cd=0;e.rng=Mock(random=Mock(return_value=.999))
         stats={a.uid:{'pow':100,'qik':0,'def':0,'rec':0,'spd':0,'jmp':0},d.uid:{'pow':48,'qik':0,'def':40,'rec':25,'spd':0,'jmp':0}}
         with patch.object(e,'combat_stats',return_value=stats),patch.object(e,'expansion_flat_reduction',return_value=0):e.resolve_hit(ctx,a,d)
-        self.assertEqual(a.damage_dealt,28)  # (100-40)*.6 - 8
+        self.assertEqual(a.damage_dealt,30)  # (100-40)*.6 - 6
         self.assertEqual(ctx.temp_flags['wall_prevented'][d.uid],24)
         e.team_a.hp=e.team_a.max_hp=1000;a.attacks_this_combat=1
         d.add_debuff('def',-7)
@@ -93,8 +124,8 @@ class RosterAndShieldTests(unittest.TestCase):
     def test_great_wall_flat_reduction_halves_with_another_flat_source(self):
         e,a,d,ctx=duel('Aran',WALL)
         stats={'def':40,'rec':25}
-        self.assertEqual(e.roster_flat_reduction(ctx,d,stats,0),8)
-        self.assertEqual(e.roster_flat_reduction(ctx,d,stats,5),4)
+        self.assertEqual(e.roster_flat_reduction(ctx,d,stats,0),6)
+        self.assertEqual(e.roster_flat_reduction(ctx,d,stats,5),3)
         d.lane='back';self.assertEqual(e.roster_flat_reduction(ctx,d,stats,0),0)
 
     def test_great_wall_does_not_inherit_old_hirugami_universal_counter(self):
