@@ -29,8 +29,10 @@ class InventoryView(SafeView):
     def row_text(self,row):
         name=discord.utils.escape_markdown(row.label)
         if row.reference:
-            return f'{name} · `{row.reference}`'+(f' · equipped: `{row.equipped_on}`' if row.equipped_on else '')
-        return f'{name} · **{row.quantity}×**'
+            text=f'{name} · `{row.reference}`'+(f' · equipped: `{row.equipped_on}`' if row.equipped_on else '')
+        else:text=f'{name} · **{row.quantity}×**'
+        if row.holders:text+='\n'+ '\n'.join('  '+discord.utils.escape_markdown(holder) for holder in row.holders)
+        return text
 
     def make_pages(self):
         all_rows=inventory_entries(self.schools,self.balances,self.items,stacked=self.stacked)

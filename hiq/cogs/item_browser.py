@@ -10,7 +10,7 @@ class ItemSearch(discord.ui.Modal,title='Search equipment'):
     query=discord.ui.TextInput(label='Item name',placeholder='Enter a name or part of a name',required=False,max_length=100)
     def __init__(self,view):super().__init__();self.view=view
     async def on_submit(self,i):
-        self.view.matches=sorted(find_items(str(self.query),include_signatures=True),key=lambda x:x['name'])
+        self.view.matches=sorted(find_items(str(self.query),include_signatures=True),key=lambda x:(bool(x.get('signature')),x['name']))
         self.view.page=0;self.view.menu_page=0
         await self.view.refresh(i)
 
@@ -19,7 +19,7 @@ class ItemBrowser(SafeView):
     def __init__(self,bot,uid,matches,progress):
         super().__init__(timeout=600)
         self.bot=bot;self.uid=uid;self.matches=matches;self.progress=progress;self.page=0;self.menu_page=0
-        self.catalogue=sorted(ITEMS+SIGNATURE_ITEMS,key=lambda x:x['name'])
+        self.catalogue=sorted(ITEMS+SIGNATURE_ITEMS,key=lambda x:(bool(x.get('signature')),x['name']))
         self.build()
 
     async def interaction_check(self,i):
@@ -33,7 +33,7 @@ class ItemBrowser(SafeView):
 
     def embed(self):
         blocks=[]
-        for it in self.matches[self.page*3:self.page*3+3]:
+        for it in self.result_pages[self.page]:
             cost=it['shard_cost'];days=self.progress.get('_days',1)
             daily_cap=25 if it.get('signature') else it['daily_cap']
             cap=daily_cap*days;earned=self.progress.get(it['key'],0)
@@ -42,18 +42,24 @@ class ItemBrowser(SafeView):
             blocks.append(f'> **{it["name"]} — {it.get("emoji","🏐")}**\n> **`{it["effect"]}`**\n> -# Item Cost: {price}\n> -# Raid Type: *{raid_type}*\n> -# Who can equip: *{it["eligible"]}*\n> -# Accrued Shard Allowance: {days/7:.0%} | {earned/cap:.0%} ({earned}/{cap}) • +{daily_cap}/day; expires weekly\n> -# Recycle Value: {it.get("recycle_value",cost)} Clan Dollars')
             if it.get('extended'):blocks[-1]+='\n> -# '+it['extended']
         e=discord.Embed(title='Equipment Items',description='\n\n'.join(blocks) or 'No matching items. Try another search or browse all items.',color=PURPLE)
-        e.set_footer(text=f'Page {self.page+1}/{max(1,math.ceil(len(self.matches)/3))} • {len(self.matches)} items • ;craft name • ;allcraft')
+        e.set_footer(text=f'Page {self.page+1}/{len(self.result_pages)} • {len(self.matches)} items • ;craft name • ;allcraft')
         return e
 
     def build(self):
         self.clear_items()
+        regular=[it for it in self.matches if not it.get('signature')]
+        unique=[it for it in self.matches if it.get('signature')]
+        self.result_pages=[regular[start:start+3] for start in range(0,len(regular),3)]
+        if unique:self.result_pages.append(unique)
+        if not self.result_pages:self.result_pages=[[]]
+        self.page=min(self.page,len(self.result_pages)-1)
         search=discord.ui.Button(label='Search',emoji='🔎',row=0)
         async def search_cb(i):await i.response.send_modal(ItemSearch(self))
         search.callback=search_cb;self.add_item(search)
         all_button=discord.ui.Button(label='All items',row=0)
         async def show_all(i):self.matches=list(self.catalogue);self.page=0;await self.refresh(i)
         all_button.callback=show_all;self.add_item(all_button)
-        pages=max(1,math.ceil(len(self.matches)/3))
+        pages=len(self.result_pages)
         if pages>1:
             for delta,emoji in [(-1,'◀️'),(1,'▶️')]:
                 button=discord.ui.Button(emoji=emoji,row=0,disabled=self.page==0 if delta<0 else self.page==pages-1)

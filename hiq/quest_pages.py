@@ -36,7 +36,7 @@ async def quest_pages(db,uid):
             amount+=recorded.get('amount',0)
             note+=' Includes Young Emperor extra payouts; Duo bonuses are outside the cap.'
             if recorded.get('estimated'):note+=' Earlier extra payouts are estimated; wallet balances are unchanged.'
-        normal={'battle':50,'raid':100,'pvp':100,'war':200,'tournament':450}.get(key,0)
+        normal={'battle':50,'raid':100,'pvp':100,'pvp_ttb':100,'war':200,'tournament':450}.get(key,0)
         return f'> **{label}**\n{count_label}: {min(count,(limit+bonus)*f)} / {(limit+bonus)*f} | {currency}: {amount} / {cap*f+int(normal*rate)*bonus*f}\n-# {note}'
     coins=[block('Battles ⚔️','battle','Battle Count',9,450,'50 per win, 450 daily cap.'),
            block('Prefecture Battles','prefecture','Battle Count',3,300,'100 per win, 300 daily cap.')]
@@ -45,6 +45,7 @@ async def quest_pages(db,uid):
     coins.extend([block('Raids 🏴‍☠️','raid','Drops',3,300,'Up to 100 per Coin drop, 300 daily cap.'),
                   block('Tournaments 🏆','tournament','Wins',1,450,'300 per win. Separately, 150 per entry with at least four humans, win or lose.'),
                   block('PvP 🗡️','pvp','PvP Count',4,400,'100 per distinct opponent defeated, 400 daily cap.'),
+                  block('Tiny Titans PvP','pvp_ttb','PvP Count',4,400,'100 per distinct opponent defeated. Separate 400 daily cap; weekly prizes pay Clan Dollars.'),
                   block('Clan Wars 🛡️','war','Wins',1,200,'200 per win, 200 daily cap.')])
     tournament_human=row('tournament_human');tournament_main=row('tournament')
     coins[4]=(f'> **Tournaments 🏆**\nWins: {min(tournament_main.get("wins",0),days*(1+extra))} / {days*(1+extra)} | 🪙: {tournament_main.get("coins",0)-tournament_human.get("coins",0)} / {(300+int(300*rate))*days}\n'

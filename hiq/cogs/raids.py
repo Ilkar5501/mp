@@ -63,10 +63,16 @@ class EquipmentView(SafeView):
     def holder(self,item):
         from ..data import CHAR_BY_ID
         cid=item.get('equipped_card_id')
-        if not cid:return 'Unequipped'
         char=CHAR_BY_ID.get(item.get('equipped_character_id'))
         name=f'{char.name} — {char.title}' if char else 'Character'
-        return f'Equipped to {name} · {cid}'
+        parts=[f'Equipped to {name} · {cid}'] if cid else []
+        groups={}
+        for row in item.get('locked_holders',[]):
+            character=CHAR_BY_ID.get(row['character_id'])
+            label=f'{character.name} — {character.title}' if character else row['card_id']
+            groups.setdefault(label,[]).append(row['team'])
+        parts.extend(f'Locked to {label} ({", ".join(teams)})' for label,teams in groups.items())
+        return ' · '.join(parts) or 'Unequipped'
 
     def instance_embed(self):
         from ..data import CHAR_BY_ID
@@ -348,7 +354,7 @@ class RaidCog(commands.Cog):
             if sep and prefix in aliases:current=aliases[prefix];token=value
             queries[current]=(queries.get(current,'')+' '+token).strip()
         name_matches={it['key'] for it in find_items(queries.get('name',''),include_signatures=True)}
-        matches=sorted([it for it in ITEMS+SIGNATURE_ITEMS if it['key'] in name_matches and (not queries.get('text') or queries['text'].casefold() in it['effect'].casefold())],key=lambda it:it['name'].casefold())
+        matches=sorted([it for it in ITEMS+SIGNATURE_ITEMS if it['key'] in name_matches and (not queries.get('text') or queries['text'].casefold() in it['effect'].casefold())],key=lambda it:(bool(it.get('signature')),it['name'].casefold()))
         from .item_browser import ItemBrowser
         view=ItemBrowser(self.bot,ctx.author.id,matches,await self.store.shard_progress(ctx.author.id))
         await ctx.send(embed=view.embed(),view=view)

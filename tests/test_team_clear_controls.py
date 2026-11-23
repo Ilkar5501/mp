@@ -35,7 +35,7 @@ class ClearControlsTests(unittest.IsolatedAsyncioTestCase):
     def controls(self,view):
         clear=next(c for c in view.children if getattr(c,'label',None)=='Clear Team')
         confirm=next(c for c in view.children if getattr(c,'label',None)=='Confirm')
-        self.assertEqual(str(clear.emoji),'🟨');self.assertEqual(clear.style,discord.ButtonStyle.secondary)
+        self.assertEqual(str(clear.emoji),'🧹');self.assertIn(clear.style,(discord.ButtonStyle.primary,discord.ButtonStyle.secondary))
         self.assertNotEqual(clear.row,confirm.row);self.assertEqual(confirm.style,discord.ButtonStyle.success)
         self.assertTrue(all(getattr(c,'label',None) not in ('Use Team','Submit Team','Reset Team') for c in view.children))
         self.assertTrue(all(sum((c.width if hasattr(c,'width') else 1) for c in view.children if c.row==row)<=5 for row in range(5)))

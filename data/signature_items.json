@@ -46,7 +46,7 @@
       "Aran — Thunderous Cannon"
     ],
     "character_id": "Aran — Thunderous Cannon",
-    "effect": "At start of turn 1, grants cooldown count−2. Gains Jmp equal to 70% of Spd bonuses, with no cap. If initiating, grants Pow/Def+5.",
+    "effect": "At start of turn 1, grants Ultimate cooldown count−2. Grants Jmp equal to 100% of unit’s positive visible and in-combat Spd bonuses, with no cap. If initiating, grants Pow/Def+5 during combat.",
     "aliases": [
       "out of nowhere",
       "aran signature"
@@ -55,7 +55,8 @@
     "character_shards": 25,
     "shard_cost": 25,
     "coin_cost": 500,
-    "recycle_value": 100
+    "recycle_value": 100,
+    "extended": "Visible Spd penalties do not reduce the converted amount. Converts positive bonuses at 100%; does not convert base Spd."
   },
   {
     "key": "tanaka_mountain_chalk",

@@ -81,6 +81,8 @@ class MarketStore(CommunityStore):
             if quantity!=1:raise ValueError('List one item instance at a time.')
             row=await self.one(conn,'SELECT * FROM inventory_items WHERE owner_id=? AND id=?',(uid,reference))
             if not row or row['kind'] in ('item_shard','character_shard'):raise ValueError('Choose an item instance you own. Item shards cannot be sold.')
+            from .loadouts import available
+            await available(conn,uid,reference)
             if await self.one(conn,'SELECT 1 FROM cards WHERE equipped_item_id=?',(reference,)):
                 raise ValueError('Unequip the item before listing it.')
             names={'mergecopy':'Merge Copy','blessing':'Blessing','starpack':'Star Pack','pack_base':'Base Pack','pack_school':'School Pack','pack_position':'Position Pack'}

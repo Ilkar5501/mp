@@ -80,7 +80,7 @@ class SealedTeamView(SafeView):
             if fresh['status']=='running':cog.launch(self.sid)
         submit.callback=commit;self.add_item(submit)
         from ..ui import clear_team_button
-        clear=clear_team_button()
+        clear=clear_team_button(primary_used=False)
         async def clear_cb(i):
             fresh=await cog.store.clear_team(self.sid,uid,version)
             await i.response.edit_message(embed=self.embed(fresh,uid),view=SealedTeamView(cog,fresh,uid,0))

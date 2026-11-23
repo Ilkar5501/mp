@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import random
+import weakref
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Iterable
@@ -18,6 +19,8 @@ from .anchor import AnchorEffects
 from .sakusa import SakusaEffects
 from .youth import YouthEffects,YOUTH_TITLES
 from .semi import SemiEffects
+from .effect_guards import ShieldEffects,effect_owner
+from .roster_update import RosterUpdateEffects,WALL,KUNIMI
 
 STATS = ('pow','qik','def','rec','spd','jmp')
 
@@ -38,10 +41,11 @@ def pct(hp: int, max_hp: int) -> float:
 
 
 def has(u: BattleUnit, name: str, title: str | None = None) -> bool:
+    if title is None and u.char_id==WALL:return False
     return u.name == name and (u.title == title if title is not None else u.title not in YOUTH_TITLES)
 
 
-class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
+class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
     """Deterministic-enough 3v3 / 6v6 simulator for the current HiQ Battler rules.
 
     The spreadsheet remains the display/source-of-truth. Character-specific mechanics that cannot
@@ -64,6 +68,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         self.team_b = self._build_team('B', team_b_specs, owner_b, name_b)
         self.teams = {'A': self.team_a, 'B': self.team_b}
         self.units = self.team_a.units + self.team_b.units
+        for unit in self.units:unit.engine_ref=weakref.ref(self)
         self.previous_turn_damage: dict[str, int] = {}
         self.turn_start_damage: dict[str, int] = {}
         self.siphon_used: set[str] = set()
@@ -265,9 +270,11 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
             order.extend(ordered[offset:]+ordered[:offset])
         return order
 
+    @effect_owner
     def _turn_start_owner(self, u: BattleUnit, *, forced=False):
         if forced:self._log(f'[{self.turn}] Repeating start-of-turn abilities for {self._unit_label(u)}.')
         self.begin_bonus_event()
+        self.roster_turn_start(u)
         self.talent_turn_start(u)
         if not forced: self.equipment_turn_start(u)
         self.expansion_turn_start(u)
@@ -363,6 +370,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
             for f in enemy.units:
                 if any(mod.value>0 for mod in f.visible_buffs.values()):affected.append(f)
                 for stat, mod in list(f.visible_buffs.items()):
+                    if not self.foe_effect_allowed(f,u):continue
                     if mod.value > 0:
                         f.add_debuff(stat, -mod.value)
                         f.visible_buffs.pop(stat, None)
@@ -409,6 +417,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
             self.log_target_effect(u,'C',enemy.units,'20 damage to opposing team; converts visible bonuses to penalties')
             for f in enemy.units:
                 for stat,mod in list(f.visible_buffs.items()):
+                    if not self.foe_effect_allowed(f,u):continue
                     if mod.value>0:
                         f.add_debuff(stat,-mod.value); f.visible_buffs.pop(stat,None)
         # Goshiki
@@ -423,6 +432,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
                 if f.lane==u.lane and f.base['hp']<=u.base['hp']:
                     if any(mod.value>0 for mod in f.visible_buffs.values()):affected.append(f)
                     for stat,mod in list(f.visible_buffs.items()):
+                        if not self.foe_effect_allowed(f,u):continue
                         if mod.value>0:
                             f.add_debuff(stat,-mod.value); f.visible_buffs.pop(stat,None)
             self.log_target_effect(u,'C',affected,'converts visible bonuses to penalties')
@@ -455,6 +465,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
                 self.log_target_effect(a,'C',[actor],'grants Ultimate cooldown charge +1 when attacking this action',phase='start of action')
 
     def end_turn(self):
+        self.roster_end_turn()
         for u in self.units:
             u.expire_end_turn(self.turn)
             u.statuses.pop('Hunted',None)
@@ -581,6 +592,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
             neutral_penalty.update(('qik','def','rec'))
         if has(u,'Kiryu','Last Hope') and ctx and ctx.attacker is u and u.burden_stacks>=5:
             neutral_penalty.update(STATS)
+        if ctx is not None:ctx.temp_flags[('neutral_bonuses',u.uid)]=neutral_bonus
         out={}
         for s in STATS:
             out[s]=u.noncombat_stat(s, neutralize_bonus=(s in neutral_bonus), neutralize_penalty=(s in neutral_penalty))
@@ -621,6 +633,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
     def _combat_mods(self,ctx,u,foe,us,fs,initiated):
         m=SpeedBonuses() if self.aran_signature(u) else defaultdict(int)
         team=self.team(u)
+        self.roster_mods(ctx,u,us,m)
         if u.name=='Semi' and initiated and self.skill_enabled(u,'A'):m['qik']+=5;m['spd']+=5
         for stat,mod in u.next_combat_bonuses.items():
             m[stat]+=mod.value
@@ -794,8 +807,8 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         if self.aran_signature(u):
             fatigue=u.statuses.get('Fatigue');n=int(fatigue.payload or 0) if fatigue else 0
             active=self._base_combat_stats(u,foe,ctx)
-            visible=u.visible_bonus('spd') if active['spd']==u.noncombat_stat('spd')-n-self.expansion_bond_penalty(ctx,u) else 0
-            m['jmp']+=floori((visible+m.positive_spd)*.7)
+            visible=0 if 'spd' in ctx.temp_flags.get(('neutral_bonuses',u.uid),set()) else u.visible_bonus('spd')
+            m['jmp']+=visible+m.positive_spd
         return m
 
     def ally_skill_impacts(self,ctx,u,stats=None):
@@ -829,6 +842,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
 
     # ---------- permissions / followups ----------
     def can_counter(self, ctx, defender, attacker, stats=None):
+        if attacker is ctx.attacker and attacker.char_id==KUNIMI and ctx.temp_flags.get('kunimi_full_power')==3:return False
         if ctx.attacker is attacker and self.lev_signature(attacker):
             st=stats or self.combat_stats(ctx)
             if self.skill_spd(attacker,st[attacker.uid])>self.skill_spd(defender,st[defender.uid]):return False
@@ -914,6 +928,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
     def ultimates_suppressed(self,ctx):
         return has(ctx.attacker,'Fukunaga') or has(ctx.defender,'Fukunaga')
 
+    @effect_owner
     def trigger_ultimate(self,u:BattleUnit,ctx:CombatContext|None,kind:str):
         if not self.skill_enabled(u,'U'):return False
         if u.cd!=0 or 'UltimateDisabled' in u.statuses: return False
@@ -950,7 +965,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
 
     def offensive_ult_ready(self,u,foe,ctx):
         if u.cd!=0 or 'UltimateDisabled' in u.statuses or self.ultimates_suppressed(ctx): return False
-        if u.title=='Young Emperor' or u.name=='Semi':return False
+        if u.title=='Young Emperor' or u.name=='Semi' or u.char_id==WALL:return False
         # Postcombat/save/defensive Ultimates do not trigger on own attack.
         if u.name in ('Echigo','Watari','Ezota','Himekawa','Akifumi'): return False
         if has(u,'Kageyama') or has(u,'Bokuto') or has(u,'Fukunaga') or has(u,'Tendo'): return False
@@ -963,6 +978,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
 
     def defensive_ult_ready(self,u,attacker,ctx):
         if u.cd!=0 or 'UltimateDisabled' in u.statuses or self.ultimates_suppressed(ctx): return False
+        if u.char_id==WALL:return True
         if has(u,'Hinata','Miracle Maker') or has(u,'Kita') or has(u,'Yaku') or has(u,'Yamagata'): return True
         if has(u,'Unnan'): return attacker.offense_key=='qik'
         if has(u,'Kosuke') or has(u,'Ezota'): return True
@@ -1016,7 +1032,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         if has(defender,'Unnan') and ctx.defender is defender and attacker.uid not in ctx.first_attack_by:
             st=self.combat_stats(ctx)
             if st[defender.uid]['def']>=st[attacker.uid]['def'] and self.offensive_ult_ready(attacker,defender,ctx):
-                attacker.cd=min(attacker.max_cd,attacker.cd+1)
+                self.inflict_cooldown(defender,attacker)
         ctx.first_attack_by.add(attacker.uid)
         off_trigger=False; def_trigger=False
         temp={}
@@ -1036,6 +1052,8 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
 
         stats=self.combat_stats(ctx,temp)
         a=stats[attacker.uid]; d=stats[defender.uid]
+        for source in self.wall_sources(ctx,defender,'B',d):
+            ctx.temp_flags.setdefault('wall_attacked',{}).setdefault(source.uid,set()).add((defender.uid,attacker.uid))
         attack_stat=a[attacker.offense_key]
         def_stat=d['def'] if attacker.offense_key=='pow' else d['rec']
 
@@ -1133,6 +1151,8 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         damage_mult=1.2 if self.gear(attacker,'block_breaker') and defender.character.position=='MB' else 1.0
         neutralize_percent_dr=(has(attacker,'Kiryu','Last Hope') and ctx.attacker is attacker and attacker.burden_stacks>=5)
         if off_trigger:
+            if attacker.char_id==KUNIMI:
+                damage_mult*=1.5
             if attacker.title=='King of the Lost Court':damage_mult*=2.5
             if has(attacker,'Shibayama'): damage_mult*=1.5
             if has(attacker,'Atema'): bonus+=floori(a['def']*.5)
@@ -1170,9 +1190,10 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
 
         potential_damage=floori((attack_power_before_def+bonus)*damage_mult)
         damage=floori((raw+bonus)*damage_mult)
+        if off_trigger and attacker is ctx.attacker and attacker.char_id==KUNIMI and ctx.temp_flags.get('kunimi_full_power'):damage+=10
 
         # Percentage damage reduction.
-        drs=[]
+        drs=[];wall_dr_index=None
         if has(defender,'Hinata','Miracle Maker') and self.skill_spd(defender,d)>self.skill_spd(attacker,a):
             drs.append(min(0.40,(self.skill_spd(defender,d)-self.skill_spd(attacker,a))*0.04))
         first_attack_action = attacker.attacks_this_combat == 0
@@ -1184,6 +1205,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         if defender.title=='Kings of the Playground' and ctx.defender is defender and self.skill_enabled(defender,'A') and self.followup(ctx,attacker,defender,True):drs.append(.30)
         ultimate_start=len(drs)
         if def_trigger:
+            if defender.char_id==WALL:wall_dr_index=len(drs);drs.append(.40)
             if has(defender,'Ezota'): drs.append(0.30)
             if has(defender,'Hinata','Miracle Maker'): drs.append(0.30)
             if has(defender,'Kita'): drs.append(0.30)
@@ -1203,9 +1225,16 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         if receiving and followup:drs.append(.30)
         if 'Inspiration' in attacker.statuses:
             drs=[dr if ultimate_start<=index<ultimate_end else dr*.5 for index,dr in enumerate(drs)]
-        if 'Perfect Window' in attacker.statuses: drs=drs[ultimate_start:ultimate_end]
+        if 'Perfect Window' in attacker.statuses:
+            drs=drs[ultimate_start:ultimate_end]
+            if wall_dr_index is not None:wall_dr_index-=ultimate_start
         if neutralize_percent_dr: drs=[]
-        for dr in drs: damage=floori(damage*(1-dr))
+        for index,dr in enumerate(drs):
+            reduced=floori(damage*(1-dr))
+            if index==wall_dr_index:
+                prevented=ctx.temp_flags.setdefault('wall_prevented',{})
+                prevented[defender.uid]=prevented.get(defender.uid,0)+damage-reduced
+            damage=reduced
 
         # Flat reduction.
         flat=self.expansion_flat_reduction(ctx,defender,attacker,stats)
@@ -1214,6 +1243,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         if def_trigger and has(defender,'Unnan'): flat+=5
         if has(defender,'Koganegawa') and ctx.defender is defender and d['jmp']>a['jmp']:
             flat+=floori(d['def']*0.10)
+        flat+=self.roster_flat_reduction(ctx,defender,d,flat)
         damage=max(0,damage-flat)
         if def_trigger and has(defender,'Yamagata'): damage=1
 
@@ -1296,6 +1326,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         self.anchor_after_combat(ctx)
         critical_uids=ctx.temp_flags.get('critical_unit_uids',set())
         for source in self.units:
+            self.effect_source=source
             if not has(source,'Kiryu','Last Hope') or not self.source_allowed(ctx,source): continue
             foe=next((u for u in (ctx.attacker,ctx.defender) if u.side!=source.side and u.uid in critical_uids),None)
             key=(self.turn,source.uid)
@@ -1317,6 +1348,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
 
         offensive_uids=ctx.temp_flags.get('offensive_crit_uids',set())
         for source in self.units:
+            self.effect_source=source
             if not has(source,'Kanbayashi') or not self.source_allowed(ctx,source): continue
             if any(foe.uid in offensive_uids for foe in self.enemy_team(source).units):
                 self.heal_team(source,6)
@@ -1333,8 +1365,9 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
                             self._log(f'{self._unit_label(source)} C: 5 after-combat damage to {foe_team.owner_name}.')
         for unit in (ctx.attacker,ctx.defender):
             if has(unit,'Kanoka'):
-                for foe in self.enemy_team(unit).units: foe.cd=min(foe.max_cd,foe.cd+1)
+                for foe in self.enemy_team(unit).units:self.inflict_cooldown(unit,foe)
                 self._log(f'{self._unit_label(unit)} C: all foes remaining Ultimate CD +1 (up to maximum).')
+        self.roster_after_combat(ctx)
         for unit in (ctx.attacker,ctx.defender):unit.next_combat_bonuses.clear()
 
     def damage_team(self,team,amount,*,source=None):
@@ -1384,6 +1417,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
             self.siphon_used.add(a.uid)
             ctx.temp_flags['siphon'] = True
         self.youth_start_combat(ctx)
+        self.roster_combat_start(ctx)
         ctx.temp_flags['tendo_attacks_before']=d.attacks_tanked
         canctr=self.can_counter(ctx,d,a)
         used_vantage=False
@@ -1411,7 +1445,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         a,d=ctx.attacker,ctx.defender
         if ctx.temp_flags.pop('siphon',False):
             a.cd = max(0,a.cd-1)
-            d.cd = min(d.max_cd,d.cd+1)
+            self.inflict_cooldown(a,d)
             self._log(f'{self._unit_label(a)} uses Siphon: own remaining CD −1; {d.name} remaining CD +1.')
 
     def after_combat(self,ctx):
@@ -1424,6 +1458,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         ctx.next_attack_bonus.clear()
         # Wings Hinata decoy debuff
         for x in (a,d):
+            self.effect_source=x
             if has(x,'Hinata','Wings of Dawn'):
                 xstat=self.skill_spd(x,self.combat_stats(ctx)[x.uid])
                 for f in self.enemy_team(x).units:
@@ -1441,6 +1476,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
             self.heal_team(a if has(a,'Konoha') else d,6)
         # Bokuto self+target debuffs if Bokuto attacked
         for boku,foe in ((a,d),(d,a)):
+            self.effect_source=boku
             if has(boku,'Bokuto') and boku.attacks_this_combat>0:
                 for x in (boku,foe):
                     for s in ('pow','jmp','spd'): x.add_debuff(s,-6)
@@ -1448,6 +1484,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         for foe in (a,d):
             enemy_team=self.enemy_team(foe)
             for k in enemy_team.units:
+                self.effect_source=k
                 if has(k,'Kenma') and self.skill_enabled(k,'A'):
                     st=foe.statuses.get('Fatigue'); n=(int(st.payload or 0)+1) if st else 1
                     # The PvP command caps stacks; other battle modes remain uncapped.
@@ -1455,26 +1492,31 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
                     foe.add_status('Fatigue',False,payload=n)
         # Aran cooldown refund
         for x in (a,d):
+            self.effect_source=x
             if has(x,'Aran') and x.ult_triggered_this_combat: x.cd=max(0,x.cd-2)
             if has(x,'Tsuki'):
                 target=d if x is a else a
                 for foe in self.enemy_team(x).units:
-                    if foe is target or foe.lane=='front': foe.cd=min(foe.max_cd,foe.cd+1)
+                    if foe is target or foe.lane=='front':self.inflict_cooldown(x,foe)
         # Kita heal if defensive Ultimate triggered
         if has(d,'Kita') and d.ult_triggered_this_combat: self.heal_team(d,6)
         # Akagi cannot-counter spread
         for x in (a,d):
+            self.effect_source=x
             if has(x,'Akagi') and x.attacks_this_combat>0:
                 for f in self.enemy_team(x).units: f.add_status('Cannot Counter',False,through_next_action=True)
         # Yaku target debuff
         if has(a,'Yaku') or has(d,'Yaku'):
             y=a if has(a,'Yaku') else d; target=d if y is a else a
+            self.effect_source=y
             target.add_debuff('pow',-4); target.add_debuff('qik',-4)
         # Daichi post-Ult flat heal
         for x in (a,d):
+            self.effect_source=x
             if has(x,'Daichi') and x.ult_triggered_this_combat: self.heal_team(x,10)
         # Tanaka ally buff
         for x in (a,d):
+            self.effect_source=x
             if has(x,'Tanaka'):
                 for ally in self.team(x).units:
                     if ally is not x or self.tanaka_signature(x):
@@ -1483,6 +1525,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         if has(d,'Iwaizumi') and a.offense_key=='qik': d.add_status('Charged',True,through_next_action=True)
         # Koganegawa Ultimate support
         for x in (a,d):
+            self.effect_source=x
             if has(x,'Koganegawa') and x.ult_triggered_this_combat:
                 for f in self.team(x).units:
                     if f.lane=='front': f.add_buff('def',4,source=(x.uid,'U')); f.add_buff('jmp',4,source=(x.uid,'U'))
@@ -1498,6 +1541,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         if has(d,'Unnan') and not d.ult_triggered_this_combat: self.heal_team(d,6)
         # Reon heal
         for x in (a,d):
+            self.effect_source=x
             if has(x,'Reon') and x.ult_triggered_this_combat:self.heal_team(x,5)
         # Teradomari speed + self team damage
         if has(a,'Teradomari'):
@@ -1506,9 +1550,11 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         # Unnan team-wide Jmp debuff
         if has(a,'Unnan') or has(d,'Unnan'):
             un=a if has(a,'Unnan') else d
+            self.effect_source=un
             for f in self.enemy_team(un).units:f.add_debuff('jmp',-3)
         # Daisho Free Ball
         for x in (a,d):
+            self.effect_source=x
             if has(x,'Daisho'):
                 for f in self.enemy_team(x).units:f.add_status('Free Ball',False,through_next_action=True)
         # Takeru heal / swap when his Ultimate triggered
@@ -1526,6 +1572,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         # Postcombat Ultimates.
         extra=False
         for x,initiated in ((a,True),(d,False)):
+            self.effect_source=x
             if x.cd!=0 or 'UltimateDisabled' in x.statuses: continue
             if has(x,'Kageyama','Prodigious Talent'):
                 if self.trigger_ultimate(x,ctx,'post'): self.talent_ultimate(x)
@@ -1557,7 +1604,7 @@ class BattleEngine(SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, Expa
         return extra
 
     def _swap_enemy_formation(self,u):
-        enemy=self.enemy_team(u); fronts=[x for x in enemy.units if x.lane=='front']; backs=enemy.backs()
+        enemy=self.enemy_team(u); fronts=[x for x in enemy.units if x.lane=='front' and self.foe_effect_allowed(x,u)]; backs=[x for x in enemy.backs() if self.foe_effect_allowed(x,u)]
         if fronts and backs:
             f=fronts[0] if len(fronts)==1 else self.rng.choice(fronts)
             b=self.rng.choice(backs); f.lane='back'; b.lane='front'

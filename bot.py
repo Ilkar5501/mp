@@ -193,7 +193,7 @@ async def help_cmd(ctx: commands.Context):
             '**Dismantle:** `;dismantle cardID` — confirm an unused, unlocked card to receive stars × (merge+1) character shards.',
             '**Duo cards:** `;fuse` — combine Young Emperor and King of the Lost Court at the same merge level. Earn 1 AF1 Mark per successful run, up to 25/day. Fusion costs 100 coins + 25 Marks × max(1, merge level).',
             '**Shiny art:** `;buy shinystone` or buy a Shiny Stone in `;clanshop`, then `;use itemID`. Choose an eligible card to unlock its next artwork and remove its bane. In `;cv`, use up/down arrows to browse unlocked art and the lock to save it. `;gallery` previews all art.',
-            '**Teams:** `;teamcreate slot [name]`, `;teamedit slot [new name]`, `;teamview [slot]`, `;teamuse slot`. Fifteen slots; 3v3 and 6v6.',
+            '**Teams:** `;teamcreate slot [name]`, `;teamedit slot [new name]`, `;teamview [slot]` / `;tv [slot]`, `;teamuse slot`. Fifteen slots; 3v3 and 6v6. Lock a loadout in ;teamedit to preserve its item copies; unlocking returns to current equipped items.',
             '**Packs:** `;daily` / `;d`, `;shop`, `;p b`, `;p p WS`, `;p s kar`. School abbreviations work.',
             '**Pack details:** `;info p b`, `;info p p WS`, `;info p s kar` — units and individual pull rates.',
             '**Inventory:** `;inv [name]` searches items and shards; arrows show 25 entries per page. `;inv toggle` switches counts/IDs. `;open packID`, `;bless [itemID] [cardID]`.',
@@ -205,7 +205,8 @@ async def help_cmd(ctx: commands.Context):
         ]),
         ('HiQ Battler — Battles & Quests', [
             '**Events:** `;tt` — Tiny Titans unique-shard challenges. `;af1team 1–5` — edit five AF1 teams. `;af1 slot` — select that team and immediately battle the next opponent. `;af1` previews; `;af1use slot` selects without battling. `;eventreset` clears a pending event.',
-            '`;battle [slot]` — matching-format random CPU. `;pvp [@user] [3v3|6v6]` — shared Elo PvP. Direct rematches are allowed. If you won the pair’s last ranked match, your rematch is unrated; the losing player can initiate a ranked rematch immediately. Their ranked win restores your Elo eligibility. This applies across both formats for the season. Automatic matches avoid both players’ last five rated opponents. Daily coin limits still apply.',
+            '`;battle [slot]` — random CPU. `;pvp [@user] [3v3|6v6]` — rated unless you won the pair’s last rated match today. Unrated results never change that record. Midnight resets eligibility. Automatic PvP shuffles eligible opponents, placing already-faced opponents last, then randomly falls back to unrated opponents.',
+            '`;pvpttb [@user] [3v3|6v6]` — independent Tiny Titans PvP ladder. `;ttbboosts` shows the weekly boosted cards. `;pvpttbboard` shows Elo and stacked weekly Clan Dollar prizes. Daily coin rewards have a separate allowance.',
             '`;pvpset` / `;pvps` — choose and lock 3v3 and 6v6 teams. Using normal teams updates unlocked PvP teams; missing or invalid teams are recovered when possible.',
             '`;pvpboard` / `;pvpb` — weekly packs: top 20% gets 5★, top 40% 4★, top 60% 3★, top 80% 2★, everyone eligible 1★. Rewards stack and go to ;inv automatically at Monday reset. Play a ranked match during the two-week season to qualify. Elo resets every two weeks.',
             '**PvP Shield:** `;buy pvpshield` or `;clanshop`, then `;use itemID`. Prevents initiating or receiving PvP for 2 hours. Another shield can be used 6 hours after activation.',

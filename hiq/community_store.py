@@ -314,6 +314,9 @@ class CommunityStore(WarActivity):
         from .items import inventory_label
         async with self.db.connect() as c:
             rows=await self.rows(c,'SELECT i.*,c.instance_id AS equipped_on,c.character_id AS equipped_character FROM inventory_items i LEFT JOIN cards c ON c.equipped_item_id=i.id WHERE i.owner_id=?',(user_id,))
+            from .loadouts import holders
+            for row in rows:
+                if row['kind']=='equipment':row['locked_holders']=await holders(c,user_id,row['id'])
         names={'mergecopy':'Merge Copy','blessing':'Blessing','starpack':'Star Pack','pack_base':'Base Pack','pack_school':'School Pack','pack_position':'Position Pack'}
         return sorted(rows,key=lambda it:((inventory_label(it) or names.get(it['kind'],it['kind'])).casefold(),it['stars'],it['id']))
 
@@ -586,14 +589,13 @@ class CommunityStore(WarActivity):
         if not row:raise ValueError('That saved team no longer exists.')
         team=self.db._saved_team(row)
         if not team.complete or team.team_format!=fmt:raise ValueError(f'Choose a complete {fmt}v{fmt} team.')
-        specs=[];names=set()
-        for _,iid,lane in team.entries:
-            cardrow=await self.one(c,'SELECT * FROM cards WHERE owner_id=? AND instance_id=?',(uid,iid))
-            if not cardrow:raise ValueError('A selected team card is no longer owned by you.')
-            card=self.db._card(cardrow);char=CHAR_BY_ID[card.character_id]
+        from .loadouts import resolve
+        specs=await resolve(c,self.db,uid,'saved',slot,[dict(id=iid,lane=lane) for _,iid,lane in team.entries])
+        names=set()
+        for card,char,lane in specs:
             from .lineups import identities
             if identities(char)&names:raise ValueError('Your team has duplicate characters or a Duo alongside a component character.')
-            names.update(identities(char));specs.append((card,char,lane))
+            names.update(identities(char))
         from .pvp_store import auto_team_tx
         await auto_team_tx(c,uid,team)
         return snapshot_specs(specs)

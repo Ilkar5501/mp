@@ -69,7 +69,7 @@ class YouthCombatTests(unittest.TestCase):
         self.assertEqual([c.id for c in exact],[OIKAWA])
 
     def test_all_five_have_real_stats_art_and_complete_skills_and_can_fight(self):
-        self.assertEqual(len(CHARACTERS),73)
+        self.assertEqual(len(CHARACTERS),75)
         for cid in NEW:
             with self.subTest(card=cid):
                 c=CHAR_BY_ID[cid]

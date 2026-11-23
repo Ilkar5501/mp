@@ -33,6 +33,7 @@ def cpu_specs(tournament_id:str,number:int,*,rng=None):
     specs=[]
     for index,name in enumerate(names):
         candidates=[c for c in CHARACTERS if c.name==name and (name!='Oikawa' or c.title=='Grand Conductor') and (name!='Hinata' or c.title=='Wings of Dawn') and (name!='Kageyama' or c.title=='Crown of Precision') and (name!='Kiryu' or c.title==('Last Hope' if names==CPU_TEAMS[10] else 'Reluctant Titan'))]
+        if name=='Hirugami':candidates=[c for c in candidates if c.title=='The Immovable Gate']
         if len(candidates)!=1:raise ValueError(f'CPU roster character is ambiguous or missing: {name}')
         c=candidates[0]
         card=CardInstance(instance_id=f'to-cpu:{tournament_id}:{number}:{index}',

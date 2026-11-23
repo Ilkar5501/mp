@@ -46,7 +46,7 @@ async def migrate(store,c,day):
     for row in await store.rows(c,'SELECT * FROM pvp_weeks WHERE closed=0'):
         target,phase=cycle_for(row['week']);await carry(row['cycle'],target)
         await c.execute('UPDATE pvp_weeks SET cycle=?,phase=? WHERE week=?',(target,phase,row['week']))
-    for row in await store.rows(c,"SELECT id,month,rated,state_json FROM pvp_runs WHERE status='running'"):
+    for row in await store.rows(c,"SELECT id,month,rated,state_json FROM pvp_runs WHERE status='running' AND month NOT LIKE 'ttb:%'"):
         target,_=cycle_for(json.loads(row['state_json'])['day'])
         await carry(row['month'],target)
         await c.execute('UPDATE pvp_runs SET month=? WHERE id=?',(target,row['id']))
@@ -81,5 +81,5 @@ async def settle(store,c,day):
             await c.execute('INSERT INTO pvp_monthly_awards VALUES (?,?,?,?,?)',('week-'+key,uid,rank,player['rating'],json.dumps(ids)))
         await c.execute('UPDATE pvp_weeks SET closed=1 WHERE week=?',(key,))
         cursor+=timedelta(weeks=1)
-    await c.execute("DELETE FROM pvp_pair_results WHERE season<>? AND NOT EXISTS(SELECT 1 FROM pvp_runs WHERE month=pvp_pair_results.season AND status='running')",(cycle,))
+    await c.execute("DELETE FROM pvp_pair_results WHERE season NOT LIKE 'ttb:%' AND season<>? AND NOT EXISTS(SELECT 1 FROM pvp_runs WHERE month=pvp_pair_results.season AND status='running')",(cycle,))
     return cycle,phase

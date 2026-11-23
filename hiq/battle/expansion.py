@@ -260,6 +260,7 @@ class ExpansionEffects:
         if ctx.temp_flags.get('v10_after_resolved'): return
         ctx.temp_flags['v10_after_resolved']=True
         for unit in (ctx.attacker,ctx.defender):
+            self.effect_source=unit
             if unit.name=='Shibayama':
                 before=ctx.temp_flags.get('v10_damage_before',{}).get(unit.uid,unit.damage_taken)
                 if unit.damage_taken-before>=unit.base['hp']*.25:

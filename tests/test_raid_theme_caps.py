@@ -65,7 +65,7 @@ class RaidThemeCapsTests(unittest.IsolatedAsyncioTestCase):
                     pool=raid.reward_pool(selected,progress)
                     expected={i['key'] for i in ITEMS if i['theme']==selected} if selected!=exhausted else set()
                     self.assertEqual({r['key'] for r in pool},expected)
-                    self.assertEqual(len(pool),12 if selected!=exhausted else 0)
+                    self.assertEqual(len(pool),sum(i['theme']==selected for i in ITEMS) if selected!=exhausted else 0)
 
     def test_item_keys_are_unique_and_do_not_collide_with_shared_rewards(self):
         keys=[i['key'] for i in ITEMS]

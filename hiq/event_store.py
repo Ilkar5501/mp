@@ -28,6 +28,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS one_live_event_run ON event_runs(owner_id) WHE
 '''
 
 class EventStore(CommunityStore):
+    async def _team_row(self,c,uid,slot):
+        row=self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
+        if row:
+            from .loadouts import locked
+            row['locked']=await locked(c,uid,'af1',slot) is not None
+        return row
     @staticmethod
     def unpack(row):
         if row and 'entries_json' in row:row['entries']=json.loads(row['entries_json'])
@@ -48,7 +54,22 @@ class EventStore(CommunityStore):
             await c.execute('INSERT OR IGNORE INTO af1_teams VALUES (?,?,?,?,0)',(uid,slot,f'AF1 Team {slot}',json.dumps([None]*7)))
             if name:
                 await c.execute('UPDATE af1_teams SET name=?,revision=revision+1 WHERE owner_id=? AND slot=?',(name[:60],uid,slot))
-            return self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
+            row=self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
+            from .loadouts import locked
+            row['locked']=await locked(c,uid,'af1',slot) is not None
+            return row
+
+    async def set_lock(self,uid,slot,value,revision):
+        from .loadouts import snapshot,unlock
+        async with self.tx() as c:
+            row=self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
+            if not row or row['revision']!=revision:raise ValueError('This AF1 team changed. Reopen ;af1team.')
+            if value:
+                await self._specs(c,uid,row['entries'],allow_empty_supports=True)
+                await snapshot(c,uid,'af1',slot,row['entries'])
+            else:await unlock(c,uid,'af1',slot)
+            await c.execute('UPDATE af1_teams SET revision=revision+1 WHERE owner_id=? AND slot=?',(uid,slot))
+        return await self.team(uid,slot)
 
     async def set_entry(self,uid,slot,index,iid,lane,revision):
         if not 0<=index<7 or lane not in ('front','back'):raise ValueError('Choose a slot and row.')
@@ -67,17 +88,24 @@ class EventStore(CommunityStore):
             from .lineups import validate_duos
             validate_duos([CHAR_BY_ID[cid] for cid in chars])
             await c.execute('UPDATE af1_teams SET entries_json=?,revision=revision+1 WHERE owner_id=? AND slot=?',(json.dumps(entries),uid,slot))
-            return self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
+            from .loadouts import refresh
+            await refresh(c,uid,'af1',slot,entries)
+            return await self._team_row(c,uid,slot)
 
     async def clear_team(self,uid,slot,revision):
         async with self.tx() as c:
             row=await self.one(c,'SELECT revision FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot))
             if not row or row['revision']!=revision:raise ValueError('This team changed. Reopen ;af1team.')
             await c.execute('UPDATE af1_teams SET entries_json=?,revision=revision+1 WHERE owner_id=? AND slot=?',(json.dumps([None]*7),uid,slot))
-            return self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
+            from .loadouts import refresh
+            await refresh(c,uid,'af1',slot,[None]*7)
+            return await self._team_row(c,uid,slot)
 
-    async def _specs(self,c,uid,entries,*,allow_empty_supports=False):
+    async def _specs(self,c,uid,entries,*,allow_empty_supports=False,slot=None):
         if not entries or entries[0] is None or (not allow_empty_supports and any(e is None for e in entries)):raise ValueError('Choose your main first: ;af1team.')
+        if slot is not None:
+            from .loadouts import resolve
+            return await resolve(c,self.db,uid,'af1',slot,entries)
         specs=[]
         for e in entries:
             if e is None:continue
@@ -91,7 +119,7 @@ class EventStore(CommunityStore):
         async with self.tx() as c:
             row=self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,slot)))
             if not row:raise ValueError('Create this team with ;af1team first.')
-            validate_af1(await self._specs(c,uid,row['entries'],allow_empty_supports=True),complete=True)
+            validate_af1(await self._specs(c,uid,row['entries'],allow_empty_supports=True,slot=slot),complete=True)
             await c.execute('INSERT OR IGNORE INTO event_wallets(owner_id) VALUES (?)',(uid,))
             await c.execute('UPDATE event_wallets SET af1_slot=? WHERE owner_id=?',(slot,uid))
             return row
@@ -129,7 +157,7 @@ class EventStore(CommunityStore):
                 selected_slot=pref['af1_slot'] if af1_slot is None else af1_slot
                 team=self.unpack(await self.one(c,'SELECT * FROM af1_teams WHERE owner_id=? AND slot=?',(uid,selected_slot)))
                 if not team:raise ValueError(f'Create AF1 team {selected_slot} with ;af1team {selected_slot} first.')
-                a=await self._specs(c,uid,team['entries'],allow_empty_supports=True);validate_af1(a,complete=True)
+                a=await self._specs(c,uid,team['entries'],allow_empty_supports=True,slot=selected_slot);validate_af1(a,complete=True)
                 await c.execute('UPDATE event_wallets SET af1_slot=? WHERE owner_id=?',(selected_slot,uid))
             else:
                 user=await self.one(c,'SELECT active_team_slot FROM users WHERE discord_id=?',(uid,))
@@ -137,7 +165,8 @@ class EventStore(CommunityStore):
                 if not raw or raw['team_format']!=6:raise ValueError('Select a complete 6v6 team with ;teamuse first.')
                 team=self.db._saved_team(raw)
                 if not team.complete:raise ValueError('Complete your active 6v6 team first: ;teamedit.')
-                a=await self._specs(c,uid,[{'id':iid,'lane':lane} if iid else None for _,iid,lane in team.entries])
+                from .loadouts import resolve
+                a=await resolve(c,self.db,uid,'saved',team.slot,[{'id':iid,'lane':lane} if iid else None for _,iid,lane in team.entries])
             challenge=EVENT_TEAMS[mode][index]
             state=dict(a=snapshot_specs(a),b=snapshot_specs(cpu_specs(mode,index)),seed=secrets.randbits(62),opponent=index,
                        label=challenge['name'],reward_policy='signature_drop_v2',signature_key=challenge.get('signature_key'),

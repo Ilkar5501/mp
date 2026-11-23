@@ -184,12 +184,8 @@ class BattleCog(commands.Cog):
         team = await (self.bot.db.get_saved_team(owner_id, slot) if slot else self.bot.db.active_team(owner_id))
         if not team or not team.complete:
             return None, team
-        specs = []
-        for iid, lane in [(iid,lane) for _,iid,lane in team.entries]:
-            card = await self.bot.db.get_card(iid)
-            if not card or card.owner_id!=owner_id:
-                return None, team
-            specs.append((card, CHAR_BY_ID[card.character_id], lane))
+        try:specs=await self.bot.db.team_specs(owner_id,team.slot)
+        except ValueError:return None,team
         from ..lineups import validate_characters
         validate_characters([char for _,char,_ in specs])
         from ..pvp_store import auto_team_tx

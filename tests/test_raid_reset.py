@@ -36,11 +36,11 @@ class RaidResetTests(unittest.IsolatedAsyncioTestCase):
         before=await raid.shard_progress(1)
         self.assertEqual(raid.reward_pool('defense',before),[])
         result=await raid.reset_item_allowances(1)
-        self.assertEqual((result['players'],result['rows']),(1,60))
+        self.assertEqual((result['players'],result['rows']),(1,len(ITEMS)))
         progress=await raid.shard_progress(1)
         for theme in ('tactics','offense','defense','tempo','recovery'):
             pool=raid.reward_pool(theme,progress)
-            self.assertEqual(len(pool),12)
+            self.assertEqual(len(pool),sum(i['theme']==theme for i in ITEMS))
             self.assertTrue(all(r['remaining']==r['cap'] for r in pool))
         self.assertEqual(progress['coins'],300)
         self.assertEqual(progress['clancoins'],300)
@@ -57,7 +57,7 @@ class RaidResetTests(unittest.IsolatedAsyncioTestCase):
     async def test_all_reset_targets_every_player_and_ignores_old_weeks(self):
         await self.seed();raid=RaidStore(self.db)
         result=await raid.reset_item_allowances()
-        self.assertEqual((result['players'],result['rows']),(2,120))
+        self.assertEqual((result['players'],result['rows']),(2,len(ITEMS)*2))
         for uid in (1,2):self.assertNotIn(self.key,await raid.shard_progress(uid))
         for invalid in (True,0,-1,'all'):
             with self.assertRaises(ValueError):await raid.reset_item_allowances(invalid)

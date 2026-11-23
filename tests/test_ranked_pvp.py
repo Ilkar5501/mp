@@ -65,22 +65,23 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
             for uid,rating in [(1,1000),(2,1010),(3,1200),(4,1030),(5,1000)]:
                 await c.execute('INSERT INTO pvp_ratings(month,owner_id,rating) VALUES (?,?,?)',('2026-11',uid,rating))
         row=await self.store.start(1,at=NOW)
-        self.assertEqual(row['b_id'],2);self.assertEqual(row['format'],3)
+        self.assertIn(row['b_id'],(2,3,4));self.assertEqual(row['format'],3)
         self.assertTrue(row['rated']);self.assertFalse(row['targeted'])
 
-    async def test_avoidance_is_bidirectional_and_lasts_five_other_rated_matches(self):
-        await self.users(1,2);await self.history(1,2)
-        for oid in range(3,8):await self.history(1,oid)
-        with self.assertRaisesRegex(ValueError,'No eligible'):await self.store.start(1,at=NOW)
-        for oid in range(3,7):await self.history(2,oid)
-        with self.assertRaisesRegex(ValueError,'No eligible'):await self.store.start(1,at=NOW)
-        await self.history(2,7)
-        self.assertEqual((await self.store.start(1,at=NOW))['b_id'],2)
+    async def test_queue_visits_fresh_eligible_opponents_then_uses_unrated_fallback(self):
+        await self.users(1,2,3)
+        first=await self.store.start(1,at=NOW);await self.finish(first)
+        second=await self.store.start(1,at=NOW)
+        self.assertNotEqual(first['b_id'],second['b_id']);self.assertTrue(second['rated'])
+        await self.finish(second)
+        third=await self.store.start(1,at=NOW)
+        self.assertIn(third['b_id'],(2,3));self.assertFalse(third['rated'])
 
-    async def test_no_relaxation_when_only_recent_opponent_exists(self):
+    async def test_only_previously_defeated_opponent_remains_available_as_unrated(self):
         await self.users(1,2)
-        row=await self.store.start(1,at=NOW);await self.finish(row)
-        with self.assertRaisesRegex(ValueError,'five other rated matches'):await self.store.start(1,at=NOW)
+        first=await self.store.start(1,at=NOW);await self.finish(first)
+        second=await self.store.start(1,at=NOW)
+        self.assertEqual(second['b_id'],2);self.assertFalse(second['rated'])
 
     async def test_ranked_rematches_follow_last_winner_without_daily_target_limit(self):
         await self.users(1,2,3,4)
@@ -206,6 +207,28 @@ class PvPStoreTests(unittest.IsolatedAsyncioTestCase):
             await c.execute('UPDATE pvp_ratings SET rating=1400 WHERE owner_id=3')
         row=await self.store.start(1,at=NOW)
         self.assertEqual(row['b_id'],3);self.assertTrue(row['rated'])
+
+    async def test_return_winner_becomes_eligible_again_behind_unfaced_players(self):
+        await self.users(1,2,3)
+        first=await self.store.start(1,target=2,at=NOW);await self.finish(first)
+        comeback=await self.store.start(2,target=1,at=NOW);await self.finish(comeback)
+        fresh=await self.store.start(1,at=NOW)
+        self.assertEqual(fresh['b_id'],3);self.assertTrue(fresh['rated']);await self.finish(fresh)
+        retry=await self.store.start(1,at=NOW)
+        self.assertEqual(retry['b_id'],2);self.assertTrue(retry['rated'])
+
+    async def test_queue_pass_finishes_after_a_loss_and_rated_comeback_requeues_opponent(self):
+        await self.users(1,2,3)
+        first=await self.store.start(1,target=2,at=NOW);await self.finish(first)
+        tough=await self.store.start(1,at=NOW)
+        self.assertEqual(tough['b_id'],3);await self.finish(tough,'B')
+        fallback=await self.store.start(1,at=NOW)
+        self.assertEqual(fallback['b_id'],2);self.assertFalse(fallback['rated'])
+        await self.finish(fallback,'B')  # An unrated loss must not reopen this matchup.
+        comeback=await self.store.start(2,target=1,at=NOW)
+        self.assertTrue(comeback['rated']);await self.finish(comeback)
+        requeued=await self.store.start(1,at=NOW)
+        self.assertEqual(requeued['b_id'],2);self.assertTrue(requeued['rated'])
 
     async def test_draw_updates_both_records_without_coin_reward(self):
         await self.users(1,2);row=await self.store.start(1,at=NOW);await self.finish(row,'draw')

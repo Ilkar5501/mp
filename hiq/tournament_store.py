@@ -98,11 +98,9 @@ class TournamentStore:
             cur=await db.execute('SELECT * FROM saved_teams WHERE owner_id=? AND slot=?',(owner,slot));row=await cur.fetchone()
             team=self.db._saved_team(row) if row else None
             if not team or team.team_format!=6 or not team.complete:raise ValueError('Choose a complete 6v6 team.')
-            specs=[];names=[]
-            for _,iid,lane in team.entries:
-                cur=await db.execute('SELECT * FROM cards WHERE instance_id=? AND owner_id=?',(iid,owner));row=await cur.fetchone()
-                if not row:raise ValueError('A selected team member is no longer in your collection.')
-                card=self.db._card(row);c=CHAR_BY_ID[card.character_id];specs.append((card,c,lane));names.extend(c.components or (c.name,))
+            from .loadouts import resolve
+            specs=await resolve(db,self.db,owner,'saved',slot,[dict(id=iid,lane=lane) for _,iid,lane in team.entries])
+            names=[name for _,char,_ in specs for name in (char.components or (char.name,))]
             if len(names)!=len(set(names)):raise ValueError('A team can use only one version of each character.')
             from .pvp_store import auto_team_tx
             await auto_team_tx(db,owner,team)

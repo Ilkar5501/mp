@@ -25,6 +25,7 @@ class InventoryEntry:
     reference:str=''
     equipped_on:str=''
     terms:tuple[str,...]=()
+    holders:tuple[str,...]=()
 
 
 def parse_query(raw):
@@ -65,8 +66,19 @@ def inventory_entries(schools,balances,items,*,stacked=False):
         name=inventory_label(copies[0]) or ((f'{stars}★ ' if stars else '')+ITEM_NAMES.get(kind,kind)+(f' · {detail}' if detail else ''))
         terms=searchable_terms(kind,detail)+tuple(item['id'] for item in copies)
         category=('Unique Equip Items' if ITEM_BY_KEY.get(detail,{}).get('signature') else 'Equip Items') if kind=='equipment' else 'Non-equip Items'
+        held=[]
+        for copy in copies:
+            if copy.get('equipped_on'):
+                char=CHAR_BY_ID.get(copy.get('equipped_character'))
+                held.append('Equipped: '+(f'{char.name} — {char.title}' if char else copy['equipped_on']))
+            groups={}
+            for holder in copy.get('locked_holders',[]):
+                char=CHAR_BY_ID.get(holder['character_id'])
+                label=f'{char.name} — {char.title}' if char else holder['card_id']
+                groups.setdefault(label,[]).append(holder['team'])
+            held.extend(f'Locked: {label} ({", ".join(teams)})' for label,teams in groups.items())
         rows.append(InventoryEntry(category,name,len(copies),'' if stacked else copies[0]['id'],
-                                   '' if stacked else copies[0].get('equipped_on') or '',terms))
+                                   '' if stacked else copies[0].get('equipped_on') or '',terms,tuple(held)))
     return sorted(rows,key=lambda row:(CATEGORIES.index(row.category),row.label.casefold(),row.reference))
 
 

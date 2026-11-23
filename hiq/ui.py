@@ -6,9 +6,8 @@ import time
 PURPLE=discord.Color.from_rgb(72,42,115)
 
 
-def clear_team_button():
-    # Discord exposes no yellow button style; keep the yellow marker consistent.
-    return discord.ui.Button(label='Clear Team',emoji='🟨',style=discord.ButtonStyle.secondary,row=4)
+def clear_team_button(*,primary_used=True):
+    return discord.ui.Button(label='Clear Team',emoji='🧹',style=discord.ButtonStyle.secondary if primary_used else discord.ButtonStyle.primary,row=4)
 
 
 def expire_result_view(view, deadline=None):

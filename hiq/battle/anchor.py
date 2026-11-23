@@ -10,6 +10,7 @@ class AnchorEffects:
         return sum('Guiding Break' in unit.statuses for unit in team.units)
 
     def inflict_guiding_break(self, source, target):
+        if not self.foe_effect_allowed(target,source):return False
         if 'Guiding Break' in target.statuses or self.guiding_break_count(self.team(target)) >= 2:
             return False
         target.add_status('Guiding Break', False, through_next_action=True, source=(source.uid, 'B'))

@@ -3,6 +3,7 @@ import json
 from dataclasses import replace
 from datetime import datetime,timezone
 from .battle.engine import BattleEngine,has
+from .battle.effect_guards import effect_owner
 from .config import DATA_DIR
 from .data import CHAR_BY_ID,CHARACTERS
 from .models import CardInstance
@@ -98,6 +99,7 @@ class AllForOneEngine(BattleEngine):
         order=super()._action_order(*args,**kwargs)
         return order if kwargs.get('for_start_turn') else [u for u in order if u.uid not in self.support_ids]
 
+    @effect_owner
     def _turn_start_owner(self,u,**kwargs):
         if u.uid in self.support_ids:
             self.begin_bonus_event();self.support_turn(u)
@@ -113,6 +115,7 @@ class AllForOneEngine(BattleEngine):
         return sum(int(u.statuses['Guiding Break'].payload or 1) for u in team.units if 'Guiding Break' in u.statuses)
 
     def inflict_guiding_break(self,source,target):
+        if not self.foe_effect_allowed(target,source):return False
         old=target.statuses.get('Guiding Break');n=int(old.payload or 1) if old else 0
         if n>=2:return False
         target.add_status('Guiding Break',False,payload=n+1,through_next_action=True,source=(source.uid,'B'))
@@ -137,7 +140,10 @@ class AllForOneEngine(BattleEngine):
     def opposite_ally(self,u):return None
     def formation_distance(self,a,b):return 0 if a is b else 1 if a.lane==b.lane else 2
 
+    @effect_owner
     def support_turn(self,source):
+        from .battle.roster_update import WALL
+        if source.char_id==WALL:self.roster_turn_start(source);return
         from .battle.youth import YOUTH_TITLES
         if source.title in YOUTH_TITLES:self.youth_turn(source);return
         f=self.mains[source.side];enemy=self.enemy_team(source);name=source.name;buffs={}
@@ -171,6 +177,7 @@ class AllForOneEngine(BattleEngine):
             for foe in enemy.units:
                 if any(mod.value>0 for mod in foe.visible_buffs.values()):affected.append(foe)
                 for stat,mod in list(foe.visible_buffs.items()):
+                    if not self.foe_effect_allowed(foe,source):continue
                     if mod.value>0:foe.add_debuff(stat,-mod.value);foe.visible_buffs.pop(stat,None)
             self.log_target_effect(source,'C',enemy.units if name=='Futakuchi' else affected,'20 damage to opposing team; converts visible bonuses to penalties' if name=='Futakuchi' else 'converts visible bonuses to penalties')
         elif name=='Kenma':

@@ -841,5 +841,33 @@
     "effect": "When unit’s damaging Ultimate triggers from unit’s attack, adds damage equal to unit’s maximum Ultimate cooldown count ×4 for that hit.",
     "emoji": "🏐",
     "recycle_value": 24
+  },
+  {
+    "key": "fish_cakes",
+    "name": "Fish Cakes",
+    "effect": "Unit is immune to foe effects applied after combat or outside unit’s own combat. Does not prevent pre-combat Save or redirect effects.",
+    "eligible": "Anyone",
+    "shard_cost": 2,
+    "drop_rate": 0.04,
+    "weekly_cap": 14,
+    "theme": "recovery",
+    "daily_cap": 2,
+    "emoji": "🍥",
+    "recycle_value": 8,
+    "aliases": []
+  },
+  {
+    "key": "chocolate_milk",
+    "name": "Chocolate Milk",
+    "effect": "Unit and allies in the same row are immune to foe effects that increase remaining Ultimate cooldown count.",
+    "eligible": "Anyone",
+    "shard_cost": 2,
+    "drop_rate": 0.04,
+    "weekly_cap": 14,
+    "theme": "tempo",
+    "daily_cap": 2,
+    "emoji": "🥛",
+    "recycle_value": 8,
+    "aliases": []
   }
 ]

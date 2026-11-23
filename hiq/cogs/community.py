@@ -28,6 +28,12 @@ def item_label(item):
         if item.get('equipped_on'):
             char=CHAR_BY_ID.get(item.get('equipped_character'))
             special+=f' • equipped to {display_title(char) if char else "card"} (`{item["equipped_on"]}`)'
+        if item.get('locked_holders'):
+            groups={}
+            for holder in item['locked_holders']:
+                char=CHAR_BY_ID.get(holder['character_id'])
+                groups.setdefault(display_title(char) if char else holder['card_id'],[]).append(holder['team'])
+            special+=' • '+ '; '.join(f'locked to {name} ({", ".join(teams)})' for name,teams in groups.items())
         return special
     names={'mergecopy':'Merge Copy','blessing':'Blessing','starpack':'Star Pack','pack_base':'Base Pack','pack_school':'School Pack','pack_position':'Position Pack'}
     return (f'{item["stars"]}★ ' if item.get('stars') else '')+names.get(item['kind'],item['kind'])+(f' • {item["detail"]}' if item.get('detail') else '')

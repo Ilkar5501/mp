@@ -78,7 +78,7 @@ class AF1TeamView(OwnedView):
         remove=discord.ui.Button(label='Remove',row=3,disabled=e is None)
         async def delete(i):await self.save(i,None,'front')
         remove.callback=delete;self.add_item(remove)
-        clear=clear_team_button()
+        clear=clear_team_button(primary_used=any(isinstance(c,discord.ui.Button) and c.style==discord.ButtonStyle.primary for c in self.children))
         async def clear_cb(i):
             self.team=await self.cog.store.clear_team(self.uid,self.team['slot'],self.team['revision'])
             self.index=0;self.page=0;self.build()
@@ -88,6 +88,19 @@ class AF1TeamView(OwnedView):
         async def activate(i):
             await self.cog.store.use(self.uid,self.team['slot']);await i.response.send_message(f'Confirmed **{self.team["name"]}** for AF1.',ephemeral=True)
         use.callback=activate;self.add_item(use)
+        value=self.team.get('locked',False)
+        lock=discord.ui.Button(label='Unlock Loadout' if value else 'Lock Loadout',emoji='🔒' if value else '🔓',row=4)
+        async def toggle(i):
+            if value:
+                from .loadout_ui import UnlockConfirm,preview
+                changes=await preview(self.cog.bot.db,self.uid,'af1',self.team['slot'])
+                async def apply():self.team=await self.cog.store.set_lock(self.uid,self.team['slot'],False,self.team['revision']);self.build()
+                async def refresh():await i.message.edit(embed=self.embed(),view=self)
+                await i.response.send_message(f'Unlock AF1 Team {self.team["slot"]}?\n{changes}',view=UnlockConfirm(self.uid,apply,refresh),ephemeral=True)
+            else:
+                self.team=await self.cog.store.set_lock(self.uid,self.team['slot'],True,self.team['revision']);self.build()
+                await i.response.edit_message(embed=self.embed(),view=self)
+        lock.callback=toggle;self.add_item(lock)
 
 class EventMenu(OwnedView):
     def __init__(self,cog,ctx,mode,index=0):

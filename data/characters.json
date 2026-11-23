@@ -158,7 +158,7 @@
     "title": "The Immovable Gate",
     "position": "MB",
     "school": "Kamomedai",
-    "rarity": 5,
+    "rarity": 4,
     "role_class": "Tank",
     "card_art": "https://i.pinimg.com/1200x/76/10/3e/76103e0efbf39b07c2a481fbbc4aab26.jpg",
     "character_icon": "https://i.pinimg.com/1200x/e5/8d/1f/e58d1f2fd6f54aee57b8bb0db614627d.jpg",
@@ -3724,6 +3724,108 @@
       "A": "The ally bonus is an in-combat bonus. An action without combat does not consume it. Multiple applications do not stack.",
       "B": "Reduces remaining cooldown, not maximum cooldown.",
       "C": "Activates once after a combat in which Lightning Serve triggered; does not grant a refund when no Ultimate triggered."
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Hirugami — The Great Wall",
+    "name": "Hirugami",
+    "title": "The Great Wall",
+    "rarity": 5,
+    "position": "MB",
+    "school": "Kamomedai",
+    "role_class": "Tank/Support",
+    "stats": {
+      "hp": 172,
+      "pow": 48,
+      "def": 40,
+      "rec": 25,
+      "spd": 24,
+      "jmp": 36,
+      "qik": 0,
+      "bst": 345
+    },
+    "ult_cd": 3,
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Hirugami2.png",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/HirugamiI.png",
+    "abilities": {
+      "U": {
+        "name": "Monster Block",
+        "text": "When unit’s Ultimate triggers during a foe’s attack, reduces damage from that attack by 40%. After combat, deals damage to the opposing team equal to the damage prevented by this effect (max. 20).",
+        "timing": "DEFENSIVE_HIT > COMBAT_END"
+      },
+      "A": {
+        "name": "The Gate Holds",
+        "text": "During combat, Wall allies gain Pow/Qik equal to 20% of their Def. During damage calculation, reduces damage from each foe’s hit by 20% of the Wall ally’s Def. If another flat damage reduction applies to that hit, reduces by 10% of the Wall ally’s Def instead.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Stuff Block",
+        "text": "After a combat in which a foe attacked a Wall ally, inflicts [Heal Block] on that foe through its next action and deals 5 damage to the opposing team. After that combat, removes all debuffs from that Wall ally. The cleanse can activate once per turn in 3v3 and twice per turn in other modes.",
+        "timing": "COMBAT_END"
+      },
+      "C": {
+        "name": "Hold the Net",
+        "text": "At start of turn, grants Pow/Qik/Def+3 to unit and MB allies, and Spd/Jmp+3 to Wall allies, through their next actions. At end of turn, restores 3 team HP for each MB ally, including unit (max. 9 in 3v3, 18 in 6v6, 27 in 9v9).",
+        "timing": "TURN_START > TURN_END"
+      }
+    },
+    "extended": {
+      "U": "The reflected amount counts damage prevented by Monster Block itself, before later reductions. The cap is 20 per combat.",
+      "A": "Wall allies are unit, MB allies, and allies whose Def is greater than Rec, while in the front-line. Percentages round down. Multiple copies of this skill do not stack.",
+      "B": "The cleanse limit is shared across this unit’s activations in the turn. The Heal Block and 5 damage are not limited by that cleanse allowance.",
+      "C": ""
+    },
+    "clarification_count": 0
+  },
+  {
+    "id": "Kunimi — Energy Saver",
+    "name": "Kunimi",
+    "title": "Energy Saver",
+    "rarity": 1,
+    "position": "OP",
+    "school": "Aoba Johsai",
+    "role_class": "DPS",
+    "stats": {
+      "hp": 156,
+      "pow": 49,
+      "def": 26,
+      "rec": 29,
+      "spd": 33,
+      "jmp": 31,
+      "qik": 0,
+      "bst": 324
+    },
+    "ult_cd": 3,
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/kunimi.png",
+    "character_icon": "https://i.pinimg.com/736x/42/32/5b/42325be49baf4c57569fbf83d26d5f34.jpg",
+    "abilities": {
+      "U": {
+        "name": "Lazy Tip",
+        "text": "When unit’s Ultimate triggers during combat, boosts damage dealt by 50% for that attack. If [Full Power] activated during that combat, also deals +10 damage for that attack.",
+        "timing": "OFFENSIVE_HIT"
+      },
+      "A": {
+        "name": "Energy Conservation",
+        "text": "At start of turn 1, grants unit 2 stacks of [Reserve]. At start of each subsequent turn, grants unit 1 stack (max. 3). During combat, inflicts Spd/Jmp−1 on unit for each [Reserve] stack.",
+        "timing": "TURN_START > COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Full Power",
+        "text": "At start of combat, if unit initiated combat, has at least 1 [Reserve] stack, and either has 3 stacks or team’s HP ≤50%, activates [Full Power]: removes all [Reserve] stacks, neutralizes the A-slot penalties, and grants Pow/Spd/Jmp+3 per removed stack during that combat (max. +9). If 3 stacks were removed, foe cannot counterattack.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "Saved for the Set",
+        "text": "After a combat in which [Full Power] activated, grants Pow/Spd+4 to all Aoba Johsai allies through their next actions (excludes unit). If unit has no Aoba Johsai allies, grants Ultimate cooldown count−1 to unit instead.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "U": "",
+      "A": "Reserve’s penalties apply during combat; they are not visible stat penalties.",
+      "B": "Full Power lasts for that combat. Reserve is consumed when Full Power activates, even if no Ultimate triggers.",
+      "C": ""
     },
     "clarification_count": 0
   }

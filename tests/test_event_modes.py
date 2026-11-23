@@ -93,10 +93,10 @@ class EventEngineTests(unittest.TestCase):
         for i in range(4):self.assertTrue(all(card.merge_level==10 for card,_,_ in cpu_specs('tiny_titans',i)))
         for i in range(12):self.assertEqual(cpu_specs('all_for_one',i)[0][0].merge_level,10)
 
-    def test_signature_is_exact_variant_and_raid_pool_stays_sixty(self):
+    def test_signature_is_exact_variant_and_raid_pool_has_sixty_two(self):
         item=ITEM_BY_KEY[KEY];self.assertTrue(can_equip(item,character('Suga')))
         self.assertFalse(can_equip(item,replace(character('Suga'),id='Suga — Other Card',title='Other Card')))
-        self.assertEqual(len(ITEMS),60)
+        self.assertEqual(len(ITEMS),62)
 
     def test_playbook_initiation_cancels_the_penalty_without_extra_speed(self):
         changes=[]

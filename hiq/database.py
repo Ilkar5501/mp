@@ -189,6 +189,8 @@ class Database:
             await migrate_legacy_signature_shards(db)
             from .pvp_store import SCHEMA as PVP_SCHEMA
             await db.executescript(PVP_SCHEMA)
+            from .loadouts import SCHEMA as LOADOUT_SCHEMA
+            await db.executescript(LOADOUT_SCHEMA)
             from .gameplay_store import SCHEMA as GAMEPLAY_SCHEMA
             await db.executescript(GAMEPLAY_SCHEMA)
             from .youth_rewards import SCHEMA as YOUTH_SCHEMA
@@ -197,12 +199,18 @@ class Database:
             await migrate_tournament_components(db)
             from .pvp_cycles import SCHEMA as CYCLE_SCHEMA
             await db.executescript(CYCLE_SCHEMA)
+            from .ttb_store import SCHEMA as TTB_SCHEMA
+            from .ttb_rotation import SCHEMA as TTB_ROTATION_SCHEMA
+            await db.executescript(TTB_SCHEMA)
+            await db.executescript(TTB_ROTATION_SCHEMA)
             from .reward_components import SCHEMA as COMPONENT_SCHEMA,migrate as migrate_components
             await db.executescript(COMPONENT_SCHEMA)
             db.row_factory=aiosqlite.Row
             await migrate_components(db)
             from .pvp_store import migrate_pair_results
             await migrate_pair_results(db)
+            from .loadouts import migrate_existing
+            await migrate_existing(db)
 
         from .retention import install
         import sqlite3
@@ -607,6 +615,32 @@ class Database:
         return await self.merge_cards(owner_id, base_id, consumed_id, max_level)
 
     # ----- saved teams -----
+    async def team_specs(self,owner_id,slot):
+        from .loadouts import resolve
+        async with self.connect() as c:
+            row=await (await c.execute('SELECT * FROM saved_teams WHERE owner_id=? AND slot=?',(owner_id,slot))).fetchone()
+            if not row:raise ValueError('That saved team no longer exists.')
+            team=self._saved_team(row)
+            entries=[dict(id=iid,lane=lane) if iid else None for _,iid,lane in team.entries]
+            return await resolve(c,self,owner_id,'saved',slot,entries)
+
+    async def team_locked(self,owner_id,slot):
+        from .loadouts import locked
+        async with self.connect() as c:return await locked(c,owner_id,'saved',slot) is not None
+
+    async def set_team_lock(self,owner_id,slot,value):
+        from .loadouts import snapshot,unlock
+        async with self._lock,self.connect() as c:
+            await c.execute('BEGIN IMMEDIATE')
+            row=await (await c.execute('SELECT * FROM saved_teams WHERE owner_id=? AND slot=?',(owner_id,slot))).fetchone()
+            if not row:raise ValueError('That saved team no longer exists.')
+            team=self._saved_team(row)
+            if value:
+                if not team.complete:raise ValueError('Complete this team before locking its loadout.')
+                await snapshot(c,owner_id,'saved',slot,[dict(id=iid,lane=lane) for _,iid,lane in team.entries])
+            else:await unlock(c,owner_id,'saved',slot)
+            await c.commit()
+
     async def ensure_saved_team(self, owner_id: int, slot: int, name: str | None = None) -> SavedTeam:
         if not 1 <= slot <= 15:
             raise ValueError('Team slot must be between 1 and 15.')
@@ -644,6 +678,8 @@ class Database:
                 'UPDATE saved_teams SET front_id=NULL,back1_id=NULL,back2_id=NULL,front2_id=NULL,front3_id=NULL,back3_id=NULL,updated_at=? WHERE owner_id=? AND slot=?',
                 (datetime.now(timezone.utc).isoformat(), owner_id, slot),
             )
+            from .loadouts import unlock
+            await unlock(db,owner_id,'saved',slot)
             await db.commit()
 
     async def tutorial_reward_claimed(self,owner_id:int) -> bool:
@@ -675,7 +711,7 @@ class Database:
         return await self.get_card(iid)
 
     async def replace_saved_team(self,owner_id:int,slot:int,front_id,back1_id,back2_id,*,
-                                 front2_id=None,front3_id=None,back3_id=None,team_format=None,expected=None,expected_format=None):
+                                 front2_id=None,front3_id=None,back3_id=None,team_format=None,expected=None,expected_format=None,loadout_locked=None,expected_loadout_locked=None):
         from .data import CHAR_BY_ID
         if not 1<=slot<=15: raise ValueError('Team slot must be between 1 and 15.')
         async with self._lock:
@@ -685,6 +721,10 @@ class Database:
                 row=await cur.fetchone()
                 if not row: raise ValueError('That team no longer exists.')
                 current=self._saved_team(row)
+                from .loadouts import locked,unlock,snapshot
+                if expected_loadout_locked is not None and (await locked(db,owner_id,'saved',slot) is not None)!=expected_loadout_locked:
+                    raise ValueError('This team’s lock changed. Reopen ;teamedit.')
+                if loadout_locked is False:await unlock(db,owner_id,'saved',slot)
                 if expected is not None and tuple(expected)!=current.card_ids or expected_format is not None and expected_format!=current.team_format:
                     raise ValueError('This team changed while you were editing. Reopen `;teamedit` to use its latest lineup.')
                 fmt=current.team_format if team_format is None else int(team_format)
@@ -701,6 +741,13 @@ class Database:
                 if len(names)!=len(set(names)): raise ValueError('A team can use only one version of each character name.')
                 await db.execute('UPDATE saved_teams SET front_id=?,front2_id=?,front3_id=?,back1_id=?,back2_id=?,back3_id=?,team_format=?,updated_at=? WHERE owner_id=? AND slot=?',
                     (*ids,fmt,datetime.now(timezone.utc).isoformat(),owner_id,slot))
+                from .loadouts import refresh
+                updated=self._saved_team(await (await db.execute('SELECT * FROM saved_teams WHERE owner_id=? AND slot=?',(owner_id,slot))).fetchone())
+                entries=[dict(id=iid,lane=lane) if iid else None for _,iid,lane in updated.entries]
+                if loadout_locked is True:
+                    if not updated.complete:raise ValueError('Complete this team before locking its loadout.')
+                    await snapshot(db,owner_id,'saved',slot,entries)
+                else:await refresh(db,owner_id,'saved',slot,entries)
                 await db.commit()
         return await self.get_saved_team(owner_id,slot)
 
@@ -734,6 +781,9 @@ class Database:
                 position=next((key for _,key,pos_lane in team.positions if pos_lane==lane and not getattr(team,key)),None)
                 if not position:raise ValueError(f'The {lane}line is full. Reset the team or use `;teamedit`.')
                 await db.execute(f'UPDATE saved_teams SET {position}=?,updated_at=? WHERE owner_id=? AND slot=?',(instance_id,datetime.now(timezone.utc).isoformat(),owner_id,slot))
+                from .loadouts import refresh
+                updated=self._saved_team(await (await db.execute('SELECT * FROM saved_teams WHERE owner_id=? AND slot=?',(owner_id,slot))).fetchone())
+                await refresh(db,owner_id,'saved',slot,[dict(id=iid,lane=lane) if iid else None for _,iid,lane in updated.entries])
                 await db.commit()
         team=await self.get_saved_team(owner_id,slot)
         if team.complete:await self.set_user_fields(owner_id,active_team_slot=slot)
@@ -792,6 +842,8 @@ class Database:
         await replace_merged_refs(db,consumed_id,survivor_id)
         from .pvp_store import replace_pvp_refs
         await replace_pvp_refs(db,consumed_id,survivor_id)
+        from .loadouts import replace_card_refs
+        await replace_card_refs(db,consumed_id,survivor_id)
         # Team validation already disallows duplicate variants within a team.
         # Keep the survivor's existing position if repairing an older invalid team.
         keys=('front_id','front2_id','front3_id','back1_id','back2_id','back3_id')
@@ -812,6 +864,8 @@ class Database:
         await replace_merged_refs(db,instance_id,None)
         from .pvp_store import replace_pvp_refs
         await replace_pvp_refs(db,instance_id,None)
+        from .loadouts import replace_card_refs
+        await replace_card_refs(db,instance_id,None)
         keys=('front_id','front2_id','front3_id','back1_id','back2_id','back3_id')
         assignments=','.join(f'{key}=CASE WHEN {key}=? THEN NULL ELSE {key} END' for key in keys)
         conditions=' OR '.join(f'{key}=?' for key in keys)
@@ -1034,6 +1088,8 @@ class Database:
                             if not isinstance(qty,int) or qty<0:raise ValueError('Shard quantities must be nonnegative whole numbers.')
                             if qty>await shard_balance(db,uid,kind,detail):raise ValueError('A player no longer has enough '+detail+' shards.')
                     for iid in offer.get('items', []):
+                        from .loadouts import available
+                        await available(db,uid,iid)
                         cur = await db.execute('SELECT owner_id FROM inventory_items WHERE id=?', (iid,))
                         item = await cur.fetchone()
                         if not item or item['owner_id'] != uid:

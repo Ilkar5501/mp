@@ -299,6 +299,7 @@ class EditCardSelect(TeamCardSelect):
 
 class TeamEditView(TeamCreateView):
     def __init__(self,bot,owner_id,team,cards):
+        self.lock_draft=False;self.original_lock=False
         self.original = team.card_ids
         self.original_format = team.team_format
         self.draft = list(self.original)
@@ -325,7 +326,8 @@ class TeamEditView(TeamCreateView):
         return await self.bot.db.replace_saved_team(self.owner_id,self.slot,
             picks.get('front_id'),picks.get('back1_id'),picks.get('back2_id'),
             front2_id=picks.get('front2_id'),front3_id=picks.get('front3_id'),back3_id=picks.get('back3_id'),
-            team_format=self.team_format,expected=self.original,expected_format=self.original_format)
+            team_format=self.team_format,expected=self.original,expected_format=self.original_format,
+            loadout_locked=self.lock_draft,expected_loadout_locked=self.original_lock)
 
     def filtered_cards(self):
         # Existing members remain selectable for a swap; uniqueness is checked
@@ -361,6 +363,7 @@ class TeamEditView(TeamCreateView):
             card=self.by_id.get(iid)
             lines.append(f'**{label}:** '+(f'{display_title(CHAR_BY_ID[card.character_id])} +{card.merge_level} (`{iid}`)' if card else 'Empty'))
         e.description=f'**{self.team_format}v{self.team_format}**\n'+'\n'.join(lines)
+        e.add_field(name='Loadout lock',value='Locked: characters, rows and item copies are preserved after Confirm.' if self.lock_draft else 'Unlocked: each character uses its current equipped item.',inline=False)
         e.add_field(name='Pending changes',value='Select a position, then a replacement card. Selecting an existing member swaps positions. **Clear Team** empties the draft immediately; **Confirm** saves the whole lineup; **Cancel** discards changes.',inline=False)
         e.set_footer(text=f'Page {self.page+1}/{self.pages} • editing '+self.draft_positions[self.position][0])
         return e
@@ -391,7 +394,7 @@ class TeamEditView(TeamCreateView):
             await i.response.edit_message(embed=await self.build_embed(),view=self)
         async def clear_cb(i):
             if self.finished or self.saving:return
-            self.draft=[None]*self.team_format;self.position=0;self.page=0;self.rebuild()
+            self.draft=[None]*self.team_format;self.lock_draft=False;self.position=0;self.page=0;self.rebuild()
             await i.response.edit_message(embed=await self.build_embed(),view=self)
         async def confirm_cb(i):
             if self.finished or self.saving: return
@@ -412,6 +415,18 @@ class TeamEditView(TeamCreateView):
             self.toggle_format(); self.rebuild()
             await i.response.edit_message(embed=await self.build_embed(),view=self)
         toggle.callback=toggle_cb;self.add_item(toggle)
+        lock=discord.ui.Button(label='Unlock Loadout' if self.lock_draft else 'Lock Loadout',emoji='🔒' if self.lock_draft else '🔓',style=discord.ButtonStyle.secondary,row=3)
+        async def lock_cb(i):
+            if self.lock_draft:
+                from .loadout_ui import UnlockConfirm,preview
+                async def apply():self.lock_draft=False;self.rebuild()
+                async def refresh():await i.message.edit(embed=await self.build_embed(),view=self)
+                changes=await preview(self.bot.db,self.owner_id,'saved',self.slot)
+                await i.response.send_message(f'Team {self.slot}: discard its saved item configuration?\n{changes}\nPress Confirm in the team editor afterward to save.',view=UnlockConfirm(self.owner_id,apply,refresh),ephemeral=True)
+            else:
+                if not all(self.draft):raise ValueError('Complete the draft before locking it.')
+                self.lock_draft=True;self.rebuild();await i.response.edit_message(embed=await self.build_embed(),view=self)
+        lock.callback=lock_cb;self.add_item(lock)
         for item,callback in ((prev,prev_cb),(nxt,next_cb),(search,search_cb),(reset,reset_cb),(clear,clear_cb),(confirm,confirm_cb),(cancel,cancel_cb)):
             item.callback=callback;self.add_item(item)
 
@@ -496,6 +511,8 @@ class TeamsCog(commands.Cog):
         if not cards:
             await ctx.send('You need cards to edit a team.');return
         view=TeamEditView(self.bot,ctx.author.id,team,cards)
+        view.original_lock=view.lock_draft=await self.bot.db.team_locked(ctx.author.id,slot)
+        view.rebuild()
         view.message=await ctx.send(embed=await view.build_embed(),view=view)
 
     async def send_team_view(self, sender, owner_id: int, slot: int, *, ephemeral: bool = False):
@@ -511,8 +528,10 @@ class TeamsCog(commands.Cog):
 
         entries = []
         description = []
+        try:resolved={card.instance_id:card for card,_,_ in await self.bot.db.team_specs(owner_id,slot)}
+        except ValueError:resolved={}
         for label, iid, lane in team.entries:
-            card = await self.bot.db.get_card(iid) if iid else None
+            card = resolved.get(iid) or (await self.bot.db.get_card(iid) if iid else None)
             char = CHAR_BY_ID.get(card.character_id) if card else None
             entries.append((card, char, lane))
             if card and char:
@@ -534,7 +553,7 @@ class TeamsCog(commands.Cog):
             e.set_footer(text=f'Incomplete team ({team.used}/{team.team_format}) • saved, but cannot enter battle, PvP, or gauntlets')
         await send(embed=e, file=file)
 
-    @commands.hybrid_command(name='teamview', description='View a saved team in chat.')
+    @commands.hybrid_command(name='teamview', aliases=['tv'], description='View a saved team in chat.')
     async def teamview(self, ctx, slot: int | None = None):
         if slot is not None:
             if not 1 <= slot <= 15:

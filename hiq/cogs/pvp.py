@@ -11,6 +11,7 @@ from ..battle.engine import BattleEngine
 from ..battle_render import render_battle_summary
 from ..data import CHAR_BY_ID
 from ..pvp_store import PvPStore,PvPTeamUnavailable
+from ..ttb_store import PvPTTBStore
 from ..tournament import restore_specs,restore_result
 from ..ui import SafeView,EmbedPager,PURPLE
 from .battle import BattleLogLauncher
@@ -55,7 +56,7 @@ class PvPTeamView(SafeView):
                 text='\n'.join(lines)
                 if not row['valid']:text+='\nUpdate this lineup before battling.'
             e.add_field(name=f'{"🔒" if row and row["locked"] else "🔓"} {size}v{size}'+(' · '+row['name'] if row else ''),value=text,inline=True)
-        e.set_footer(text='Locks stop ;teamuse from replacing that PvP lineup. Edit normal teams with ;teamedit.')
+        e.set_footer(text='Locks preserve the lineup and its item copies. Unlocking follows the source team and current equipped items. Edit normal teams with ;teamedit.')
         return e
 
     def build(self):
@@ -70,7 +71,15 @@ class PvPTeamView(SafeView):
             locked=bool(row and row['locked'])
             lock=discord.ui.Button(label=f'{fmt}v{fmt}',emoji='🔒' if locked else '🔓',style=discord.ButtonStyle.primary if locked else discord.ButtonStyle.secondary,row=2,disabled=row is None)
             async def toggle(i,f=fmt,r=revision,value=locked):
-                await self.cog.store.set_lock(self.uid,f,not value,r);await self.refresh(i)
+                if value:
+                    from .loadout_ui import UnlockConfirm,preview
+                    changes=await preview(self.cog.bot.db,self.uid,'pvp',f)
+                    async def apply():await self.cog.store.set_lock(self.uid,f,False,r)
+                    async def refresh():
+                        self.prefs=await self.cog.store.preferences(self.uid);self.build()
+                        await i.message.edit(embed=self.embed(),view=self)
+                    await i.response.send_message(f'Unlock {f}v{f} PvP? The roster refreshes from its source team.\n{changes}',view=UnlockConfirm(self.uid,apply,refresh),ephemeral=True)
+                else:await self.cog.store.set_lock(self.uid,f,True,r);await self.refresh(i)
             lock.callback=toggle;self.add_item(lock)
             default=discord.ui.Button(label=f'Confirm {fmt}v{fmt}',row=3,style=discord.ButtonStyle.primary if self.prefs['profile']['default_format']==fmt else discord.ButtonStyle.secondary,disabled=not row or not row['valid'])
             async def activate(i,f=fmt):await self.cog.store.set_default(self.uid,f);await self.refresh(i)
@@ -79,7 +88,7 @@ class PvPTeamView(SafeView):
 
 class PvPCog(commands.Cog):
     def __init__(self,bot):
-        self.bot=bot;self.store=PvPStore(bot.db);self.jobs={};self.recoveries=set();self.maintenance.start()
+        self.bot=bot;self.store=PvPStore(bot.db);self.ttb_store=PvPTTBStore(bot.db);self.jobs={};self.recoveries=set();self.maintenance.start()
 
     def cog_unload(self):
         self.maintenance.cancel()
@@ -89,6 +98,7 @@ class PvPCog(commands.Cog):
     async def maintenance(self):
         try:
             await self.store.settle()
+            await self.ttb_store.settle()
             for row in await self.store.pending():
                 if row['id'] not in self.jobs:
                     task=self.launch(row['id'])
@@ -111,16 +121,18 @@ class PvPCog(commands.Cog):
         if row['status']=='done':return row,restore_result(row['result']),a,b
         engine=BattleEngine(a,b,owner_a=row['a_id'],owner_b=row['b_id'],name_a=state['name_a'],name_b=state['name_b'],mode='pvp',seed=state['seed'])
         result=await asyncio.to_thread(engine.run)
-        row=await self.store.finish(sid,asdict(result))
+        store=self.ttb_store if row['month'].startswith('ttb:') else self.store
+        row=await store.finish(sid,asdict(result))
         return row,result,a,b
 
     async def result_payload(self,row,result,a,b):
         state=row['state'];settlement=row['settlement']
         embed=self.bot.get_cog('BattleCog')._result_embed(result,state['name_a'],state['name_b'],a,b)
-        embed.title=('Ranked PvP · ' if row['rated'] else 'Practice PvP · ')+embed.title
+        embed.title=('Rated PvP · ' if row['rated'] else 'Unrated PvP · ')+embed.title
+        if row['month'].startswith('ttb:'):embed.title='Tiny Titans · '+embed.title
         if row['rated']:
             embed.add_field(name='Elo',value=f'<@{row["a_id"]}>: **{settlement["a_before"]} → {settlement["a_after"]}**\n<@{row["b_id"]}>: **{settlement["b_before"]} → {settlement["b_after"]}**',inline=False)
-        else:embed.add_field(name='Practice · Elo unchanged',value=state['reason'],inline=False)
+        else:embed.add_field(name='Unrated · You won your last rated match',value=state['reason'],inline=False)
         reward=settlement['reward']
         if reward:embed.add_field(name='PvP coins',value=f'<@{settlement["winner_id"]}>: **+{reward["coins"]} coins**',inline=False)
         if reward and not reward.get('duplicate') and reward.get('allowance_day') is None:
@@ -148,14 +160,23 @@ class PvPCog(commands.Cog):
         except asyncio.CancelledError:raise
         except Exception:log.exception('PvP %s recovery will retry if unsettled.',sid)
 
-    @commands.hybrid_command(name='pvp',description='Match the closest eligible Elo opponent, or challenge a player.')
+    @commands.hybrid_command(name='pvp',description='Take the next eligible opponent from your daily queue, or challenge a player.')
     @app_commands.choices(format=[app_commands.Choice(name='3v3',value='3v3'),app_commands.Choice(name='6v6',value='6v6')])
     @commands.cooldown(1,5.0,commands.BucketType.user)
     async def pvp(self,ctx,opponent:discord.Member|None=None,format:str=''):
+        await self.play(ctx,opponent,format,self.store)
+
+    @commands.hybrid_command(name='pvpttb',description='Play the independent Tiny Titans PvP ladder with weekly character boosts.')
+    @app_commands.choices(format=[app_commands.Choice(name='3v3',value='3v3'),app_commands.Choice(name='6v6',value='6v6')])
+    @commands.cooldown(1,5.0,commands.BucketType.user)
+    async def pvpttb(self,ctx,opponent:discord.Member|None=None,format:str=''):
+        await self.play(ctx,opponent,format,self.ttb_store)
+
+    async def play(self,ctx,opponent,format,store):
         if opponent and (opponent.bot or opponent.id==ctx.author.id):await ctx.send('Choose another player.');return
         await ctx.defer()
         try:
-            row=await self.store.start(ctx.author.id,target=opponent.id if opponent else None,fmt=parse_format(format),name=ctx.author.display_name,target_name=opponent.display_name if opponent else '',channel=ctx.channel.id)
+            row=await store.start(ctx.author.id,target=opponent.id if opponent else None,fmt=parse_format(format),name=ctx.author.display_name,target_name=opponent.display_name if opponent else '',channel=ctx.channel.id)
             row,result,a,b=await asyncio.shield(self.launch(row['id']))
         except PvPTeamUnavailable as error:
             if getattr(ctx,'interaction',None):await ctx.send(str(error),ephemeral=True)
@@ -165,6 +186,26 @@ class PvPCog(commands.Cog):
             return
         except ValueError as error:await ctx.send(str(error),allowed_mentions=discord.AllowedMentions.none());return
         await ctx.send(**await self.result_payload(row,result,a,b))
+
+    @commands.hybrid_command(name='ttbboosts',description='View this week’s boosted Tiny Titans PvP characters.')
+    async def ttbboosts(self,ctx):
+        state=await self.ttb_store.boosts()
+        embed=discord.Embed(title='Tiny Titans PvP — Weekly boosts',description='Four cards from each rarity 1★–4★ receive the Tiny Titans stat boost this week. 5★ and Duo cards are not boosted. Changes every Monday at the weekly cutoff.',color=PURPLE)
+        for rarity,picks in state['picks'].items():embed.add_field(name=f'{rarity}★',value='\n'.join(picks),inline=False)
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command(name='pvpttbboard',aliases=['ttbboard'],description='View the independent Tiny Titans Elo board and weekly Clan Dollar prizes.')
+    async def pvpttbboard(self,ctx):
+        month,rows,own=await self.ttb_store.board(ctx.author.id)
+        pages=[]
+        for start in range(0,max(1,len(rows)),15):
+            lines=[f'**{i}.** <@{r["owner_id"]}> · **{r["rating"]} Elo** · {r["wins"]}W/{r["losses"]}L/{r["draws"]}D' for i,r in enumerate(rows[start:start+15],start+1)]
+            embed=discord.Embed(title='Tiny Titans PvP Ladder',description='\n'.join(lines) or 'No rated matches yet. Use ;pvpttb to begin.',color=PURPLE)
+            embed.add_field(name='Your Elo',value=str(own['rating']))
+            embed.add_field(name='Weekly Clan Dollars',value='Top 20%: 500 · Top 40%: 400 · Top 60%: 300 · Top 80%: 200 · Everyone eligible: 100.\nRewards stack: top 20% earns 1,500 Clan Dollars. Requires a rated match this two-week season. Weekly rewards are credited automatically. Elo resets every two weeks; ;ttbboosts shows the current weekly picks.',inline=False)
+            pages.append(embed)
+        view=EmbedPager(pages,ctx.author.id)
+        await ctx.send(embed=view.embed(),view=view,allowed_mentions=discord.AllowedMentions.none())
 
     @commands.hybrid_command(name='pvpset',aliases=['pvps'],description='Set and lock separate 3v3 and 6v6 PvP teams.')
     async def pvpset(self,ctx,slot:int|None=None):

@@ -16,11 +16,11 @@ class ItemCatalogueTests(unittest.TestCase):
             self.assertEqual(item['weekly_cap'],7*item['shard_cost'])
             self.assertEqual(item['drop_rate'],{2:.04,4:.02,6:.01,8:.005}[cost])
 
-    def test_exactly_twelve_items_per_raid(self):
-        self.assertEqual(Counter(i['theme'] for i in ITEMS),Counter({theme:12 for theme in THEMES}))
+    def test_new_items_have_separate_raid_themes(self):
+        self.assertEqual(Counter(i['theme'] for i in ITEMS),Counter({theme:(13 if theme in ('recovery','tempo') else 12) for theme in THEMES}))
         for theme in THEMES:
             pool=RaidStore(None).reward_pool(theme,{},'hard')
-            self.assertEqual(len([r for r in pool if r['kind']=='item_shard']),12)
+            self.assertEqual(len([r for r in pool if r['kind']=='item_shard']),sum(i['theme']==theme for i in ITEMS))
             self.assertAlmostEqual(sum(r['weight'] for r in pool),1)
 
     def test_capped_items_leave_pool_and_increase_non_item_reward_chances(self):

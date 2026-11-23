@@ -58,6 +58,7 @@ class BattleUnit:
     stored_attack_bonus: int = 0
     burden_stacks: int = 0
     bonus_event: int = 0
+    engine_ref: Any = field(default=None,repr=False,compare=False)
 
     @property
     def name(self) -> str:
@@ -103,6 +104,8 @@ class BattleUnit:
 
     def add_debuff(self, stat: str, value: int, *, through_next_action: bool = True, turn: int | None = None) -> None:
         if value >= 0: return
+        engine=self.engine_ref() if self.engine_ref is not None else None
+        if engine is not None and not engine.foe_effect_allowed(self):return
         exp = self.actions_taken + 1 + int(self.action_in_progress) if through_next_action else None
         existing = self.visible_debuffs.get(stat)
         if existing is None or value < existing.value:
@@ -116,6 +119,8 @@ class BattleUnit:
             self.statuses.pop(key, None)
 
     def add_status(self, name: str, positive: bool, payload: Any = None, *, through_next_action: bool = False, end_turn: int | None = None, source: tuple[str,str] | None = None) -> None:
+        engine=self.engine_ref() if self.engine_ref is not None else None
+        if not positive and engine is not None and not engine.foe_effect_allowed(self,source):return
         self.statuses[name] = Status(
             name=name, positive=positive, payload=payload,
             expires_after_action=(self.actions_taken + 1 + int(self.action_in_progress) if through_next_action else None),

@@ -49,8 +49,10 @@ class EquipmentEffects:
 
     def postcombat_damage(self,ctx,team,amount,*,source=None):
         protected=any(u.side==team.side and 'Safe Landing' in u.statuses for u in (ctx.attacker,ctx.defender))
+        if source is not None and source.side!=team.side:
+            protected=protected or any(u.side==team.side and self.gear(u,'fish_cakes') for u in (ctx.attacker,ctx.defender))
         if not protected:self.damage_team(team,amount,source=source)
-        else:self._log(f'Safe Landing prevents {amount} after-combat team damage.')
+        else:self._log(f'After-combat protection prevents {amount} team damage.')
         return not protected
 
     def gear(self,u,key):return equipment_key(u.card)==key
@@ -72,7 +74,7 @@ class EquipmentEffects:
         if key=='pressure_board':
             targets=[]
             for foe in self.cardinal_foes(u):
-                if foe.base['hp']<=u.base['hp']:
+                if foe.base['hp']<=u.base['hp'] and self.foe_effect_allowed(foe,u):
                     if foe.visible_buffs:targets.append(foe)
                     for stat,mod in list(foe.visible_buffs.items()):foe.add_debuff(stat,-mod.value)
                     foe.visible_buffs.clear()
@@ -167,6 +169,7 @@ class EquipmentEffects:
 
     def equipment_after_combat(self,ctx):
         for u in (ctx.attacker,ctx.defender):
+            self.effect_source=u
             if self.tanaka_signature(u) and u.ult_triggered_this_combat:
                 for ally in self.team(u).units:
                     if ally.lane==u.lane:ally.clear_debuffs()

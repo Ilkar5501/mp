@@ -5,6 +5,8 @@ Supports remain teammates for bonds, but never take actions or enter combat.
 """
 from datetime import datetime,timezone
 from .battle.engine import BattleEngine, has
+from .battle.effect_guards import effect_owner
+from .battle.roster_update import WALL
 from .data import CHARACTERS
 from .models import CardInstance
 
@@ -44,7 +46,7 @@ def support_note(index,char):
 def character(name,title=None):
     name=name.split('@',1)[0]
     if ' — ' in name:name,title=name.split(' — ',1)
-    if title is None:title={'Oikawa':'Grand Conductor','Hinata':'Wings of Dawn','Kageyama':'Crown of Precision'}.get(name)
+    if title is None:title={'Oikawa':'Grand Conductor','Hinata':'Wings of Dawn','Kageyama':'Crown of Precision','Hirugami':'The Immovable Gate'}.get(name)
     matches=[c for c in CHARACTERS if c.name==name and (title is None or c.title==title)]
     if len(matches)!=1:raise ValueError('Choose an exact contest variant: '+name)
     return matches[0]
@@ -218,6 +220,7 @@ class ContestEngine(BattleEngine):
             if self.preset_index==11 and has(source,'Hinata','Miracle Maker'):return 'back'
         return super().support_target_lane(source,target)
 
+    @effect_owner
     def _turn_start_owner(self,unit,**kwargs):
         if self.rules_version!=1 and unit.uid in self.support_ids:
             self.begin_bonus_event()
@@ -297,8 +300,10 @@ class ContestEngine(BattleEngine):
             return self._action_order()
         return order
 
+    @effect_owner
     def support_turn(self,source):
         """Run only the listed slots, always selecting the sole active ally."""
+        if source.char_id==WALL:self.roster_turn_start(source);return
         f=self.feature;name=source.name
         buffs={}
         if name=='Tenma Udai':buffs={'def':4,'rec':4}
@@ -323,6 +328,7 @@ class ContestEngine(BattleEngine):
             if name=='Futakuchi':self.damage_team(enemy,20,source=source)
             for foe in enemy.units:
                 for stat,mod in list(foe.visible_buffs.items()):
+                    if not self.foe_effect_allowed(foe,source):continue
                     if mod.value>0:
                         foe.add_debuff(stat,-mod.value);foe.visible_buffs.pop(stat,None)
         elif name=='Kenma':

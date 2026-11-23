@@ -1,4 +1,4 @@
-# HiQ Battler v13
+# HiQ Battler v14
 
 Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requirements.txt`, set `DISCORD_TOKEN` in the host environment, and start `python bot.py`. Existing database files are upgraded automatically without resetting wallets, collections, equipment IDs, or earned daily caps.
 
@@ -11,7 +11,32 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v13.0.4 — Daily PvP rematch eligibility
+## Latest release: v14.0.0
+
+- PvP uses a saved shuffled daily queue. Fresh eligible opponents come first;
+  already-faced eligible opponents move to the back. After the queue pass,
+  automatic matchmaking chooses a random available unrated opponent; a later
+  ranked comeback can requeue an opponent at the rear. Only rated
+  outcomes update the last winner. Eligibility resets at game midnight.
+- `;pvpttb` has an independent two-week Elo board and daily coin allowance.
+  `;ttbboosts` lists four weekly boosted characters from each rarity 1–4.
+  `;pvpttbboard` shows stacked weekly Clan Dollar prizes of 100/200/300/400/500.
+  Boosts reset with Monday's weekly cutoff; up to four weeks of picks are retained.
+- Lock character formations and equipment copies in `;teamedit`, `;af1team`,
+  and `;pvpset`. A copy can be shared by one character across several locked
+  teams, and that character can reserve different copies for different builds.
+  Reserved items cannot be moved to other characters, recycled or traded.
+  Unlock previews show item changes; unlocked teams use current equipped items.
+- `;tv [slot]` aliases teamview. Clear Team uses a broom and a grey or blurple
+  button, away from Confirm. Unique items follow regular items in `;items`.
+- Aran's unique item converts positive visible and in-combat Spd bonuses to
+  Jmp at 100%; visible Spd penalties do not reduce the conversion.
+- Added Fish Cakes (Recovery, 2 shards) and Chocolate Milk (Tempo, 2 shards).
+  Added 5-star Hirugami — The Great Wall and 1-star Kunimi — Energy Saver.
+  Hirugami — The Immovable Gate is now 4-star. Existing owned cards remain owned.
+
+## Previous release: v13.0.4 — Daily PvP rematch eligibility
+
 
 Ranked rematch eligibility resets at midnight in the game timezone. Beating
 someone makes further challenges you initiate against them practice matches

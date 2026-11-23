@@ -22,10 +22,20 @@ class SignatureCombatTests(unittest.TestCase):
                 e.turn=1;before=a.cd;e.equipment_turn_start(a)
                 self.assertEqual(a.cd,max(0,before-2))
                 e.equipment_turn_start(a);self.assertEqual(a.cd,max(0,before-2))
-        self.assertGreaterEqual(results[1]['jmp']-results[0]['jmp'],70)
+        self.assertGreaterEqual(results[1]['jmp']-results[0]['jmp'],100)
         self.assertEqual(results[1]['spd'],results[0]['spd'])
         self.assertEqual(results[1]['pow']-results[0]['pow'],5)
         self.assertEqual(results[1]['def']-results[0]['def'],5)
+
+    def test_aran_conversion_ignores_visible_speed_penalties(self):
+        for penalty in (0,-40):
+            values=[]
+            for item in (None,'aran_out_of_nowhere'):
+                e,a,d,ctx=duel(['Aran'],item=item)
+                a.add_buff('spd',10)
+                if penalty:a.add_debuff('spd',penalty)
+                values.append(e.combat_stats(ctx)[a.uid]['jmp'])
+            self.assertEqual(values[1]-values[0],10)
 
     def test_lev_counter_denial_followup_control_and_damage(self):
         e,a,d,ctx=duel(['Lev'],'Daichi','lev_rookie_gains')

@@ -3,7 +3,7 @@ from .economy import local_date_key
 from .allowances import allowance_days
 
 LIMITS={'battle':9,'tournament':1,'tournament_human':1,'gauntlet_regional':1,'gauntlet_national':1,
-        'pvp':4,'prefecture':3,'war':1}
+        'pvp':4,'pvp_ttb':4,'prefecture':3,'war':1}
 ROLLOVER_MODES={'battle','tournament','tournament_human','gauntlet_regional','gauntlet_national','prefecture','raid'}
 
 SCHEMA = '''
@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS economy_daily (
  clan_coins INTEGER NOT NULL DEFAULT 0,
  PRIMARY KEY(owner_id,day_key,reward_key));
 CREATE TABLE IF NOT EXISTS economy_pvp_opponents (
+ owner_id INTEGER NOT NULL,day_key TEXT NOT NULL,opponent_id INTEGER NOT NULL,
+ PRIMARY KEY(owner_id,day_key,opponent_id));
+CREATE TABLE IF NOT EXISTS economy_ttb_opponents (
  owner_id INTEGER NOT NULL,day_key TEXT NOT NULL,opponent_id INTEGER NOT NULL,
  PRIMARY KEY(owner_id,day_key,opponent_id));
 CREATE TABLE IF NOT EXISTS raid_shard_daily (
@@ -61,9 +64,10 @@ async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=
     rows={r['day_key']:dict(r) for r in await cur.fetchall()}
     def wins_on(d):return rows.get(d,{}).get('wins',0)
     coins=clan=0;duplicate=False;chosen=None
-    if key=='pvp':
+    if key in ('pvp','pvp_ttb'):
         if opponent is None or opponent==uid:raise ValueError('Choose another player.')
-        cur=await conn.execute('INSERT OR IGNORE INTO economy_pvp_opponents VALUES (?,?,?)',(uid,day,opponent))
+        opponents_table='economy_ttb_opponents' if key=='pvp_ttb' else 'economy_pvp_opponents'
+        cur=await conn.execute('INSERT OR IGNORE INTO '+opponents_table+' VALUES (?,?,?)',(uid,day,opponent))
         duplicate=not bool(cur.rowcount)
         if duplicate:
             progress=(await daily(conn,uid,day)).get(key,{})
@@ -83,7 +87,7 @@ async def award_in(conn, uid, key, *, day=None, opponent=None, human_tournament=
         allowance=await extra(conn,uid,key,days)
         if allowance:
             chosen,rate=allowance;extra_award=True
-            normal={'battle':50,'pvp':100,'war':200}[key]
+            normal={'battle':50,'pvp':100,'pvp_ttb':100,'war':200}[key]
             coins=int(normal*rate)
             if key=='war':clan=coins
     await conn.execute('''INSERT INTO economy_daily VALUES (?,?,?,?,?,?)

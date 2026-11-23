@@ -73,7 +73,10 @@ class RaidStore(CommunityStore):
             args=(uid,)
             if not all_items:
                 query+=' AND '+('i.id=?' if item_id else 'i.detail=?');args+=(item_id or key,)
-            rows=await self.rows(c,query+' AND NOT EXISTS (SELECT 1 FROM cards WHERE equipped_item_id=i.id)',args)
+            if item_id:
+                from .loadouts import available
+                await available(c,uid,item_id)
+            rows=await self.rows(c,query+' AND NOT EXISTS (SELECT 1 FROM cards WHERE equipped_item_id=i.id) AND NOT EXISTS (SELECT 1 FROM locked_items l JOIN cards c ON c.instance_id=l.card_id AND c.owner_id=l.owner_id WHERE l.item_id=i.id)',args)
             if not rows:raise ValueError('No matching unequipped equipment is available in your inventory.')
             rows.sort(key=lambda r:(r['created_at'],r['id']))
             if count is not None:
@@ -96,6 +99,8 @@ class RaidStore(CommunityStore):
                 if not can_equip(ITEM_BY_KEY[item['detail']],CHAR_BY_ID[card['character_id']]):raise ValueError('That unit cannot equip this item.')
                 used=await self.one(c,'SELECT instance_id,owner_id FROM cards WHERE equipped_item_id=?',(item_id,))
                 if used and used['owner_id']!=uid:raise ValueError('That item is attached to a card you do not own.')
+                from .loadouts import available
+                await available(c,uid,item_id,card['instance_id'])
                 key=item['detail']
                 # Validate everything before moving the copy, in the same transaction.
                 await c.execute('UPDATE cards SET equipped_item_id=NULL,equipment_key=NULL WHERE equipped_item_id=? AND instance_id<>? AND owner_id=?',(item_id,card['instance_id'],uid))
@@ -105,6 +110,8 @@ class RaidStore(CommunityStore):
     async def equipment_options(self,uid,card):
         async with self.db.connect() as c:
             rows=await self.rows(c,"SELECT i.*,c.instance_id AS equipped_card_id,c.character_id AS equipped_character_id FROM inventory_items i LEFT JOIN cards c ON c.equipped_item_id=i.id WHERE i.owner_id=? AND i.kind='equipment' ORDER BY i.detail,i.id",(uid,))
+            from .loadouts import holders
+            for row in rows:row['locked_holders']=await holders(c,uid,row['id'])
         return [i for i in rows if i['detail'] in ITEM_BY_KEY and can_equip(ITEM_BY_KEY[i['detail']],CHAR_BY_ID[card.character_id])]
 
     async def craft_sources(self,uid,char):

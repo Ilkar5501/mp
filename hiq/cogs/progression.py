@@ -289,11 +289,8 @@ class ProgressionCog(commands.Cog):
     async def _active_specs(self,owner_id:int):
         team=await self.bot.db.active_team(owner_id)
         if not team or not team.complete: return None,team
-        specs=[]
-        for iid,lane in [(iid,lane) for _,iid,lane in team.entries]:
-            card=await self.bot.db.get_card(iid)
-            if not card: return None,team
-            specs.append((card,CHAR_BY_ID[card.character_id],lane))
+        try:specs=await self.bot.db.team_specs(owner_id,team.slot)
+        except ValueError:return None,team
         return specs,team
 
     @commands.hybrid_command(name='training',description='Train against a school for one school shard on a win.')

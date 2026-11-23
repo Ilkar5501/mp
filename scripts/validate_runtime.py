@@ -70,7 +70,7 @@ def main():
     from hiq.items import ITEMS,ITEM_BY_KEY,SIGNATURE_ITEMS,THEMES
     from hiq.raids import RAID_TEAMS,RAID_POOLS,cpu_specs as raid_specs
     from hiq.raid_store import RaidStore
-    if len(ITEMS)!=60 or len(ITEM_BY_KEY)!=60+len(SIGNATURE_ITEMS):raise ValueError('Invalid equipment catalogue.')
+    if len(ITEMS)!=62 or len(ITEM_BY_KEY)!=62+len(SIGNATURE_ITEMS):raise ValueError('Invalid equipment catalogue.')
     for theme in THEMES:
         for stage in ('easy','hard','extreme'):
             pool=RaidStore(None).reward_pool(theme,{},stage)
@@ -102,7 +102,7 @@ def main():
         if not item.get('eligible_character_ids') or any(cid not in CHAR_BY_ID for cid in item['eligible_character_ids']):raise ValueError('Signature item needs exact character IDs.')
         if item['character_id'] not in CHAR_BY_ID:raise ValueError('Unknown signature recipe character.')
         if any(type(item[k]) is not int or item[k]<=0 for k in ('shard_cost','character_shards','coin_cost')):raise ValueError('Invalid signature recipe cost.')
-    print(f'Runtime data valid: {len(CHAR_BY_ID)} characters, 60 raid items, 35 raid formations, '+str(len(EVENT_TEAMS['tiny_titans']))+' Tiny Titans teams, '+str(len(EVENT_TEAMS['all_for_one']))+' AF1 teams, signature recipes, packs and gallery filters.')
+    print(f'Runtime data valid: {len(CHAR_BY_ID)} characters, 62 raid items, 35 raid formations, '+str(len(EVENT_TEAMS['tiny_titans']))+' Tiny Titans teams, '+str(len(EVENT_TEAMS['all_for_one']))+' AF1 teams, signature recipes, packs and gallery filters.')
 
 
 if __name__=='__main__':main()
