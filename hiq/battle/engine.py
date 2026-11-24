@@ -1016,7 +1016,6 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         return self.equipment_charge(ctx,u,foe,is_attacking,acceleration,guard,st)
 
     def crit_multiplier(self,ctx,u):
-        if has(u,'Sakusa') and u is ctx.attacker:return 1.1
         if any(has(a,'Iwaizumi') and self.source_allowed(ctx,a) for a in self.team(u).units): return 1.5
         return 1.2
 

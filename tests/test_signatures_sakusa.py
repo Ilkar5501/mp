@@ -80,7 +80,7 @@ class SakusaTests(unittest.TestCase):
         e.sakusa_after_combat(ctx);self.assertEqual(e.sakusa_stacks(a),1)
         for _ in range(9):e.sakusa_after_combat(CombatContext(e,a,d,a,d))
         self.assertEqual(e.sakusa_stacks(a),5);self.assertEqual(e.critical_bonus(a),10)
-        self.assertEqual(e.crit_multiplier(ctx,a),1.1)
+        self.assertEqual(e.crit_multiplier(ctx,a),1.2)
 
     def test_quad_has_independent_preliminary_and_actual_crit_rolls(self):
         e,a,d,ctx=duel(['Sakusa'])
@@ -100,12 +100,12 @@ class SakusaTests(unittest.TestCase):
         e.combat(ctx);self.assertEqual(a.attacks_made,1);self.assertEqual(a.crits,1)
         self.assertEqual(e.rng.random.call_count,3)
 
-    def test_each_initial_crit_gets_a_50_percent_roll_until_one_succeeds(self):
+    def test_each_initial_crit_gets_a_55_percent_roll_until_one_succeeds(self):
         for rolls,hits,crits in [
             ([0,0,.9,0,.49,.99,.99],4,2), # fail first roll; second crit retries
             ([0,.99,0,.49,.99,.99],4,1),   # only second initial hit crits
-            ([0,0,.49,0,.99,.99],4,2),    # first succeeds; second crit needs no roll
-            ([0,0,.50,0,.99],2,2),        # .50 is outside the success interval
+            ([0,0,.54,0,.99,.99],4,2),    # first succeeds; second crit needs no roll
+            ([0,0,.55,0,.99],2,2),        # .55 is outside the success interval
         ]:
             with self.subTest(rolls=rolls):
                 e,a,d,ctx=duel(['Sakusa']);a.base['jmp']=d.base['jmp']+3
@@ -120,6 +120,17 @@ class SakusaTests(unittest.TestCase):
         e.rng=Mock(random=Mock(side_effect=[.99,0,.49,.99]));e.combat(ctx)
         self.assertFalse(e.attacks_twice(ctx,a));self.assertEqual(a.attacks_made,2)
         self.assertEqual(a.crits,1);self.assertEqual(e.rng.random.call_count,4)
+
+    def test_initiating_critical_uses_normal_rules_with_or_without_support(self):
+        for names,multiplier in ((['Sakusa'],1.2),(['Sakusa','Iwaizumi'],1.5)):
+            with self.subTest(names=names):
+                e,a,d,ctx=duel(names)
+                self.assertEqual(e.crit_multiplier(ctx,a),multiplier)
+                a.cd=99;a.base['jmp']=100;d.base['jmp']=0
+                e.rng=Mock(random=Mock(return_value=0))
+                stats={a.uid:{'pow':100,'qik':0,'def':0,'rec':0,'spd':0,'jmp':100},d.uid:{'pow':0,'qik':0,'def':0,'rec':0,'spd':0,'jmp':0}}
+                with patch.object(e,'combat_stats',return_value=stats):e.resolve_hit(ctx,a,d)
+                self.assertEqual(a.damage_dealt,int(100*multiplier))
 
     def test_dispel_removes_named_buff_not_visible_or_intrinsic_resource(self):
         e,a,d,ctx=duel(['Sakusa'])

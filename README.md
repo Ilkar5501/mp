@@ -11,7 +11,14 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v14.0.2
+## Latest release: v14.0.3
+
+- Sakusa uses normal critical damage rules instead of a fixed 1.1× multiplier
+  when initiating. Initial critical hits have a 55% follow-up chance (was 50%).
+  Unravel's dispel chance remains 50%.
+- Suwa and Iizuna can equip Captain's Armband. Existing captains remain eligible.
+
+## Previous release: v14.0.2
 
 - Wall allies are front-line MBs or front-line allies with Def at least 5 above Rec.
   For example, 29 Rec requires at least 34 Def. Back-line units do not qualify.

@@ -3,7 +3,7 @@
     "key": "captain_s_armband",
     "name": "Captain's Armband",
     "effect": "After this unit's Ultimate triggers, remove all debuffs from unit and allies.",
-    "eligible": "Bokuto, Daichi, Daisho, Futakuchi, Kiryu, Kita, Kuroo, Oikawa, Takeru, Ushijima",
+    "eligible": "Bokuto, Daichi, Daisho, Futakuchi, Iizuna, Kiryu, Kita, Kuroo, Oikawa, Suwa, Takeru, Ushijima",
     "shard_cost": 4,
     "drop_rate": 0.02,
     "weekly_cap": 28,

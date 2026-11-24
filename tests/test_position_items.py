@@ -26,6 +26,13 @@ class PositionEquipmentTests(unittest.TestCase):
         self.assertTrue(can_equip(ITEM_BY_KEY['captain_s_armband'],character('Oikawa')))
         self.assertFalse(can_equip(ITEM_BY_KEY['captain_s_armband'],character('Sakusa')))
 
+    def test_armband_accepts_suwa_and_iizuna_without_removing_other_captains(self):
+        armband=ITEM_BY_KEY['captain_s_armband']
+        captains={'Bokuto','Daichi','Daisho','Futakuchi','Iizuna','Kiryu','Kita','Kuroo','Oikawa','Suwa','Takeru','Ushijima'}
+        for card in CHARACTERS:
+            with self.subTest(card=card.id):
+                self.assertEqual(can_equip(armband,card),card.name in captains)
+
     def test_sakusa_requested_stats_and_media(self):
         sakusa=character('Sakusa')
         self.assertEqual(sakusa.stats['pow'],50);self.assertEqual(sakusa.stats['bst'],349)

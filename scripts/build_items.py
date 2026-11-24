@@ -14,7 +14,7 @@ def main():
         key=re.sub('[^a-z0-9]+','_',name.casefold()).strip('_')
         items.append(dict(key=key,name=name,effect=effect,eligible=eligible.replace('Kanbayshi','Kanbayashi'),shard_cost=int(cost),drop_rate=.005 if cost==25 else 1/(cost*5),weekly_cap=int(ws.cell(row,7).value),theme=next(t for t,rows in THEMES.items() if row in rows)))
     for item in items:
-        if item['key']=='captain_s_armband':item['eligible']+=', Futakuchi'
+        if item['key']=='captain_s_armband':item['eligible']+=', Futakuchi, Iizuna, Suwa'
         item['eligible']=', '.join(sorted(set(s.strip() for s in item['eligible'].split(',')),key=str.casefold))
         fixes={'death_stare':"At start of turn, inflicts Jmp-5 on the foe with the highest Jmp through its next action.",'burden_of_expectation':'Grants Pow/Qik/Spd+5. Inflicts Def/Rec-5.','water_bottle':'At start of even-numbered turns, restores 20 HP.'}
         if item['key'] in fixes:item['effect']=fixes[item['key']]
