@@ -19,6 +19,7 @@ from .anchor import AnchorEffects
 from .sakusa import SakusaEffects
 from .youth import YouthEffects,YOUTH_TITLES
 from .semi import SemiEffects
+from .nisekyu import NisekyuEffects,SCHOOL,CHITOGE,TSUGUMI,KOSAKI,MARIKA
 from .effect_guards import ShieldEffects,effect_owner
 from .roster_update import RosterUpdateEffects,WALL,KUNIMI
 
@@ -45,7 +46,7 @@ def has(u: BattleUnit, name: str, title: str | None = None) -> bool:
     return u.name == name and (u.title == title if title is not None else u.title not in YOUTH_TITLES)
 
 
-class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
+class BattleEngine(NisekyuEffects, RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects, SakusaEffects, AnchorEffects, ExpansionEffects, ProdigiousTalentEffects, EquipmentEffects):
     """Deterministic-enough 3v3 / 6v6 simulator for the current HiQ Battler rules.
 
     The spreadsheet remains the display/source-of-truth. Character-specific mechanics that cannot
@@ -134,6 +135,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         # Same-school synergy is permanent and applies to all listed stats, including HP.
         for u in units:
             bonus = sum(1 for a in units if a is not u and a.character.school == u.character.school)
+            if u.character.school==SCHOOL and any(equipment_key(a.card)=='raku_s_locket' for a in units):bonus*=2
             if bonus:
                 for stat in ('hp','pow','qik','def','rec','spd','jmp'):
                     u.base[stat] += bonus
@@ -274,6 +276,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
     def _turn_start_owner(self, u: BattleUnit, *, forced=False):
         if forced:self._log(f'[{self.turn}] Repeating start-of-turn abilities for {self._unit_label(u)}.')
         self.begin_bonus_event()
+        self.nisekyu_turn_start(u)
         self.roster_turn_start(u)
         self.talent_turn_start(u)
         if not forced: self.equipment_turn_start(u)
@@ -449,6 +452,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
             self.log_target_effect(u,'C',[a for a in team.units if a.noncombat_stat('def')>a.noncombat_stat('rec')],'remaining Ultimate CD −1 (minimum 0)')
 
     def action_start(self, actor: BattleUnit):
+        self.nisekyu_action_start(actor)
         # Visible penalties affect the remaining queue after this action resolves.
         if has(actor,'Daisho'):
             foes=self.enemy_team(actor).units
@@ -465,6 +469,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
                 self.log_target_effect(a,'C',[actor],'grants Ultimate cooldown charge +1 when attacking this action',phase='start of action')
 
     def end_turn(self):
+        self.nisekyu_end_turn()
         self.roster_end_turn()
         for u in self.units:
             u.expire_end_turn(self.turn)
@@ -633,6 +638,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
     def _combat_mods(self,ctx,u,foe,us,fs,initiated):
         m=SpeedBonuses() if self.aran_signature(u) else defaultdict(int)
         team=self.team(u)
+        self.nisekyu_mods(ctx,u,m)
         self.roster_mods(ctx,u,us,m)
         if u.name=='Semi' and initiated and self.skill_enabled(u,'A'):m['qik']+=5;m['spd']+=5
         for stat,mod in u.next_combat_bonuses.items():
@@ -858,7 +864,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         if has(defender,'Lev') and attacker.offense_key=='qik' and defender.offense_key=='qik':
             st=stats or self.combat_stats(ctx)
             if self.skill_spd(defender,st[defender.uid])>self.skill_spd(attacker,st[attacker.uid]): return False
-        universal = (defender.title=='Kings of the Playground' and self.skill_enabled(defender,'A')) or any(has(defender,n) for n in ('Hirugami','Kuroo','Yaku','Daichi','Yamagata'))
+        universal = self.nisekyu_counter(ctx,defender) or (defender.title=='Kings of the Playground' and self.skill_enabled(defender,'A')) or any(has(defender,n) for n in ('Hirugami','Kuroo','Yaku','Daichi','Yamagata'))
         if has(defender,'Nishinoya'): universal=True
         if has(defender,'Tendo'):
             st=stats or self.combat_stats(ctx)
@@ -883,6 +889,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         st=self.combat_stats(ctx); us,fs=st[u.uid],st[foe.uid]
         guaranteed=has(u,'Kageyama','Prodigious Talent') and initiated and len(self.distinct_bonuses(ctx,u,st))>=4
         guaranteed=guaranteed or (u is ctx.attacker and bool(ctx.temp_flags.get('sakusa_followup:'+u.uid)))
+        guaranteed=guaranteed or self.nisekyu_promise(ctx,u)
         prevented=False
         if has(u,'Hinata','Wings of Dawn') and not self.allied(u,'Kageyama') and self.skill_spd(u,us)>=self.skill_spd(foe,fs)+5: guaranteed=True
         if has(u,'Nishinoya') and not initiated and self.skill_spd(u,us)>=self.skill_spd(foe,fs)+5: guaranteed=True
@@ -964,6 +971,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         return True
 
     def offensive_ult_ready(self,u,foe,ctx):
+        if u.char_id==MARIKA:return False
         if u.cd!=0 or 'UltimateDisabled' in u.statuses or self.ultimates_suppressed(ctx): return False
         if u.title=='Young Emperor' or u.name=='Semi' or u.char_id==WALL:return False
         # Postcombat/save/defensive Ultimates do not trigger on own attack.
@@ -978,7 +986,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
 
     def defensive_ult_ready(self,u,attacker,ctx):
         if u.cd!=0 or 'UltimateDisabled' in u.statuses or self.ultimates_suppressed(ctx): return False
-        if u.char_id==WALL:return True
+        if u.char_id in (WALL,MARIKA):return True
         if has(u,'Hinata','Miracle Maker') or has(u,'Kita') or has(u,'Yaku') or has(u,'Yamagata'): return True
         if has(u,'Unnan'): return attacker.offense_key=='qik'
         if has(u,'Kosuke') or has(u,'Ezota'): return True
@@ -1107,6 +1115,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         if has(attacker,'Korai') and attacker.lane=='back' and self.skill_spd(attacker,a)>self.skill_spd(defender,d): penetration=max(penetration,0.20)
         if 'Open Play' in attacker.statuses: penetration=max(penetration,0.20)
         if off_trigger and attacker.title in ('Old Friend','Kings of the Playground'):penetration=max(penetration,.30)
+        if off_trigger and attacker.char_id==CHITOGE and self.has_key(attacker):penetration=max(penetration,.30)
         effective_def=floori(def_stat*(1-penetration))
         if off_trigger and has(attacker,'Matsukawa'): attack_stat=floori(attack_stat*1.5)
         attack_power_before_def=attack_stat
@@ -1187,6 +1196,9 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         elif has(attacker,'Takeru') and not self.ultimates_suppressed(ctx) and (attacker.cd==0 or attacker.ult_triggered_this_combat) and self.skill_spd(attacker,a)>=self.skill_spd(defender,d)-4:
             bonus+=floori(a['spd']*0.15)
 
+        if off_trigger and attacker.char_id==CHITOGE:damage_mult*=1.5
+        if off_trigger and attacker.char_id==TSUGUMI:bonus+=floori(a['spd']*.40)
+        neutralize_percent_dr=neutralize_percent_dr or self.nisekyu_promise(ctx,attacker)
         potential_damage=floori((attack_power_before_def+bonus)*damage_mult)
         damage=floori((raw+bonus)*damage_mult)
         if off_trigger and attacker is ctx.attacker and attacker.char_id==KUNIMI and ctx.temp_flags.get('kunimi_full_power'):damage+=10
@@ -1205,6 +1217,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         ultimate_start=len(drs)
         if def_trigger:
             if defender.char_id==WALL:wall_dr_index=len(drs);drs.append(.40)
+            if defender.char_id==MARIKA:drs.append(.40)
             if has(defender,'Ezota'): drs.append(0.30)
             if has(defender,'Hinata','Miracle Maker'): drs.append(0.30)
             if has(defender,'Kita'): drs.append(0.30)
@@ -1267,6 +1280,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
             if has(attacker,'Daichi'): self.heal_team(attacker,floori(damage*0.50))
             if has(attacker,'Kanoka'): self.heal_team(attacker,floori(damage*0.60))
             if has(attacker,'Kanbayashi'): self.heal_team(attacker,floori(a['rec']*0.75))
+        if off_trigger and attacker.char_id==KOSAKI:self.heal_team(attacker,damage//2)
         if off_trigger and attacker.title=='Kings of the Playground':self.heal_team(attacker,floori(damage*.30))
         if attacker.title=='Furious Upstart' and self.skill_enabled(attacker,'B'):self.heal_team(attacker,max(0,a['spd']-d['spd']))
         if def_trigger and has(defender,'Kosuke'): self.heal_team(defender,10)
@@ -1318,6 +1332,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         # Keep these reactions available even when the last hit depleted a team's HP.
         if ctx.temp_flags.get('new_unit_after_combat_resolved'): return
         ctx.temp_flags['new_unit_after_combat_resolved']=True
+        self.nisekyu_after_combat(ctx)
         self.semi_after_combat(ctx)
         self.equipment_after_combat(ctx)
         self.talent_after_combat(ctx)
@@ -1404,6 +1419,7 @@ class BattleEngine(RosterUpdateEffects, ShieldEffects, SemiEffects, YouthEffects
         initiations[self.turn]=initiations.get(self.turn,0)+1
         ctx.temp_flags['start_hp_pct']={'A':pct(self.team_a.hp,self.team_a.max_hp),'B':pct(self.team_b.hp,self.team_b.max_hp)}
         for u in (a,d): u.ult_triggered_this_combat=False; u.attacks_this_combat=0
+        self.nisekyu_combat_start(ctx)
         self.semi_precombat(ctx)
         if not self.team(a).living() or not self.team(d).living():return
         ctx.temp_flags['start_team_hp']={team.side:team.hp for team in (self.team_a,self.team_b)}

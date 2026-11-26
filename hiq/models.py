@@ -33,6 +33,7 @@ class CharacterDef:
     is_duo: bool = False
     components: tuple[str,...] = ()
     shiny_arts: tuple[str,...] = ()
+    event_pack: str = ''
 
     @property
     def offense_key(self) -> str:

@@ -415,7 +415,8 @@ class CommunityStore(WarActivity):
             item=await self.one(c,'SELECT * FROM inventory_items WHERE id=? AND owner_id=?',(item_id,uid))
             if not item or item['kind'] not in ('starpack','pack_base','pack_school','pack_position'):raise ValueError('That owned item is not an unopened pack.')
             if item['kind']=='starpack':
-                pool=[ch for ch in CHARACTERS if ch.rarity==item['stars']]
+                pool=[ch for ch in CHARACTERS if ch.rarity==item['stars'] and not ch.event_pack and not ch.is_duo]
+                if not pool:raise ValueError('No pullable characters match this pack.')
                 chars=[random.choice(pool)]
                 pack_type='starpack'
             else:
@@ -425,7 +426,7 @@ class CommunityStore(WarActivity):
             pity=await self.one(c,'SELECT * FROM pity WHERE owner_id=?',(uid,))
             if pity and pity['character_id'] in CHAR_BY_ID:
                 target=CHAR_BY_ID[pity['character_id']]
-                eligible=pack_type=='base' or (pack_type=='starpack' and target.rarity==item['stars']) or (pack_type=='school' and target.school==item['detail']) or (pack_type=='position' and target.position.upper()==item['detail'].upper())
+                eligible=not target.event_pack and (pack_type=='base' or (pack_type=='starpack' and target.rarity==item['stars']) or (pack_type=='school' and target.school==item['detail']) or (pack_type=='position' and target.position.upper()==item['detail'].upper()))
                 result=resolve_pity_sequence(chars,target,armed=bool(pity['armed']),target_eligible=eligible)
                 chars=result.cards
                 if result.cleared:await c.execute('DELETE FROM pity WHERE owner_id=?',(uid,))

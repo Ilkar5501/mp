@@ -98,5 +98,30 @@
     "shard_cost": 25,
     "coin_cost": 500,
     "recycle_value": 100
+  },
+  {
+    "key": "raku_s_locket",
+    "name": "Raku's Locket",
+    "eligible": "Bonyari High units",
+    "eligible_character_ids": [
+      "Chitoge Kirisaki — Fake Sweetheart",
+      "Seishiro Tsugumi — Black Tiger",
+      "Kosaki Onodera — Sweet Promise",
+      "Marika Tachibana — Determined Fiancée"
+    ],
+    "character_id": "Chitoge Kirisaki — Fake Sweetheart",
+    "character_shard_ids": [
+      "Chitoge Kirisaki — Fake Sweetheart",
+      "Seishiro Tsugumi — Black Tiger",
+      "Kosaki Onodera — Sweet Promise",
+      "Marika Tachibana — Determined Fiancée"
+    ],
+    "character_shard_label": "Bonyari High",
+    "effect": "Doubles the current school-bond bonus for unit and all Bonyari High allies. Does not stack. At start of each Bonyari High unit’s action, including unit’s, the wearer has a 2/3 chance to remove all debuffs from itself.",
+    "signature": true,
+    "character_shards": 25,
+    "shard_cost": 25,
+    "coin_cost": 500,
+    "recycle_value": 100
   }
 ]

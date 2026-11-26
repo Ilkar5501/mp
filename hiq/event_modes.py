@@ -143,6 +143,7 @@ class AllForOneEngine(BattleEngine):
     @effect_owner
     def support_turn(self,source):
         from .battle.roster_update import WALL
+        if source.character.school=='Bonyari High':self.nisekyu_turn_start(source);return
         if source.char_id==WALL:self.roster_turn_start(source);return
         from .battle.youth import YOUTH_TITLES
         if source.title in YOUTH_TITLES:self.youth_turn(source);return

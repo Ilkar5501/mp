@@ -11,7 +11,27 @@ Discord auto-battler using Python 3.12 and SQLite. Run `pip install -r requireme
 
 No Discord token or production database is included in the repository.
 
-## Latest release: v14.0.3
+## Latest release: v14.0.4 — Nisekyu!!
+
+- Four exclusive 3★ Bonyari High cards: Chitoge, Tsugumi, Kosaki and Marika.
+  Each has one shiny artwork. Keys grant Pow/Qik+3, last until the holder
+  initiates combat, and are limited to one per unit and three per team.
+- `;pack nisekyu`: 500 coins for 10 independent draws. Each draw has a 25%
+  Bonyari chance, 50% returning Nisekyu cast chance, and 25% other regular card
+  chance. `;info p nisekyu` lists the exact pools and odds; regular pity is unchanged.
+- The sale starts on the first startup with this update and lasts exactly 96
+  hours. Its deadline is saved in SQLite and survives restarts. Bonyari character
+  shard drops end at the same deadline. These cards are excluded from regular
+  packs, pity, and character crafting, both during and after the event.
+- Bonyari High Tiny Titans challenge: all +10, with the supplied six-card formation.
+  Raku's Locket costs 25 item shards + 25 shards pooled from any Bonyari characters
+  + 500 coins. Doubles the current Bonyari school bond without stacking; each
+  Bonyari action gives the wearer a 2/3 chance to cleanse itself. Recycles for
+  100 Clan Dollars. Its recipe and challenge remain after the sale ends.
+- Includes v14.0.2 Wall changes, v14.0.3 Sakusa buffs and captain eligibility,
+  and the existing SQLite retention/cleanup tools. No player-data reset is needed.
+
+## Previous release: v14.0.3
 
 - Sakusa uses normal critical damage rules instead of a fixed 1.1× multiplier
   when initiating. Initial critical hits have a 55% follow-up chance (was 50%).

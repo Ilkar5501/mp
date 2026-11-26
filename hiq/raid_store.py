@@ -50,7 +50,7 @@ class RaidStore(CommunityStore):
                 crafted.append(dict(item=item,count=count,ids=ids))
             # Character-specific balances only. School shards are never read or spent.
             for char in CHARACTERS:
-                if char.is_duo:continue
+                if char.is_duo or char.event_pack:continue
                 cost=CHARACTER_SHARD_COST[char.rarity]
                 count=(await shard_balance(c,uid,'character_shard',char.id))//cost
                 if not count:continue
@@ -115,6 +115,7 @@ class RaidStore(CommunityStore):
         return [i for i in rows if i['detail'] in ITEM_BY_KEY and can_equip(ITEM_BY_KEY[i['detail']],CHAR_BY_ID[card.character_id])]
 
     async def craft_sources(self,uid,char):
+        if char.event_pack:raise ValueError('Bonyari High cards are exclusive to the Nisekyu!! Pack and cannot be crafted.')
         if char.is_duo:raise ValueError('Duo cards are made with ;fuse, using both required character cards and AF1 Marks.')
         async with self.db.connect() as c:
             count=await shard_balance(c,uid,'character_shard',char.id)
@@ -129,7 +130,15 @@ class RaidStore(CommunityStore):
                 if not item:raise ValueError('No matching item.')
                 if item.get('signature'):
                     await consume_shards(c,uid,'item_shard',target,item['shard_cost'])
-                    await consume_shards(c,uid,'character_shard',item['character_id'],item['character_shards'])
+                    shard_ids=item.get('character_shard_ids',[item['character_id']])
+                    available=[(cid,await shard_balance(c,uid,'character_shard',cid)) for cid in shard_ids]
+                    required=item['character_shards']
+                    if sum(amount for _,amount in available)<required:raise ValueError(f'Requires {required} {item.get("character_shard_label","matching character")} shards.')
+                    for cid,amount in available:
+                        used=min(required,amount)
+                        if used:await consume_shards(c,uid,'character_shard',cid,used)
+                        required-=used
+                        if not required:break
                     cur=await c.execute('UPDATE users SET coins=coins-? WHERE discord_id=? AND coins>=?',(item['coin_cost'],uid,item['coin_cost']))
                     if not cur.rowcount:raise ValueError(f'Requires {item["coin_cost"]} coins.')
                     return await self._issue_item(c,uid,'equipment',detail=target)
@@ -137,6 +146,7 @@ class RaidStore(CommunityStore):
             else:
                 char=CHAR_BY_ID.get(target)
                 if not char or source not in ('character','school'):raise ValueError('No matching crafting recipe.')
+                if char.event_pack:raise ValueError('Bonyari High cards are exclusive to the Nisekyu!! Pack and cannot be crafted.')
                 if char.is_duo:raise ValueError('Create Duo cards with ;fuse.')
                 kind,detail,cost='character_shard',target,CHARACTER_SHARD_COST[char.rarity]
             if source=='school':
@@ -284,7 +294,9 @@ class RaidStore(CommunityStore):
                     kind=reward['kind'];stars=0
                     if kind=='character_shard':
                         from .raids import choose_character
-                        char=choose_character(rng,CHARACTERS,st.get('difficulty','hard'));reward['detail']=char.id;stars=char.rarity
+                        from .nisekyu import shard_characters
+                        characters=await shard_characters(c)
+                        char=choose_character(rng,characters,st.get('difficulty','hard'));reward['detail']=char.id;stars=char.rarity
                     if kind=='coins':
                         if earned.get('coins',0)>=300*earned['_days']:
                             allowance=await extra(c,uid,'raid_coins',await allowance_days(c,uid,reward_day))

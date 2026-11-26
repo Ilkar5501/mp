@@ -45,7 +45,7 @@ class EventStore(CommunityStore):
             await c.execute('INSERT OR IGNORE INTO event_wallets(owner_id) VALUES (?)',(uid,))
             row=await self.one(c,'SELECT * FROM event_wallets WHERE owner_id=?',(uid,))
             row['shards']={i['key']:await balance(c,uid,'item_shard',i['key']) for i in SIGNATURE_ITEMS}
-            row['characters']={i['character_id']:await balance(c,uid,'character_shard',i['character_id']) for i in SIGNATURE_ITEMS}
+            row['characters']={cid:await balance(c,uid,'character_shard',cid) for i in SIGNATURE_ITEMS for cid in i.get('character_shard_ids',[i['character_id']])}
             return row
 
     async def team(self,uid,slot=1,name=''):

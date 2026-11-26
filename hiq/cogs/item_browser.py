@@ -37,7 +37,7 @@ class ItemBrowser(SafeView):
             cost=it['shard_cost'];days=self.progress.get('_days',1)
             daily_cap=25 if it.get('signature') else it['daily_cap']
             cap=daily_cap*days;earned=self.progress.get(it['key'],0)
-            price=(f"{cost} Item shards + {it['character_shards']} character shards + {it['coin_cost']} coins" if it.get('signature') else str(cost))
+            price=(f"{cost} Item shards + {it['character_shards']} {it.get('character_shard_label','character')} shards + {it['coin_cost']} coins" if it.get('signature') else str(cost))
             raid_type=('Tiny Titans '+it['eligible'].split(' — ')[0]+' Challenge' if it.get('signature') else it['theme'].title())
             blocks.append(f'> **{it["name"]} — {it.get("emoji","🏐")}**\n> **`{it["effect"]}`**\n> -# Item Cost: {price}\n> -# Raid Type: *{raid_type}*\n> -# Who can equip: *{it["eligible"]}*\n> -# Accrued Shard Allowance: {days/7:.0%} | {earned/cap:.0%} ({earned}/{cap}) • +{daily_cap}/day; expires weekly\n> -# Recycle Value: {it.get("recycle_value",cost)} Clan Dollars')
             if it.get('extended'):blocks[-1]+='\n> -# '+it['extended']

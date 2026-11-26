@@ -274,6 +274,62 @@
           "equipment_key": "smelling_salts"
         }
       ]
+    },
+    {
+      "name": "Bonyari High Promise Challenge",
+      "signature_key": "raku_s_locket",
+      "merge": 10,
+      "units": [
+        {
+          "character_id": "Seishiro Tsugumi — Black Tiger",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "jmp",
+          "equipment_key": "athletic_tape"
+        },
+        {
+          "character_id": "Chitoge Kirisaki — Fake Sweetheart",
+          "lane": "front",
+          "merge": 10,
+          "boon": "pow",
+          "bane": "jmp",
+          "equipment_key": "firm_contact"
+        },
+        {
+          "character_id": "Atsumu — Arrogant Genius",
+          "lane": "front",
+          "merge": 10,
+          "boon": "spd",
+          "bane": "hp",
+          "equipment_key": "recruit_s_shoes"
+        },
+        {
+          "character_id": "Kosaki Onodera — Sweet Promise",
+          "lane": "back",
+          "merge": 10,
+          "boon": "qik",
+          "bane": "def",
+          "equipment_key": "tricky_game_plan"
+        },
+        {
+          "character_id": "Marika Tachibana — Determined Fiancée",
+          "lane": "back",
+          "merge": 10,
+          "boon": "rec",
+          "bane": "jmp",
+          "equipment_key": "padded_arm_sleeves"
+        },
+        {
+          "character_id": "Kanbayashi — Emergency Recovery",
+          "lane": "back",
+          "merge": 10,
+          "boon": "rec",
+          "bane": "jmp",
+          "equipment_key": "water_bottle"
+        }
+      ],
+      "tier": "Challenge"
     }
   ],
   "all_for_one": [

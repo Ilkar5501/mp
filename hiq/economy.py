@@ -78,7 +78,7 @@ def _draw_from_pool(pool: list[CharacterDef], rarities: list[int], rng: random.R
 def pull_starter_daily(rng: random.Random | None = None) -> list[CharacterDef]:
     """First-ever daily: exactly one 2★, one 3★, and one 4★ card."""
     rng = rng or random.Random()
-    results = _draw_from_pool(list(CHARACTERS), [2, 3, 4], rng)
+    results = _draw_from_pool([c for c in CHARACTERS if not c.event_pack and not c.is_duo], [2, 3, 4], rng)
     rng.shuffle(results)
     return results
 
@@ -95,7 +95,7 @@ def pull_pack(
     if pack_type not in GAME_CONFIG['packs']:
         raise ValueError('Unknown pack type.')
     cfg = GAME_CONFIG['packs'][pack_type]
-    pool = list(CHARACTERS)
+    pool = [c for c in CHARACTERS if not c.event_pack and not c.is_duo]
     if pack_type == 'position':
         if not position:
             raise ValueError('A position is required for a Position Pack.')

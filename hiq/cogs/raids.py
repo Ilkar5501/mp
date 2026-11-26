@@ -170,7 +170,9 @@ async def craft_command(bot,ctx,query=''):
     if len(matches)!=1:
         choices=[it['name'] for it in items]+[c.id for c in matches]
         await ctx.send('Be more specific: '+', '.join(choices[:12]) if choices else 'No item or character matched. Use ;items or ;gallery.');return
-    char=matches[0];sources=await store.craft_sources(ctx.author.id,char)
+    char=matches[0]
+    try:sources=await store.craft_sources(ctx.author.id,char)
+    except ValueError as exc:await ctx.send(str(exc));return
     eligible=[kind for kind,(balance,cost) in sources.items() if balance>=cost]
     if len(eligible)==2:
         await ctx.send(f'Choose shards for **{display_title(char)}**: character {sources["character"][1]} or school {sources["school"][1]}.',view=CraftSourceView(bot,ctx.author.id,str(ctx.author),char));return

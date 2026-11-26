@@ -31,6 +31,7 @@ def load_characters(path: Path | None = None) -> list[CharacterDef]:
             is_duo=bool(row.get('is_duo',False)),
             components=tuple(row.get('components',())),
             shiny_arts=tuple(row.get('shiny_arts',())),
+            event_pack=row.get('event_pack',''),
         ))
     return out
 

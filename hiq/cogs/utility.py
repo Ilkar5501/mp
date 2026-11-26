@@ -31,9 +31,21 @@ class UtilityCog(commands.Cog):
     async def info(self,ctx,*,query:str):
         parts=query.split()
         if not parts or parts[0].casefold() not in ('p','pack'):await ctx.send('Use ;info p b, ;info p s <school>, or ;info p p <position>.');return
+        if len(parts)>1 and parts[1].casefold().rstrip('!')=='nisekyu':
+            from ..nisekyu import RETURNING_IDS,PACK_IMAGE,window,active
+            async with self.bot.db.connect() as c:bounds=await window(c);available=await active(c)
+            lines=['500 coins • 10 independent draws. Duplicates are possible. Regular pity is unchanged.']
+            lines+=['\n**Bonyari High: 25% total • 6.25% each**']
+            lines += [c.id for c in CHARACTERS if c.event_pack=='nisekyu']
+            lines+=['\n**Returning Nisekyu cast: 50% total**','60% of this group is split equally among the four non-5★ cards (7.5% per card overall). The remaining 40% is split equally among the three 5★ cards (about 6.67% per card overall).']
+            lines += [c.id for c in CHARACTERS if c.id in RETURNING_IDS]
+            lines+=['\n**Other pullable cards: 25% total**','Uses Base Pack rarity odds within the remaining regular roster. Excludes Bonyari, the seven returning cards and Duo cards.']
+            lines += [f'Closes <t:{int(bounds[1].timestamp())}:F>.' if available else 'Sale closed.']
+            e=discord.Embed(title='Nisekyu!! Pack — Units & Odds',description='\n'.join(lines),color=PURPLE);e.set_thumbnail(url=PACK_IMAGE)
+            await ctx.send(embed=e);return
         kind={'b':'base','base':'base','s':'school','school':'school','p':'position','pos':'position','position':'position'}.get(parts[1].casefold() if len(parts)>1 else '')
         if not kind:await ctx.send('Choose base, school or position.');return
-        pool=list(CHARACTERS);detail=''
+        pool=[c for c in CHARACTERS if not c.event_pack and not c.is_duo];detail=''
         if kind=='school':
             raw=school_name(' '.join(parts[2:]));detail=next((s for s in GAME_CONFIG['packs']['school']['eligible_schools'] if s.casefold()==raw.casefold()),None)
             if not detail:await ctx.send('That school does not have a School Pack. Use ;shop for eligible schools.');return

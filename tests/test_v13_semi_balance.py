@@ -135,7 +135,7 @@ class BalanceTests(unittest.TestCase):
         for name,stats in expected.items():
             c=character(name)
             for stat,value in stats.items():self.assertEqual(c.stats[stat],value,(name,stat))
-        recs={'Nishinoya':38,'Yaku':41,'Komi':36,'Akagi':34,'Yamagata':35,'Kosuke':34,'Kanbayashi':35,'Shibayama':27,'Watari':29,'Akifumi':28}
+        recs={'Nishinoya':38,'Yaku':41,'Komi':36,'Akagi':34,'Yamagata':35,'Kosuke':34,'Kanbayashi':35,'Shibayama':27,'Watari':29,'Akifumi':28,'Marika Tachibana':37}
         self.assertEqual({c.name:c.stats['rec'] for c in CHARACTERS if c.position=='Li'},recs)
 
     def test_unnan_neutralizes_all_visible_penalties_only_during_combat(self):

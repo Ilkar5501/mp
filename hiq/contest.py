@@ -27,6 +27,7 @@ SUPPORT_SLOTS={'Oikawa':('B','C'),'Ushijima':('C',),'Aran':('C',),
 
 def support_slots(char):
     youth={'Old Friend':('B','C'),'Furious Upstart':('C',),'Young Emperor':('A','C'),'King of the Lost Court':('C',),'Kings of the Playground':('B','C')}
+    if char.school=='Bonyari High':return ('B','C') if char.title=='Sweet Promise' else ('C',)
     if char.title in youth:return youth[char.title]
     if char.name=='Kageyama':
         return ('B',) if char.title=='Crown of Precision' else ('C',)
@@ -303,6 +304,7 @@ class ContestEngine(BattleEngine):
     @effect_owner
     def support_turn(self,source):
         """Run only the listed slots, always selecting the sole active ally."""
+        if source.character.school=='Bonyari High':self.nisekyu_turn_start(source);return
         if source.char_id==WALL:self.roster_turn_start(source);return
         f=self.feature;name=source.name
         buffs={}

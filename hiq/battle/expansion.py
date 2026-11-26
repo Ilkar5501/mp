@@ -111,6 +111,8 @@ class ExpansionEffects:
                 if negative.name=='Teradomari': mem['head_assist_turn']=self.turn+1
 
     def passive_save(self, attacker, intended):
+        replacement,saved=self.nisekyu_save(attacker,intended)
+        if saved:return replacement,True
         if attacker.name=='Fukunaga' or intended.name=='Fukunaga': return intended,False
         eligible=[]
         for unit in self.team(intended).units:

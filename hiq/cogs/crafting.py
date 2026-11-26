@@ -42,13 +42,13 @@ class CraftMenu(SafeView):
             for it in ITEMS+SIGNATURE_ITEMS:
                 if it['key'] not in matching:continue
                 row={'target':it['key'],'name':it['name'],'sources':{'item':(self.balances.get(('item_shard',it['key']),0),it['shard_cost'])}}
-                if it.get('signature'):row['requirements']={'Character':(self.balances.get(('character_shard',it['character_id']),0),it['character_shards']),'Coins':(getattr(self,'coins',0),it['coin_cost'])}
+                if it.get('signature'):row['requirements']={'Character':(sum(self.balances.get(('character_shard',cid),0) for cid in it.get('character_shard_ids',[it['character_id']])),it['character_shards']),'Coins':(getattr(self,'coins',0),it['coin_cost'])}
                 rows.append(row)
         else:
             matching={c.id for c in match_roster_names(self.query)}
             rows=[]
             for c in CHARACTERS:
-                if c.is_duo:continue
+                if c.is_duo or c.event_pack:continue
                 if c.id not in matching:continue
                 sources={'character':(self.balances.get(('character_shard',c.id),0),CHARACTER_SHARD_COST[c.rarity])}
                 if c.school in TRAINING_SCHOOLS:sources['school']=(self.schools.get(c.school,0),craft_cost(c.rarity))

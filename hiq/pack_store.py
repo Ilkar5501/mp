@@ -6,6 +6,18 @@ from .progression import resolve_pity_sequence
 
 
 class PackStore(CommunityStore):
+    async def open_nisekyu(self,uid,username):
+        from .nisekyu import active,pull_nisekyu,COST,window
+        await self.db.ensure_user(uid)
+        async with self.tx() as c:
+            if not await active(c):raise ValueError('The 96-hour Nisekyu!! Pack sale is closed.')
+            cur=await c.execute('UPDATE users SET coins=coins-? WHERE discord_id=? AND coins>=?',(COST,uid,COST))
+            if not cur.rowcount:raise ValueError('You need 500 coins for a Nisekyu!! Pack.')
+            chars=pull_nisekyu()
+            cards=[await self._issue_card(c,uid,username,char) for char in chars]
+            user=await self.one(c,'SELECT coins FROM users WHERE discord_id=?',(uid,))
+            return dict(chars=chars,cards=cards,coins=user['coins'],ends_at=(await window(c))[1])
+
     async def open(self,uid,username,pack_type='base',*,daily=False,day=None,position=None,school=None):
         if daily and pack_type!='base':raise ValueError('Daily packs must be Base Packs.')
         if pack_type not in ('base','position','school'):raise ValueError('Unknown pack type.')
@@ -24,7 +36,7 @@ class PackStore(CommunityStore):
             if pity:
                 target=CHAR_BY_ID.get(pity['character_id'])
                 if target:
-                    eligible=pack_type=='base' or (pack_type=='position' and target.position.casefold()==(position or '').casefold()) or (pack_type=='school' and target.school.casefold()==(school or '').casefold())
+                    eligible=not target.event_pack and (pack_type=='base' or (pack_type=='position' and target.position.casefold()==(position or '').casefold()) or (pack_type=='school' and target.school.casefold()==(school or '').casefold()))
                     result=resolve_pity_sequence(chars,target,armed=bool(pity['armed']),target_eligible=eligible)
                     chars=result.cards
                     if result.cleared:await c.execute('DELETE FROM pity WHERE owner_id=?',(uid,))

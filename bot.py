@@ -206,7 +206,7 @@ async def help_cmd(ctx: commands.Context):
         ('HiQ Battler — Battles & Quests', [
             '**Events:** `;tt` — Tiny Titans unique-shard challenges. `;af1team 1–5` — edit five AF1 teams. `;af1 slot` — select that team and immediately battle the next opponent. `;af1` previews; `;af1use slot` selects without battling. `;eventreset` clears a pending event.',
             '`;battle [slot]` — random CPU. `;pvp [@user] [3v3|6v6]` — rated unless you won the pair’s last rated match today. Unrated results never change that record. Midnight resets eligibility. Automatic PvP shuffles eligible opponents, placing already-faced opponents last, then randomly falls back to unrated opponents.',
-            '`;pvptt [@user] [3v3|6v6]` — independent Tiny Titans PvP ladder. `;ttboosts` shows the weekly boosted cards. `;pvpttoard` shows Elo and stacked weekly Clan Dollar prizes. Daily coin rewards have a separate allowance.',
+            '`;pvptt [@user] [3v3|6v6]` — independent Tiny Titans PvP ladder. `;ttboosts` shows the weekly boosted cards. `;pvpttboard` shows Elo and stacked weekly Clan Dollar prizes. Daily coin rewards have a separate allowance.',
             '`;pvpset` / `;pvps` — choose and lock 3v3 and 6v6 teams. Using normal teams updates unlocked PvP teams; missing or invalid teams are recovered when possible.',
             '`;pvpboard` / `;pvpb` — weekly packs: top 20% gets 5★, top 40% 4★, top 60% 3★, top 80% 2★, everyone eligible 1★. Rewards stack and go to ;inv automatically at Monday reset. Play a ranked match during the two-week season to qualify. Elo resets every two weeks.',
             '**PvP Shield:** `;buy pvpshield` or `;clanshop`, then `;use itemID`. Prevents initiating or receiving PvP for 2 hours. Another shield can be used 6 hours after activation.',
@@ -215,6 +215,7 @@ async def help_cmd(ctx: commands.Context):
             '`;pref` / `;prefecture` — join three distinct 3v3 pods into a shared 9v9 team. Host starts. 100 coins per win, up to 300 per daily allowance.',
             '`;botset` — personal 3v3/6v6 CPU builder with virtual equipment, merges and boon/bane controls. `;test` — matching-format test with regular results/logs.',
             '`;qv` — daily currency caps, weekly shard caps, and training progress.',
+            '`;pack nisekyu` — limited 10-card pack for 500 coins. `;info p nisekyu` shows its roster, odds and sale deadline.',
             '`;bal` — coins and pack affordability.',
             '`;refresh` — leave pending/broken activities. Healthy wars cannot be closed this way; use Forfeit to concede.',
         ]),

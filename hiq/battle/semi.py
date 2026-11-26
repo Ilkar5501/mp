@@ -22,6 +22,8 @@ class SemiEffects:
         ctx.temp_flags['initiator_ultimate']=unit.uid
         self.log_target_effect(unit,'U',foes,'pre-combat Qik−Rec damage ×0.7 (minimum 0)',phase='before combat')
         for foe,amount in zip(foes,amounts):
+            raw_amount=amount;amount=self.nisekyu_precombat_damage(ctx,foe,amount)
+            foe.damage_mitigated+=raw_amount-amount
             if not self.team(foe).living():break
             self.damage_team(self.team(foe),amount)
             unit.damage_dealt+=amount;foe.damage_taken+=amount

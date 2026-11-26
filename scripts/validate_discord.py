@@ -23,6 +23,8 @@ async def main():
             for alias,canonical in {'pvpttb':'pvptt','ttbboosts':'ttboosts','ttboard':'pvpttboard','ttbboard':'pvpttboard','pvpttbboard':'pvpttboard'}.items():
                 assert app.bot.get_command(alias) is app.bot.get_command(canonical) and app.bot.get_command(canonical) is not None,(alias,canonical)
             assert {'pvptt','ttboosts','pvpttboard'} <= {command.name for command in app.bot.tree.get_commands()}
+            assert app.bot.get_command('pack nisekyu') is not None
+            assert {'nisekyu','base','position','school'} <= {command.name for command in app.bot.tree.get_command('pack').commands}
             store=SealedStore(app.bot.db)
             row=await store.create([dict(id=i,name=str(i)) for i in (1,2)],100)
             cog=app.bot.get_cog('SealedCog')

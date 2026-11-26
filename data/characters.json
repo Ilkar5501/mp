@@ -3828,5 +3828,220 @@
       "C": ""
     },
     "clarification_count": 0
+  },
+  {
+    "id": "Chitoge Kirisaki — Fake Sweetheart",
+    "name": "Chitoge Kirisaki",
+    "title": "Fake Sweetheart",
+    "position": "OP",
+    "school": "Bonyari High",
+    "rarity": 3,
+    "role_class": "DPS",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu1v2.png",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%201.png",
+    "shiny_arts": [
+      "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%201v1.png"
+    ],
+    "event_pack": "nisekyu",
+    "stats": {
+      "hp": 164,
+      "pow": 52,
+      "def": 27,
+      "rec": 25,
+      "spd": 33,
+      "jmp": 36,
+      "qik": 0,
+      "bst": 337
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Gorilla Spike",
+        "text": "When unit’s Ultimate triggers during combat, boosts damage dealt by 50% for that attack. If unit holds [Key], also treats foe’s Def/Rec as if reduced by 30% for that attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "A": {
+        "name": "Tsundere Swing",
+        "text": "If unit initiates combat, grants Pow/Spd+5 during combat. If foe initiates combat, grants Pow/Def+4 during combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Promise Ribbon",
+        "text": "If unit initiates combat while holding [Key], grants unit a guaranteed follow-up attack and neutralizes foe’s percentage-based damage reduction during that combat.",
+        "timing": "COMBAT_START"
+      },
+      "C": {
+        "name": "Fake Love",
+        "text": "After an ally enters combat in unit’s place, grants [Key] to unit. During combat, grants Pow+3 to allies holding [Key]. Excludes unit.",
+        "timing": "COMBAT_START / COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "Key": "The holder gains Pow/Qik+3 during combat. Consumed after the holder initiates combat. One per unit; at most 3 per team. Keys are positive Named Buffs, so cleanses do not remove them.",
+      "Event": "Available only from the limited Nisekyu!! Pack. Existing copies can still be traded, merged and made shiny after the event."
+    },
+    "clarification_count": 2
+  },
+  {
+    "id": "Seishiro Tsugumi — Black Tiger",
+    "name": "Seishiro Tsugumi",
+    "title": "Black Tiger",
+    "position": "MB",
+    "school": "Bonyari High",
+    "rarity": 3,
+    "role_class": "DPS/Tank",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%202v3.png",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%202.png",
+    "shiny_arts": [
+      "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%202v2.png"
+    ],
+    "event_pack": "nisekyu",
+    "stats": {
+      "hp": 160,
+      "qik": 50,
+      "def": 34,
+      "rec": 26,
+      "spd": 34,
+      "jmp": 30,
+      "pow": 0,
+      "bst": 334
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Hitman’s Strike",
+        "text": "When unit’s Ultimate triggers during combat, deals bonus damage equal to 40% of unit’s Spd for that attack.",
+        "timing": "COMBAT_LIVE"
+      },
+      "A": {
+        "name": "Bodyguard Instinct",
+        "text": "If unit is in the front-line, when a foe would initiate combat against Chitoge, unit enters combat in her place. Against another ally holding [Key], unit has a 50% chance to enter combat in that ally’s place instead. Once per turn. Effects that prevent saves also prevent this effect.",
+        "timing": "COMBAT_START"
+      },
+      "B": {
+        "name": "Bee Hive Training",
+        "text": "During a combat unit entered in an ally’s place, grants Qik/Def/Spd+5 to unit, and unit can counterattack regardless of foe’s attack type.",
+        "timing": "COMBAT_LIVE"
+      },
+      "C": {
+        "name": "Sworn Retainer",
+        "text": "After a combat unit entered in an ally’s place, grants Pow/Qik/Spd+4 to that ally through their next action.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "Key": "The holder gains Pow/Qik+3 during combat. Consumed after the holder initiates combat. One per unit; at most 3 per team. Keys are positive Named Buffs, so cleanses do not remove them.",
+      "Event": "Available only from the limited Nisekyu!! Pack. Existing copies can still be traded, merged and made shiny after the event.",
+      "A": "After-combat effects target Tsugumi instead of the protected ally. The once-per-turn use is spent only when she successfully enters combat. Anti-save effects prevent the substitution. Ultimate saves retain their existing priority."
+    },
+    "clarification_count": 3
+  },
+  {
+    "id": "Kosaki Onodera — Sweet Promise",
+    "name": "Kosaki Onodera",
+    "title": "Sweet Promise",
+    "position": "S",
+    "school": "Bonyari High",
+    "rarity": 3,
+    "role_class": "Support",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%203v3.png",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%203.png",
+    "shiny_arts": [
+      "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%203v1.png"
+    ],
+    "event_pack": "nisekyu",
+    "stats": {
+      "hp": 158,
+      "qik": 46,
+      "def": 25,
+      "rec": 31,
+      "spd": 30,
+      "jmp": 30,
+      "pow": 0,
+      "bst": 320
+    },
+    "ult_cd": 3,
+    "abilities": {
+      "U": {
+        "name": "Sweets Delivery",
+        "text": "When unit’s Ultimate triggers during combat, restores team HP equal to 50% of damage dealt by that attack after damage is dealt.",
+        "timing": "COMBAT_LIVE"
+      },
+      "A": {
+        "name": "Gentle Set",
+        "text": "If unit initiates combat, grants Qik/Rec+4 during combat.",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Ten-Year Promise",
+        "text": "At start of turn 1, if unit’s team has at least 3 Bonyari High units, grants [Key] to each of them, excluding unit if there are 4 or more. At start of each turn, grants [Key] to the ally with the highest Pow/Qik that does not hold one (Chitoge takes priority). Excludes unit. Team limit of 3 [Key] applies.",
+        "timing": "TURN_START"
+      },
+      "C": {
+        "name": "Kitchen Disaster",
+        "text": "After unit’s combat, restores 8 team HP and inflicts Spd−3 on unit through unit’s next action.",
+        "timing": "COMBAT_END"
+      }
+    },
+    "extended": {
+      "Key": "The holder gains Pow/Qik+3 during combat. Consumed after the holder initiates combat. One per unit; at most 3 per team. Keys are positive Named Buffs, so cleanses do not remove them.",
+      "Event": "Available only from the limited Nisekyu!! Pack. Existing copies can still be traded, merged and made shiny after the event.",
+      "B": "The opening grant resolves before the regular per-turn grant. With 4 or more Bonyari units, Kosaki is skipped. Existing Keys count toward the team limit; Chitoge takes priority, then team order. The regular grant compares current visible active Pow/Qik; ties use team order."
+    },
+    "clarification_count": 3
+  },
+  {
+    "id": "Marika Tachibana — Determined Fiancée",
+    "name": "Marika Tachibana",
+    "title": "Determined Fiancée",
+    "position": "Li",
+    "school": "Bonyari High",
+    "rarity": 3,
+    "role_class": "Support/Tank",
+    "card_art": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%204v4.png",
+    "character_icon": "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%204.png",
+    "shiny_arts": [
+      "https://raw.githubusercontent.com/Ilkar5501/matchpointbattler/refs/heads/main/Nisekyu%204v1v2.png"
+    ],
+    "event_pack": "nisekyu",
+    "stats": {
+      "hp": 148,
+      "qik": 45,
+      "def": 22,
+      "rec": 37,
+      "spd": 33,
+      "jmp": 31,
+      "pow": 0,
+      "bst": 316
+    },
+    "ult_cd": 2,
+    "abilities": {
+      "U": {
+        "name": "Unwavering Devotion",
+        "text": "When unit’s Ultimate triggers during a foe’s attack, reduces damage from that attack by 40%. After combat, if this Ultimate triggered during that combat, grants [Key] to unit.",
+        "timing": "COMBAT_LIVE"
+      },
+      "A": {
+        "name": "Never Giving Up",
+        "text": "Unit can counterattack regardless of foe’s attack type. During combat, grants Def/Rec+2 to unit for each ally holding [Key] (max. +6).",
+        "timing": "COMBAT_LIVE"
+      },
+      "B": {
+        "name": "Persistent Pursuit",
+        "text": "At end of turn, if team’s HP ≤75%, grants [Key] to 1 random ally that does not hold one.",
+        "timing": "TURN_END"
+      },
+      "C": {
+        "name": "Receive the Serve",
+        "text": "Reduces damage dealt to unit and allies before combat by 50%. During combat, grants Rec+3 to unit and allies holding [Key].",
+        "timing": "PRE_COMBAT / COMBAT_LIVE"
+      }
+    },
+    "extended": {
+      "Key": "The holder gains Pow/Qik+3 during combat. Consumed after the holder initiates combat. One per unit; at most 3 per team. Keys are positive Named Buffs, so cleanses do not remove them.",
+      "Event": "Available only from the limited Nisekyu!! Pack. Existing copies can still be traded, merged and made shiny after the event.",
+      "C": "Multiple copies do not stack. This reduces pre-combat damage such as Lightning Serve, including damage aimed at an ally. It does not reduce start-of-turn, normal combat or after-combat damage."
+    },
+    "clarification_count": 3
   }
 ]

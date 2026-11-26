@@ -49,6 +49,12 @@ class EconomyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def cog_load(self):
+        from ..nisekyu import activate
+        async with self.bot.db.connect() as c:
+            await activate(c)
+            await c.commit()
+
     @commands.hybrid_command(name='daily', aliases=['d'], description='Open your free daily Base Pack.')
     async def daily(self, ctx: commands.Context):
         opened = await PackStore(self.bot.db).open(ctx.author.id,ctx.author.name,daily=True,day=local_date_key())
@@ -97,6 +103,11 @@ class EconomyCog(commands.Cog):
         e.add_field(name='Base Pack — 300 coins', value='3 random cards\n**30% 1★ • 25% 2★ • 20% 3★ • 15% 4★ • 10% 5★** per card', inline=False)
         e.add_field(name='Position Pack — 450 coins', value='3 cards from MB / S / OP / Li / WS\n**20% 1★ • 20% 2★ • 25% 3★ • 20% 4★ • 15% 5★** per card', inline=False)
         e.add_field(name='School Pack — 450 coins', value=f'3 cards from one eligible school\n**{schools}**\nSame targeted rarity odds as Position Packs.', inline=False)
+        from ..nisekyu import window,active
+        async with self.bot.db.connect() as c:
+            bounds=await window(c);available=await active(c)
+        status=(f'Closes <t:{int(bounds[1].timestamp())}:F> (<t:{int(bounds[1].timestamp())}:R>)' if available else 'Sale closed')
+        e.add_field(name='Nisekyu!! Pack — 500 coins',value='`;pack nisekyu` • 10 cards per pack\nEach card: 25% Bonyari High, 50% returning Nisekyu cast, 25% other pullable characters.\n'+status,inline=False)
         e.add_field(name='Boons / Banes', value='Each pull rolls HP, active POW/QIK, DEF, REC, SPD, and JMP independently for its boon and bane. Different rolls give **+3 / −3**; matching rolls cancel into **Neutral**.', inline=False)
         e.add_field(name='Free & earned', value='`;daily` gives one free Base Pack per day. Battle wins award **50 coins each**, up to **450 coins per daily allowance**. Unused Battle allowances roll over within the week.', inline=False)
         e.add_field(name='Consumables',value='**PvP Shield — 500 coins:** `;buy pvpshield [quantity]`\n**Shiny Stone — 10,000 coins:** `;buy shinystone [quantity]`\nItems can be traded. Activate them with `;use ID`.',inline=False)
@@ -106,7 +117,7 @@ class EconomyCog(commands.Cog):
     async def pack(self, ctx):
         schools = ', '.join(GAME_CONFIG['packs']['school']['eligible_schools'])
         await ctx.send(
-            'Use `;pack base`, `;pack position <position>`, or `;pack school <school>`.\n'
+            'Use `;pack base`, `;pack position <position>`, `;pack school <school>`, or `;pack nisekyu`.\n'
             '**Positions:** Li, MB, OP, S, WS\n'
             f'**Schools:** {schools}'
         )
@@ -126,6 +137,16 @@ class EconomyCog(commands.Cog):
             await ctx.send(str(e))
             return
         await ctx.send(embed=pack_embed(f'🎯 {position.upper()} Position Pack',opened['chars'],opened['cards'],opened['coins']))
+
+    @pack.command(name='nisekyu',aliases=['nisekyu!!','thanksgiving'],description='Buy 10 cards from the limited Nisekyu!! Pack for 500 coins.')
+    async def pack_nisekyu(self,ctx):
+        from ..nisekyu import PACK_IMAGE
+        try:opened=await PackStore(self.bot.db).open_nisekyu(ctx.author.id,ctx.author.name)
+        except ValueError as e:await ctx.send(str(e));return
+        e=pack_embed('Nisekyu!! Pack',opened['chars'],opened['cards'],opened['coins'])
+        e.set_thumbnail(url=PACK_IMAGE)
+        e.add_field(name='Limited pack',value=f'Sale closes <t:{int(opened["ends_at"].timestamp())}:R>. Event pulls do not change your regular pity.',inline=False)
+        await ctx.send(embed=e)
 
     @pack.command(name='school', aliases=['s'], description='Buy a School Pack for 450 coins.')
     @app_commands.choices(school=SCHOOL_CHOICES)

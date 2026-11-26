@@ -381,6 +381,7 @@ class ProgressionCog(commands.Cog):
         if len(matches)>1:
             await ctx.send('Be more specific: '+', '.join(f'`{c.id}`' for c in matches[:10])); return
         c=matches[0]
+        if c.event_pack:await ctx.send('Limited event cards cannot be regular pity targets.');return
         if c.is_duo:await ctx.send('Duo cards are created with ;fuse and cannot be pity targets.');return
         await self.bot.db.set_pity(ctx.author.id,c.id,False)
         await ctx.send(f'🎯 Pity target set to **{display_title(c)} {c.rarity_label}**. **Pity: Inactive** — a same-rarity miss activates the guarantee.')
